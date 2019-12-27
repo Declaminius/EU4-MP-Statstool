@@ -28,7 +28,8 @@ class ShowStats(Widgets.QWidget):
 	change_dir = Core.pyqtSignal()
 	switch_table_window = Core.pyqtSignal(list, str)
 	switch_overview_window = Core.pyqtSignal(str, list, int, list, dict)
-	
+	switch_error_window = Core.pyqtSignal(str)
+
 	def __init__(self, savegame_list, formable_nations_dict):
 		super().__init__()
 		self.savegame_list = savegame_list
@@ -37,6 +38,7 @@ class ShowStats(Widgets.QWidget):
 		self.savegame_list[2].year = str(self.savegame_list[0].year) + " - " + str(self.savegame_list[1].year)
 
 		self.save_figures_box = Widgets.QCheckBox("Save Figures", self)
+		self.save_figures_box.setChecked(True)
 		self.show_button = Widgets.QPushButton("Show Stats", self)
 		self.show_button.released.connect(self.show_stats)
 		self.select_all_button = Widgets.QPushButton("Select All", self)
@@ -86,7 +88,7 @@ class ShowStats(Widgets.QWidget):
 
 		self.initUI()
 
-	def groupbox(self, savegame, title, boolean = True):
+	def groupbox(self, savegame, title, checks, b = True):
 
 		savegame.box_list = []
 		savegame.method_list = []
@@ -107,11 +109,17 @@ class ShowStats(Widgets.QWidget):
 		savegame.box_list.append(savegame.income_stat_box)
 		savegame.method_list.append(self.income_stat)
 
-		if boolean:
+		if b:
 			savegame.trade_goods_box = Widgets.QCheckBox("Trade Goods", self)
 			savegame.box_list.append(savegame.trade_goods_box)
 			savegame.method_list.append(self.trade_goods)
 
+		if checks > 0:
+			savegame.losses_box.setChecked(True)
+		if checks > 1:
+			savegame.development_box.setChecked(True)
+			savegame.income_manpower_box.setChecked(True)
+			savegame.income_stat_box.setChecked(True)
 		groupBox = Widgets.QGroupBox(title)
 		vbox = Widgets.QVBoxLayout()
 
@@ -128,9 +136,9 @@ class ShowStats(Widgets.QWidget):
 		hbox = Widgets.QHBoxLayout()
 		self.groupBox2 = Widgets.QGroupBox()
 		hbox.addStretch(1)
-		hbox.addWidget(self.groupbox(self.savegame_list[0], "Savegame 1"))
-		hbox.addWidget(self.groupbox(self.savegame_list[1], "Savegame 2"))
-		hbox.addWidget(self.groupbox(self.savegame_list[2], "Vergleich", False))
+		hbox.addWidget(self.groupbox(self.savegame_list[0], "Savegame 1", 0))
+		hbox.addWidget(self.groupbox(self.savegame_list[1], "Savegame 2", 1))
+		hbox.addWidget(self.groupbox(self.savegame_list[2], "Vergleich", 2, False))
 		hbox.addStretch(1)
 		vbox.addLayout(hbox)
 		vbox.addStretch(1)
@@ -209,11 +217,11 @@ class ShowStats(Widgets.QWidget):
 			for box, method in zip(savegame.box_list, savegame.method_list):
 				if box.isChecked():
 					method(savegame)
-					# try:
-					#	 method(savegame)
-					# except Exception as e:
-					#	 plt.close("all")
-					#	 self.error = ErrorWindow("Something went wrong. Check Nation Formations. \nIf problem persists, contact Decla.\nError: \n{0}".format(e))
+					try:
+						method(savegame)
+					except Exception as e:
+						plt.close("all")
+						self.switch_error_window.emit(e)
 					box.setChecked(False)
 		plt.show()
 
@@ -472,7 +480,7 @@ class ShowStats(Widgets.QWidget):
 						base_max_manpower_y.append(savegame.stats_dict[tag][6] - self.savegame_list[0].stats_dict[tag][6])
 				else:
 					base_max_manpower_y.append(savegame.stats_dict[tag][6] - self.savegame_list[0].stats_dict[tag][6])
-				
+
 
 			color_list2 = colormap(base_max_manpower_y)
 			ax2.bar(range(len(base_max_manpower_y)), base_max_manpower_y, color=color_list2, edgecolor = "black", linewidth = 1)
@@ -660,7 +668,7 @@ class ShowStats(Widgets.QWidget):
 		tab = ax3.table(cellText=cell_text, cellColours=colors, rowLabels=rows, rowColours=row_colors,
 						colColours=col_colors, colLabels=cols, loc='upper center')
 		ax3.axis("Off")
-		
+
 		tab.auto_set_font_size(False)
 		tab.set_fontsize(8)
 		table_props = tab.properties()
@@ -783,7 +791,7 @@ class ShowStats(Widgets.QWidget):
 
 class MainWindow(Widgets.QMainWindow):
 	change_dir = Core.pyqtSignal()
-	
+
 	def __init__(self, savegame_list, formable_nations_dict):
 		super().__init__()
 		self.main = ShowStats(savegame_list, formable_nations_dict)

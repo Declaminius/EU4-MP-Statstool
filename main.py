@@ -1,5 +1,5 @@
 # Author: Florian Schager
-# Version: 2.0.
+# Version: 2.0.1 Beta
 # Last edited: 25.12.2019
 
 """
@@ -30,16 +30,17 @@ Changelog 2.0.:
 	> Added Innovatiness to Tech Window
 	> Changed Calculation of Tech Score to: (Number of Techs + Number of Ideas)*(1+Innovatiness/100)/(Institution Penalty)
 
+Changelog 2.0.1.:
+
+	> Error Window functional again
+	> Added default checks to Stats-Navigation-Checkboxes
+	> Filtered out battles with less than 10.000 men or less than 10 ships
 """
 
 
 ### Projects ###
 # Nation Profiles
 # Code Commenting & Cleanup
-# Dynamic Censoring
-# HRE - Stuff:
-# BIP
-# HRE-Army & Manpower
 # Add default checks to checkboxes
 
 # Better Color-Coding

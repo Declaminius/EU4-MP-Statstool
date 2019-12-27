@@ -48,7 +48,7 @@ def colormap(values, mode = 0, output_range = 1):
 
 def edit_parse(filename):
 	""" Pre-Parser: Parsing player nations and real (alive) nations
-		in order to enable dynamic nation selection. 
+		in order to enable dynamic nation selection.
 		Returns list of Player-Nations-Tag and list of all real nations tag in alphabetical order. """
 
 	with open(filename, 'r') as sg:
@@ -63,14 +63,13 @@ def edit_parse(filename):
 		for info, tag in zip(info_list, tag_list):
 			result = compile_real_nations.search(info)
 			if result:
-				real_nations_list.append(tag)	   
+				real_nations_list.append(tag)
 				result = compile_player.search(info)
 				if result:
 					playertag_list.append(tag)
 
 
 	return playertag_list, sorted(real_nations_list)
-
 
 def parse_regions_files(filename, data):
 	"""	 Reads data about areas, regions and superregion from
@@ -182,7 +181,7 @@ def parse_provinces(provinces, pbar, plabel):
 
 def parse_wars(content):
 	""" Second part of the main parser. Reads all relevant information about wars
-	from the savegame. Returns a list of all wars, as well as a dictionary about 
+	from the savegame. Returns a list of all wars, as well as a dictionary about
 	the participants in each war."""
 	previous_wars = content.split("previous_war={")[0].split("active_war={")[1:] + content.split("previous_war={")[1:]
 	compile_wars = compile("name=\"(?P<name>.+?)\"\n\thistory", DOTALL)
@@ -285,7 +284,7 @@ def parse_battles(content, war_list, pbar, plabel):
 			pass
 		battle.append(war_list[i])
 		battle[2] = str(battle[2][0])
-	for battle, index in zip(result_list, range(len(result_list))):
+	for battle in result_list:
 		if ("galley" in battle[3]) or ("light_ship" in battle[3]) or ("heavy_ship" in battle[3]) or (
 				"transport" in battle[3]):
 			navy_battle_list.append(battle)
@@ -339,11 +338,10 @@ def parse_battles(content, war_list, pbar, plabel):
 		battle.insert(19, battle[7] + battle[15])
 		battle.insert(20, battle[8] + battle[16])
 
+	filtered_army_battle_list = [battle for battle in army_battle_list if battle[17] >= 10000]
+	filtered_navy_battle_list = [battle for battle in navy_battle_list if battle[19] >= 10]
 
-	return army_battle_list, navy_battle_list
-
-
-
+	return filtered_army_battle_list, filtered_navy_battle_list
 
 def parse_incomestat(content, playertag_list, savegame_list, formable_nations_dict, pbar, plabel, b1):
 	step = 0
@@ -381,7 +379,6 @@ def parse_incomestat(content, playertag_list, savegame_list, formable_nations_di
 	player_tag_indizes = list(sorted(set(player_tag_indizes)))
 
 	return income_tag_list, income_info_list, income_x_data, income_y_data, player_tag_indizes
-
 
 def parse_trade(content, pbar, plabel):
 	trade_nodes = content.split("trade={")[1].split("tradegoods_total")[0].split("\n\tnode={")[1:]
@@ -425,7 +422,6 @@ def parse_trade(content, pbar, plabel):
 	del trade_stats_list[0]
 	return trade_stats_list
 
-
 def compile_main(info, tag, stats_list):
 	main_regex = "\n\t\tdevelopment=(?P<effective_development>\d+.\d+).+?" \
 				 "raw_development=(?P<development>\d+.\d+).+?" \
@@ -446,9 +442,8 @@ def compile_main(info, tag, stats_list):
 			stats["great_power_score"] = 0
 		result = trade_goods.search(info)
 		if result:
-			stats["trade_goods"] = result.group(1)	
+			stats["trade_goods"] = result.group(1)
 		stats_list.append(stats)
-
 
 def compile_techcost(info, tag, tech_dict):
 	compile_techcost = compile("technology_cost=(\d+.\d+)")
@@ -474,13 +469,11 @@ def compile_techcost(info, tag, tech_dict):
 	else:
 		del tech_dict[tag]
 
-
 def compile_player(info, tag, playertag_list):
 	compile_player = compile("was_player=yes")
 	result = compile_player.search(info)
 	if result:
 		playertag_list.append(tag)
-
 
 def compile_color(info, tag, color_dict):
 	color_regex = "country_color=[{]\n\t\t\t\t(?P<color>[^\n]+).+?"
@@ -495,7 +488,6 @@ def compile_color(info, tag, color_dict):
 		hex_color = ("#{0:02x}{1:02x}{2:02x}".format(*color))
 		color_dict[stats["country"]] = hex_color
 
-
 def compile_subjects(info, tag, subject_dict, trade_port_dict, old_version_flag = False):
 	compile_subjects = compile("\n\t\tsubjects={([^}]+)}")
 	compile_trade_port = compile("trade_port=(.+)")
@@ -508,7 +500,6 @@ def compile_subjects(info, tag, subject_dict, trade_port_dict, old_version_flag 
 	else:
 		subject_dict[tag] = []
 	trade_port_dict[tag] = int(compile_trade_port.search(info).group(1))
-
 
 def compile_points_spent(info, tag, stats_list):
 	adm_points_dict, dip_points_dict, mil_points_dict, total_points_dict = {}, {}, {}, {}
@@ -532,8 +523,6 @@ def compile_points_spent(info, tag, stats_list):
 			if tag == country["country"]:
 				country["points_spent"] = [adm_points_dict, dip_points_dict, mil_points_dict, total_points_dict]
 
-
-
 def parse_countries(content, pbar, plabel, b2):
 	step = 0
 	pbar.reset()
@@ -550,7 +539,7 @@ def parse_countries(content, pbar, plabel, b2):
 		compile_techcost(info, tag, tech_dict)
 		compile_player(info, tag, playertag_list)
 		compile_color(info, tag, color_dict)
-		compile_subjects(info, tag, subject_dict, trade_port_dict, b2)		
+		compile_subjects(info, tag, subject_dict, trade_port_dict, b2)
 		compile_points_spent(info, tag, stats_list)
 		step += 1000 / len(tag_list)
 		pbar.setValue(step)
