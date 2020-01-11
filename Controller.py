@@ -17,6 +17,7 @@ from TableWindow import TableWindow
 from Overview import Overview
 from Selecter import NationSelecter, WarSelecter, CommanderSelecter
 from ProvinceFilter import ProvinceFilter
+from ErrorWindow import ErrorWindow
 
 class Controller:
 
@@ -27,23 +28,23 @@ class Controller:
 
 	def show_parse_window(self):
 		try:
-			self.setup_window.close()
 			self.parse_window = ParseWindow(self.setup_window.savegame_list)
 			self.parse_window.switch_back.connect(self.back_to_setup)
 			self.parse_window.switch_edit_nations.connect(self.show_edit_nations)
 			self.parse_window.switch_configure_nations.connect(self.show_configure_nations)
 			self.parse_window.switch_main_window.connect(self.show_main_window)
 			self.parse_window.show()
+			self.setup_window.close()
 		except AttributeError as err:
 			self.setup_window.show()
-			self.setup_window.status.showMessage("Error:{}\nSelect two Savegames".format(err))
+			self.setup_window.status.showMessage("Error:{}. Select two Savegames".format(err))
 
 	def back_to_setup(self):
-		self.parse_window.close()
 		self.setup_window.savegame_list = [[],[]]
 		self.setup_window.line1.setText("")
 		self.setup_window.line2.setText("")
 		self.setup_window.show()
+		self.parse_window.close()
 
 	def show_edit_nations(self, b):
 		self.edit_nations_window = EditNations(b, self.parse_window.savegame_list)
@@ -84,13 +85,13 @@ class Controller:
 			label.setText("{0} {1} {2}".format(value, chr(10230), key))
 
 	def show_main_window(self):
-		self.parse_window.close()
 		self.main_window = MainWindow(self.parse_window.savegame_list, self.parse_window.formable_nations_dict)
 		self.main_window.main.switch_table_window.connect(self.show_table_window)
 		self.main_window.main.back_to_parse_window.connect(self.back_to_parse_window)
 		self.main_window.main.switch_overview_window.connect(self.show_overview_window)
 		self.main_window.main.switch_error_window.connect(self.show_error_window)
 		self.main_window.show()
+		self.parse_window.close()
 
 	def show_table_window(self, data, title):
 		self.table_window = TableWindow(self.parse_window.savegame_list, data, title)
@@ -101,17 +102,17 @@ class Controller:
 		self.table_window.show()
 
 	def show_nation_selecter(self):
-		self.nation_select_window = NationSelecter(self.data, self.parse_window.savegame_list)
+		self.nation_select_window = NationSelecter(self.table_window.data, self.parse_window.savegame_list)
 		self.nation_select_window.update_table.connect(self.update_table)
 		self.nation_select_window.show()
 
 	def show_commander_selecter(self):
-		self.commander_select_window = CommanderSelecter(self.data, self.parse_window.savegame_list)
+		self.commander_select_window = CommanderSelecter(self.table_window.data, self.parse_window.savegame_list)
 		self.commander_select_window.update_table.connect(self.update_table)
 		self.commander_select_window.show()
 
 	def show_war_selecter(self):
-		self.war_select_window = WarSelecter(self.data, self.parse_window.savegame_list)
+		self.war_select_window = WarSelecter(self.table_window.data, self.parse_window.savegame_list)
 		self.war_select_window.update_table.connect(self.update_table)
 		self.war_select_window.show()
 
@@ -137,5 +138,5 @@ class Controller:
 		self.error_window.show()
 
 	def back_to_parse_window(self):
-		self.main_window.close()
 		self.parse_window.show()
+		self.main_window.close()

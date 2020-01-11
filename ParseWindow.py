@@ -21,18 +21,9 @@ class ParseWindow(Widgets.QWidget):
 	
 	def __init__(self, savegame_list):
 		super().__init__()
-		self.label = Widgets.QLabel(self)
-		self.setGeometry(0, 30, 500, 500)
-		self.setWindowTitle("Decla's Stats-Tool")
-		self.setWindowIcon(Gui.QIcon(icon_dir))
 		self.savegame_list = savegame_list
-		self.initMe()
-		self.initLayout()
-
-	def initMe(self):
-
-		self.old_nations_list = ["CAS", "ENG", "MOS", "ODA", "POL", "SWE", "BRA", "LAN", "C00", "TUS"]
-		self.new_nations_list = ["SPA", "GBR", "RUS", "JAP", "PLC", "SCA", "PRU", "TUS", "TEX", "ITA"]
+		self.old_nations_list = ["CAS", "ENG", "MOS", "POL", "SWE", "BRA", "LAN", "TUS", "TIM"]
+		self.new_nations_list = ["SPA", "GBR", "RUS", "PLC", "SCA", "PRU", "TUS", "ITA", "MUG"]
 		self.formable_nations_dict = dict(zip(self.new_nations_list, self.old_nations_list))
 
 		self.first_label = Widgets.QLabel("Standard Nation Formations:", self)
@@ -43,12 +34,12 @@ class ParseWindow(Widgets.QWidget):
 		for (key, value), label in zip(self.formable_nations_dict.items(), self.label_list):
 			label.setText("{0} {1} {2}".format(value, chr(10230), key))
 
-
 		self.create_button = Widgets.QPushButton("Create Statistic", self)
 		self.create_button.released.connect(self.create_statistic)
 		self.create_button.setShortcut("Ctrl+C")
 		self.back_button = Widgets.QPushButton("Back", self)
 		self.back_button.released.connect(self.back)
+		self.back_button.setShortcut("Ctrl+B")
 		self.add_button = Widgets.QPushButton("Add Nation", self)
 		self.add_button.released.connect(self.add_nation)
 		self.remove_button = Widgets.QPushButton("Remove Nation", self)
@@ -57,13 +48,10 @@ class ParseWindow(Widgets.QWidget):
 		self.remove_all_button.released.connect(self.remove_all)
 		self.configure_nation_formations_button = Widgets.QPushButton("Configure Nation Formations", self)
 		self.configure_nation_formations_button.released.connect(self.configure_nation_formations)
-		self.old_version_checkbox = Widgets.QCheckBox("1.25", self)
-		self.old_version_checkbox.setChecked(False)
-
 
 		self.groupBox = Widgets.QGroupBox("Nation Selection Type", self)
-		self.was_player_button = Widgets.QRadioButton("Was Player")
-		self.all_nations_button = Widgets.QRadioButton("All Nations")
+		self.was_player_button = Widgets.QRadioButton("Players only")
+		self.all_nations_button = Widgets.QRadioButton("All Nations (use at own risk)")
 
 		self.was_player_button.setChecked(True)
 		self.playertags_table = Widgets.QTableWidget()
@@ -89,8 +77,12 @@ class ParseWindow(Widgets.QWidget):
 		self.pbar.setMinimum(0)
 		self.pbar.setMaximum(1000)
 		self.plabel = Widgets.QLabel("", self)
+		self.init_ui()
 
-	def initLayout(self):
+	def init_ui(self):
+		self.setGeometry(0, 30, 500, 500)
+		self.setWindowTitle("Decla's Stats-Tool")
+		self.setWindowIcon(Gui.QIcon(icon_dir))
 		hbox = Widgets.QHBoxLayout(self)
 		vbox = Widgets.QVBoxLayout()
 		vbox.addWidget(self.playertags_table)
@@ -110,13 +102,11 @@ class ParseWindow(Widgets.QWidget):
 			sub_hbox.addWidget(label2)
 			vbox.addLayout(sub_hbox)
 		grid = Widgets.QGridLayout(self)
-		grid.addWidget(self.old_version_checkbox, 0, 0)
 		grid.addWidget(self.create_button, 0, 1)
 		grid.addWidget(self.pbar, 1, 1)
 		grid.addWidget(self.back_button, 1, 0)
 		grid.addWidget(self.plabel, 2, 1)
 		vbox.addLayout(grid)
-		vbox.addWidget(self.label)
 		hbox.addLayout(vbox)
 
 		self.setLayout(hbox)
@@ -145,30 +135,19 @@ class ParseWindow(Widgets.QWidget):
 
 	def create_statistic(self):
 		for savegame in self.savegame_list[:2]:
-			if savegame.data_flag:
-				with open (savegame.file) as savefile:
-					content = savefile.read()
-					savegame.datasets, savegame.year, savegame.total_trade_goods,\
-					savegame.sorted_tag_list, savegame.income_tag_list, savegame.income_info_list,\
-					savegame.income_x_data, savegame.income_y_data, savegame.player_tag_indizes,\
-					savegame.color_dict, savegame.army_battle_list, savegame.navy_battle_list,\
-					savegame.province_stats_list, savegame.great_power_list,\
-					savegame.trade_stats_list, savegame.subject_dict, savegame.hre_reformlevel,\
-					savegame.trade_port_dict = eval(content)[-1]
-			else:
-				start = time.process_time()
-				print("Start:", start)
-				savegame.datasets, savegame.year, savegame.total_trade_goods, savegame.sorted_tag_list,\
-				savegame.income_tag_list, savegame.income_info_list, savegame.income_x_data,\
-				savegame.income_y_data, savegame.player_tag_indizes, savegame.color_dict,\
-				savegame.army_battle_list, savegame.navy_battle_list, savegame.province_stats_list,\
-				savegame.great_power_list, savegame.trade_stats_list, savegame.subject_dict,\
-				savegame.hre_reformlevel, savegame.trade_port_dict, savegame.war_list,\
-				savegame.war_dict, savegame.tech_dict = parser.parse(savegame.file, self.savegame_list, 
-														 self.formable_nations_dict, self.all_nations_button.isChecked(), self.pbar, self.plabel, self.old_version_checkbox.isChecked())
-				end = time.process_time()
-				print("End:", end)
-				print("Time elapsed:", end - start)
+			start = time.process_time()
+			print("Start:", start)
+			savegame.datasets, savegame.year, savegame.total_trade_goods, savegame.sorted_tag_list,\
+			savegame.income_tag_list, savegame.income_info_list, savegame.income_x_data,\
+			savegame.income_y_data, savegame.player_tag_indizes, savegame.color_dict,\
+			savegame.army_battle_list, savegame.navy_battle_list, savegame.province_stats_list,\
+			savegame.great_power_list, savegame.trade_stats_list, savegame.subject_dict,\
+			savegame.hre_reformlevel, savegame.trade_port_dict, savegame.war_list,\
+			savegame.war_dict, savegame.tech_dict = parser.parse(savegame.file, self.savegame_list, 
+													 self.formable_nations_dict, self.all_nations_button.isChecked(), self.pbar, self.plabel)
+			end = time.process_time()
+			print("End:", end)
+			print("Time elapsed:", end - start)
 
 			savegame.great_power_y, savegame.great_power_x = parser.sort_two_lists(savegame.datasets[3], savegame.datasets[1])
 			savegame.effective_development_y, savegame.effective_development_x = parser.sort_two_lists(savegame.datasets[2], savegame.datasets[1])
