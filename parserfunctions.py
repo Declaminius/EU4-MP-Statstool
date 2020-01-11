@@ -343,7 +343,7 @@ def parse_battles(content, war_list, pbar, plabel):
 
 	return filtered_army_battle_list, filtered_navy_battle_list
 
-def parse_incomestat(content, playertag_list, savegame_list, formable_nations_dict, pbar, plabel, b1):
+def parse_incomestat(content, playertag_list, savegame_list, formable_nations_dict, pbar, plabel, all_nations_bool):
 	step = 0
 	pbar.reset()
 	plabel.setText("Loading Income Data...")
@@ -371,7 +371,7 @@ def parse_incomestat(content, playertag_list, savegame_list, formable_nations_di
 	player_tag_indizes = []
 	old_nations = [formable_nations_dict[tag] for tag in savegame_list[1].playertags if tag in formable_nations_dict.keys()]
 	for tag in income_tag_list:
-		if b1:
+		if all_nations_bool:
 			player_tag_indizes.append(income_tag_list.index(tag))
 		else:
 			if tag in (savegame_list[1].playertags + savegame_list[0].playertags + old_nations):
@@ -523,7 +523,7 @@ def compile_points_spent(info, tag, stats_list):
 			if tag == country["country"]:
 				country["points_spent"] = [adm_points_dict, dip_points_dict, mil_points_dict, total_points_dict]
 
-def parse_countries(content, pbar, plabel, b2):
+def parse_countries(content, pbar, plabel):
 	step = 0
 	pbar.reset()
 	plabel.setText("Loading Country Data...")
@@ -539,7 +539,7 @@ def parse_countries(content, pbar, plabel, b2):
 		compile_techcost(info, tag, tech_dict)
 		compile_player(info, tag, playertag_list)
 		compile_color(info, tag, color_dict)
-		compile_subjects(info, tag, subject_dict, trade_port_dict, b2)
+		compile_subjects(info, tag, subject_dict, trade_port_dict)
 		compile_points_spent(info, tag, stats_list)
 		step += 1000 / len(tag_list)
 		pbar.setValue(step)
@@ -577,7 +577,7 @@ def parse_history(content):
 			if result:
 				monarch_dict[tag] = result.groups()
 
-def parse(filename, savegame_list, formable_nations_dict, b1, pbar, plabel, b2):
+def parse(filename, savegame_list, formable_nations_dict, all_nations_bool, pbar, plabel):
 
 	with open(filename, 'r') as sg:
 		content = sg.read()
@@ -595,14 +595,14 @@ def parse(filename, savegame_list, formable_nations_dict, b1, pbar, plabel, b2):
 		army_battle_list, navy_battle_list = parse_battles(content, war_list, pbar, plabel)
 		stats_list, sorted_tag_list, great_power_list,\
 		subject_dict, playertag_list, color_dict,\
-		trade_port_dict, tech_dict = parse_countries(content, pbar, plabel, b2)
+		trade_port_dict, tech_dict = parse_countries(content, pbar, plabel)
 		income_tag_list, income_info_list, income_x_data,\
-		income_y_data, player_tag_indizes = parse_incomestat(content, playertag_list, savegame_list, formable_nations_dict, pbar, plabel, b1)
+		income_y_data, player_tag_indizes = parse_incomestat(content, playertag_list, savegame_list, formable_nations_dict, pbar, plabel, all_nations_bool)
 		trade_stats_list = parse_trade(content, pbar, plabel)
 		parse_history(content)
 		data = []
 		old_nations = [formable_nations_dict[tag] for tag in savegame_list[1].playertags if tag in formable_nations_dict.keys()]
-		if b1:
+		if all_nations_bool:
 			for nation in stats_list:
 				m = list(nation.values())
 				m.insert(0, [])

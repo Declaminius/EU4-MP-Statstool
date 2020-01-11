@@ -35,6 +35,7 @@ class ShowStats(Widgets.QWidget):
 		self.savegame_list = savegame_list
 		self.formable_nations_dict = formable_nations_dict
 		self.savegame_list.append(Savegame())
+		# Create empty Savegame as placeholer for the comparison between Savegame 1 and 2
 		self.savegame_list[2].year = str(self.savegame_list[0].year) + " - " + str(self.savegame_list[1].year)
 
 		self.save_figures_box = Widgets.QCheckBox("Save Figures", self)
@@ -43,6 +44,8 @@ class ShowStats(Widgets.QWidget):
 		self.show_button.released.connect(self.show_stats)
 		self.select_all_button = Widgets.QPushButton("Select All", self)
 		self.select_all_button.released.connect(self.select_all)
+		self.deselect_all_button = Widgets.QPushButton("Deselect All", self)
+		self.deselect_all_button.released.connect(self.deselect_all)
 		self.close_button = Widgets.QPushButton("Close Stats", self)
 		self.close_button.released.connect(self.close_stats)
 
@@ -76,11 +79,7 @@ class ShowStats(Widgets.QWidget):
 		self.total_points_spent_button = Widgets.QPushButton("Total Points Spent Table", self)
 		self.total_points_spent_button.released.connect(self.total_points_spent)
 
-		self.save_button = Widgets.QPushButton("Generate data file", self)
-		self.save_button.released.connect(self.save)
-		self.save_label = Widgets.QLabel("", self)
-
-		self.upload_button = Widgets.QPushButton("Upload to Picload", self)
+		self.upload_button = Widgets.QPushButton("Upload to Abload", self)
 		self.upload_button.released.connect(self.upload)
 
 		self.back_button = Widgets.QPushButton("Back", self)
@@ -88,7 +87,7 @@ class ShowStats(Widgets.QWidget):
 
 		self.initUI()
 
-	def groupbox(self, savegame, title, checks, b = True):
+	def create_groupbox(self, savegame, title, checks, b = True):
 
 		savegame.box_list = []
 		savegame.method_list = []
@@ -132,72 +131,65 @@ class ShowStats(Widgets.QWidget):
 
 
 	def initUI(self):
+		
+		groupBox1 = Widgets.QGroupBox()
+		grid1 = Widgets.QGridLayout()
+		grid1.addWidget(self.show_button, 0, 0)
+		grid1.addWidget(self.close_button, 0, 1)
+		grid1.addWidget(self.select_all_button, 1, 0)
+		grid1.addWidget(self.deselect_all_button, 1, 1)
+		groupBox1.setLayout(grid1)
+		
+		groupBox2 = Widgets.QGroupBox()
+		grid2 = Widgets.QGridLayout()
+		grid2.addWidget(self.army_battle_button, 2, 0)
+		grid2.addWidget(self.navy_battle_button, 2, 1)
+		grid2.addWidget(self.province_list_button, 3, 0)
+		grid2.addWidget(self.wars_button, 3, 1)
+		groupBox2.setLayout(grid2)
+
+		groupBox3 = Widgets.QGroupBox()
+		grid3 = Widgets.QGridLayout()
+		grid3.addWidget(self.overview_button, 0, 0)
+		grid3.addWidget(self.total_points_spent_button, 0, 1)
+		grid3.addWidget(self.tech_button, 0, 2)		
+		grid3.addWidget(self.adm_points_spent_button, 1, 0)
+		grid3.addWidget(self.dip_points_spent_button, 1, 1)
+		grid3.addWidget(self.mil_points_spent_button, 1, 2)
+		groupBox3.setLayout(grid3)
+		
+		groupBox4 = Widgets.QGroupBox()
+		grid4 = Widgets.QGridLayout()
+		grid4.addWidget(self.back_button, 0, 0)
+		grid4.addWidget(self.upload_button, 0, 1)
+		groupBox4.setLayout(grid4)
+		
 		vbox = Widgets.QVBoxLayout()
 		hbox = Widgets.QHBoxLayout()
-		self.groupBox2 = Widgets.QGroupBox()
 		hbox.addStretch(1)
-		hbox.addWidget(self.groupbox(self.savegame_list[0], "Savegame 1", 0))
-		hbox.addWidget(self.groupbox(self.savegame_list[1], "Savegame 2", 1))
-		hbox.addWidget(self.groupbox(self.savegame_list[2], "Vergleich", 2, False))
+		hbox.addWidget(self.create_groupbox(self.savegame_list[0], "Savegame 1", 0))
+		hbox.addWidget(self.create_groupbox(self.savegame_list[1], "Savegame 2", 1))
+		hbox.addWidget(self.create_groupbox(self.savegame_list[2], "Vergleich", 2, False))
 		hbox.addStretch(1)
 		vbox.addLayout(hbox)
-		vbox.addStretch(1)
-		grid = Widgets.QGridLayout()
-		grid.addWidget(self.show_button, 0, 0)
-		grid.addWidget(self.select_all_button, 0, 1)
-		grid.addWidget(self.close_button, 0, 2)
-		grid.addWidget(self.army_battle_button, 1, 0)
-		grid.addWidget(self.navy_battle_button, 1, 1)
-		grid.addWidget(self.province_list_button, 1, 2)
-		grid.addWidget(self.wars_button, 2, 1)
-		self.groupBox2.setLayout(grid)
+
 		hbox = Widgets.QHBoxLayout()
 		hbox.addStretch(1)
 		hbox.addWidget(self.save_figures_box)
 		hbox.addStretch(1)
+		vbox.addLayout(hbox)
+		vbox.addWidget(groupBox3)
 		vbox.addStretch(1)
-		vbox.addLayout(hbox)
-
+		
 		hbox = Widgets.QHBoxLayout()
 		hbox.addStretch(1)
-		hbox.addWidget(self.overview_button)
-		hbox.addWidget(self.tech_button)
-		hbox.addWidget(self.adm_points_spent_button)
-		hbox.addWidget(self.dip_points_spent_button)
-		hbox.addWidget(self.mil_points_spent_button)
-		hbox.addWidget(self.total_points_spent_button)
-		hbox.addStretch(1)
-		vbox.addStretch(1)
-		vbox.addLayout(hbox)
-
-		hbox = Widgets.QHBoxLayout()
-		hbox.addStretch(1)
-		hbox.addWidget(self.save_button)
-		hbox.addStretch(1)
-		vbox.addStretch(1)
-		vbox.addLayout(hbox)
-
-		hbox = Widgets.QHBoxLayout()
-		hbox.addStretch(1)
-		hbox.addWidget(self.save_label)
-		hbox.addStretch(1)
-		vbox.addLayout(hbox)
-
-		hbox = Widgets.QHBoxLayout()
-		hbox.addStretch(1)
-		hbox.addWidget(self.upload_button)
-		hbox.addStretch(1)
-		vbox.addLayout(hbox)
-
-
-		hbox = Widgets.QHBoxLayout()
-		hbox.addStretch(1)
-		hbox.addWidget(self.groupBox2)
+		hbox.addWidget(groupBox1)
+		hbox.addWidget(groupBox2)
 		hbox.addStretch(1)
 		vbox.addLayout(hbox)
 		hbox = Widgets.QHBoxLayout()
 		hbox.addStretch(1)
-		hbox.addWidget(self.back_button)
+		hbox.addWidget(groupBox4)
 		hbox.addStretch(1)
 		vbox.addLayout(hbox)
 
@@ -208,7 +200,6 @@ class ShowStats(Widgets.QWidget):
 
 	def upload(self):
 		webbrowser.open("https://abload.de/")
-
 
 	def show_stats(self):
 		if self.save_figures_box.isChecked():
@@ -236,6 +227,11 @@ class ShowStats(Widgets.QWidget):
 		for savegame in self.savegame_list:
 			for box in savegame.box_list:
 				box.setChecked(True)
+	
+	def deselect_all(self):
+		for savegame in self.savegame_list:
+			for box in savegame.box_list:
+				box.setChecked(False)
 
 	def wars(self):
 		d = []
@@ -259,7 +255,6 @@ class ShowStats(Widgets.QWidget):
 		self.switch_table_window.emit(self.savegame_list[1].province_stats_list, "Province Table")
 
 	def development(self, savegame):
-		compare = False
 		savegame.development_figure = plt.figure("Development - {0}".format(savegame.year))
 
 		ax1 = plt.subplot2grid((5, 2), (0, 0), rowspan=3)
@@ -280,6 +275,8 @@ class ShowStats(Widgets.QWidget):
 		if savegame == self.savegame_list[2]:
 			savegame = self.savegame_list[1]
 			compare = True
+		else:
+			compare = False
 
 		dev_x = [sorted(savegame.stats_dict.items(), key = lambda x: x[1][2], reverse = True)[i][0] for i in range(len(savegame.stats_dict))][:20]
 		dev_y = [sorted(savegame.stats_dict.items(), key = lambda x: x[1][2], reverse = True)[i][1][2] for i in range(len(savegame.stats_dict))][:20]
@@ -298,7 +295,8 @@ class ShowStats(Widgets.QWidget):
 				else:
 					base_dev_y.append(savegame.stats_dict[tag][2] - self.savegame_list[0].stats_dict[tag][2])
 
-			color_list2 = colormap(base_dev_y)
+			norm = plt.Normalize(min(base_dev_y), max(base_dev_y))
+			color_list2 = plt.cm.RdYlGn(norm(base_dev_y))
 
 
 
@@ -321,7 +319,8 @@ class ShowStats(Widgets.QWidget):
 				except KeyError:
 					if tag in self.formable_nations_dict:
 						base_effective_development_y.append(savegame.stats_dict[tag][0] - self.savegame_list[0].stats_dict[self.formable_nations_dict[tag]][0])
-			color_list2 = colormap(base_effective_development_y)
+			norm = plt.Normalize(min(base_effective_development_y), max(base_effective_development_y))
+			color_list2 = plt.cm.RdYlGn(norm(base_effective_development_y))
 
 		ax2.grid(True, axis="y")
 		ax2.minorticks_on()
@@ -358,7 +357,9 @@ class ShowStats(Widgets.QWidget):
 			row_colors = ["white", "gold", "salmon"]
 		for data in cell_text:
 			try:
-				colors.append(colormap(data))
+				clean_data = [float(d) for d in data]
+				norm = plt.Normalize(min(clean_data), max(clean_data))
+				colors.append(plt.cm.RdYlGn(norm(clean_data)))
 			except:
 				colors.append(["white" for x in range(len(dev_y))])
 		col_colors = []
@@ -451,7 +452,8 @@ class ShowStats(Widgets.QWidget):
 				else:
 					base_income_y.append(savegame.stats_dict[tag][4] - self.savegame_list[0].stats_dict[tag][4])
 
-			color_list2 = colormap(base_income_y)
+			norm = plt.Normalize(min(base_income_y), max(base_income_y))
+			color_list2 = plt.cm.RdYlGn(norm(base_income_y))
 			ax1.bar(range(len(base_income_y)), base_income_y, color=color_list2, edgecolor = "black", linewidth = 1)
 
 
@@ -481,8 +483,8 @@ class ShowStats(Widgets.QWidget):
 				else:
 					base_max_manpower_y.append(savegame.stats_dict[tag][6] - self.savegame_list[0].stats_dict[tag][6])
 
-
-			color_list2 = colormap(base_max_manpower_y)
+			norm = plt.Normalize(min(base_max_manpower_y), max(base_max_manpower_y))
+			color_list2 = plt.cm.RdYlGn(norm(base_max_manpower_y))
 			ax2.bar(range(len(base_max_manpower_y)), base_max_manpower_y, color=color_list2, edgecolor = "black", linewidth = 1)
 
 			base_max_manpower_table = []
@@ -531,7 +533,9 @@ class ShowStats(Widgets.QWidget):
 		#data_list.append(manpower_table)
 		for data in data_list:
 			try:
-			   colors.append(colormap(data))
+				clean_data = [float(d) for d in data]
+				norm = plt.Normalize(min(clean_data), max(clean_data))
+				colors.append(plt.cm.RdYlGn(norm(clean_data)))
 			except:
 				colors.append(["white" for x in range(len(income_y))])
 		col_colors = []
@@ -658,7 +662,8 @@ class ShowStats(Widgets.QWidget):
 				sorted_losses_list = savegame.sorted_losses_list
 			if i != 3:
 				cell_text.append(['{0:,}'.format(loss) for loss in sorted_losses_list[i]])
-				colors.append(colormap(sorted_losses_list[i]))
+				norm = plt.Normalize(min(sorted_losses_list[i]), max(sorted_losses_list[i]))
+				colors.append(plt.cm.RdYlGn(norm(sorted_losses_list[i])))
 		rows = ["Infantry", "Cavalry", "Artillery", "Combat", "Atrittion", "Total", "Per Year"]
 		cols = sorted_losses_list[0]
 		row_colors = ["royalblue", "saddlebrown", "k", "indianred", "dimgray", "white", "white"]
@@ -666,15 +671,14 @@ class ShowStats(Widgets.QWidget):
 		for tag in sorted_losses_list[0]:
 			col_colors.append(savegame.color_dict[tag])
 		tab = ax3.table(cellText=cell_text, cellColours=colors, rowLabels=rows, rowColours=row_colors,
-						colColours=col_colors, colLabels=cols, loc='upper center')
+						colColours=col_colors, colLabels=cols, loc='upper center', fontsize=10)
 		ax3.axis("Off")
 
-		tab.auto_set_font_size(False)
-		tab.set_fontsize(8)
 		table_props = tab.properties()
 		table_cells = table_props['child_artists']
 		x = len(cols) * (len(rows) + 1) + 2
 		table_cells[x]._text.set_color("white")
+		tab.scale(1, 2)
 		losses_figure.canvas.set_window_title("Army Losses")
 		losses_figure.set_size_inches(16, 10)
 
@@ -774,17 +778,6 @@ class ShowStats(Widgets.QWidget):
 		header_labels = ["Country", "Adm", "Dip", "Mil", "Total"]
 		data = {tag: list(self.savegame_list[1].stats_dict[tag][-1][3].values()) for tag in self.savegame_list[1].playertags}
 		self.switch_overview_window.emit("Total Points Spent", columns, column_count, header_labels, data)
-
-
-	def save(self):
-		for savegame in self.savegame_list:
-			if savegame != self.savegame_list[2]:
-				print("Generate File: {0}".format(savegame.file))
-				self.save_label.setText("Generate File: {0}".format(savegame.file))
-				with open("{0}-data.txt".format(savegame.file), "w") as savefile:
-					savefile.write(str(tuple(a for a in [savegame.playertags, savegame.tag_list, parse(savegame.file)])))
-			else:
-				self.save_label.clear()
 
 	def close_stats(self):
 		plt.close("all")

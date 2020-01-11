@@ -35,15 +35,15 @@ Changelog 2.0.1.:
 	> Error Window functional again
 	> Added default checks to Stats-Navigation-Checkboxes
 	> Filtered out battles with less than 10.000 men or less than 10 ships
+	> Slight design changes
+	> Changed the colormap
 """
 
 
 ### Projects ###
 # Nation Profiles
 # Code Commenting & Cleanup
-# Add default checks to checkboxes
 
-# Better Color-Coding
 # Thicker Plot Lines
 # Add relative change
 
@@ -51,12 +51,13 @@ import sys
 import PyQt5.QtWidgets as Widgets
 from Controller import Controller
 
-
 def main():
 	Widgets.QApplication.setStyle(Widgets.QStyleFactory.create("Fusion"))
 	app = Widgets.QApplication(sys.argv)
+	app.lastWindowClosed.connect(app.quit)
 	window = Controller()
 	sys.exit(app.exec_())
 
 if __name__ == '__main__':
 	main()
+	
