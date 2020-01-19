@@ -615,10 +615,17 @@ def parse(filename, savegame_list, formable_nations_dict, all_nations_bool, pbar
 		else:
 			for nation in stats_list:
 				if nation["country"] in (savegame_list[1].playertags + savegame_list[0].playertags + old_nations):
-					m = list(nation.values())
-					m.insert(0, [])
-					m.insert(3, m.pop(9))
-					data.append(m)
+					if nation["country"] in formable_nations_dict.values():
+						if list(formable_nations_dict.keys())[list(formable_nations_dict.values()).index(nation["country"])] not in savegame_list[1].playertags:
+							m = list(nation.values())
+							m.insert(0, [])
+							m.insert(3, m.pop(9))
+							data.append(m)
+					else:
+						m = list(nation.values())
+						m.insert(0, [])
+						m.insert(3, m.pop(9))
+						data.append(m)
 				legend = list(nation.keys())
 				legend.insert(0, "empty")
 				legend.insert(3, legend.pop(9))

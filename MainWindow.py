@@ -131,7 +131,7 @@ class ShowStats(Widgets.QWidget):
 
 
 	def initUI(self):
-		
+
 		groupBox1 = Widgets.QGroupBox()
 		grid1 = Widgets.QGridLayout()
 		grid1.addWidget(self.show_button, 0, 0)
@@ -139,7 +139,7 @@ class ShowStats(Widgets.QWidget):
 		grid1.addWidget(self.select_all_button, 1, 0)
 		grid1.addWidget(self.deselect_all_button, 1, 1)
 		groupBox1.setLayout(grid1)
-		
+
 		groupBox2 = Widgets.QGroupBox()
 		grid2 = Widgets.QGridLayout()
 		grid2.addWidget(self.army_battle_button, 2, 0)
@@ -152,18 +152,18 @@ class ShowStats(Widgets.QWidget):
 		grid3 = Widgets.QGridLayout()
 		grid3.addWidget(self.overview_button, 0, 0)
 		grid3.addWidget(self.total_points_spent_button, 0, 1)
-		grid3.addWidget(self.tech_button, 0, 2)		
+		grid3.addWidget(self.tech_button, 0, 2)
 		grid3.addWidget(self.adm_points_spent_button, 1, 0)
 		grid3.addWidget(self.dip_points_spent_button, 1, 1)
 		grid3.addWidget(self.mil_points_spent_button, 1, 2)
 		groupBox3.setLayout(grid3)
-		
+
 		groupBox4 = Widgets.QGroupBox()
 		grid4 = Widgets.QGridLayout()
 		grid4.addWidget(self.back_button, 0, 0)
 		grid4.addWidget(self.upload_button, 0, 1)
 		groupBox4.setLayout(grid4)
-		
+
 		vbox = Widgets.QVBoxLayout()
 		hbox = Widgets.QHBoxLayout()
 		hbox.addStretch(1)
@@ -180,7 +180,7 @@ class ShowStats(Widgets.QWidget):
 		vbox.addLayout(hbox)
 		vbox.addWidget(groupBox3)
 		vbox.addStretch(1)
-		
+
 		hbox = Widgets.QHBoxLayout()
 		hbox.addStretch(1)
 		hbox.addWidget(groupBox1)
@@ -207,7 +207,6 @@ class ShowStats(Widgets.QWidget):
 		for savegame in self.savegame_list:
 			for box, method in zip(savegame.box_list, savegame.method_list):
 				if box.isChecked():
-					method(savegame)
 					try:
 						method(savegame)
 					except Exception as e:
@@ -227,7 +226,7 @@ class ShowStats(Widgets.QWidget):
 		for savegame in self.savegame_list:
 			for box in savegame.box_list:
 				box.setChecked(True)
-	
+
 	def deselect_all(self):
 		for savegame in self.savegame_list:
 			for box in savegame.box_list:
@@ -586,6 +585,7 @@ class ShowStats(Widgets.QWidget):
 				color_list.append(savegame.color_dict[tag])
 			else:
 				color_list.append("black")
+		print(savegame.player_tag_indizes)
 		for i, color in zip(savegame.player_tag_indizes, color_list):
 			plt.plot(savegame.income_x_data[i], savegame.income_y_data[i],
 					 label=savegame.income_tag_list[i], color=color, linewidth=1.5)
@@ -678,7 +678,6 @@ class ShowStats(Widgets.QWidget):
 		table_cells = table_props['child_artists']
 		x = len(cols) * (len(rows) + 1) + 2
 		table_cells[x]._text.set_color("white")
-		tab.scale(1, 2)
 		losses_figure.canvas.set_window_title("Army Losses")
 		losses_figure.set_size_inches(16, 10)
 
