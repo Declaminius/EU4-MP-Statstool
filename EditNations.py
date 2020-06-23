@@ -12,7 +12,7 @@ icon_dir = "files/attack_move.png"
 
 class EditNations(Widgets.QWidget):
 	set_playertags = Core.pyqtSignal()
-	
+
 	def __init__(self, b, savegame_list):
 		super().__init__()
 		self.b = b
@@ -71,8 +71,7 @@ class EditNations(Widgets.QWidget):
 		else:
 			if self.choose_nation1.currentText() in self.savegame_list[0].playertags:
 				self.savegame_list[0].playertags.remove(self.choose_nation1.currentText())
-				self.choose_nation1.removeItem(self.choose_nation1.currentIndex())
 			if self.choose_nation1.currentText() in self.savegame_list[1].playertags:
 				self.savegame_list[1].playertags.remove(self.choose_nation1.currentText())
-				self.choose_nation1.removeItem(self.choose_nation1.currentIndex())
+			self.choose_nation1.removeItem(self.choose_nation1.currentIndex())
 		self.set_playertags.emit()
