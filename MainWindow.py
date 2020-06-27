@@ -585,10 +585,12 @@ class ShowStats(Widgets.QWidget):
 				color_list.append(savegame.color_dict[tag])
 			else:
 				color_list.append("black")
-		print(savegame.player_tag_indizes)
+		markers = ["o","v","^","<",">","s","p","*","+","x","d","D","h","H"]
 		for i, color in zip(savegame.player_tag_indizes, color_list):
+			marker = markers[a%len(markers)]
+			print(savegame.income_tag_list[i],marker)
 			plt.plot(savegame.income_x_data[i], savegame.income_y_data[i],
-					 label=savegame.income_tag_list[i], color=color, linewidth=1.5)
+					 label=savegame.income_tag_list[i], color=color, linewidth=1.5, marker = marker)
 			a += 1
 		plt.grid(True, which="both")
 		plt.minorticks_on()

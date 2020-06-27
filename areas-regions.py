@@ -1,8 +1,8 @@
 import re
 
-filename = "paradox_files/1.29/area.txt"
-filename2 = "paradox_files/1.29/region.txt"
-filename3 = "paradox_files/1.29/superregion.txt"
+filename = "paradox_files/1.30/area.txt"
+filename2 = "paradox_files/1.30/region.txt"
+filename3 = "paradox_files/1.30/superregion.txt"
 savefile = "files/area.txt"
 savefile2 = "files/region.txt"
 savefile3 = "files/superregion.txt"

@@ -1,6 +1,6 @@
 # Author: Florian Schager
-# Version: 2.0.1 Beta
-# Last edited: 25.12.2019
+# Version: 2.1.
+# Last edited: 27.06.2020
 
 """
 Changelog 2.0.:
@@ -37,6 +37,12 @@ Changelog 2.0.1.:
 	> Filtered out battles with less than 10.000 men or less than 10 ships
 	> Slight design changes
 	> Changed the colormap
+
+Changelog 2.1.:
+
+	> Compatability with 1.30
+	> Fixed remove nation bug
+	> Made Income-Stat-Plot more readable
 """
 
 
