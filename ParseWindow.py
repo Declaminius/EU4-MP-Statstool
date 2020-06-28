@@ -18,7 +18,7 @@ class ParseWindow(Widgets.QWidget):
 	switch_edit_nations = Core.pyqtSignal(bool)
 	switch_configure_nations = Core.pyqtSignal()
 	switch_main_window = Core.pyqtSignal()
-	
+
 	def __init__(self, savegame_list):
 		super().__init__()
 		self.savegame_list = savegame_list
@@ -67,7 +67,7 @@ class ParseWindow(Widgets.QWidget):
 				item.setData(Core.Qt.DisplayRole, x)
 				item.setFlags(Core.Qt.ItemIsEnabled)
 				self.playertags_table.setItem(i-1, j, item)
-			
+
 		vbox = Widgets.QVBoxLayout()
 		vbox.addWidget(self.was_player_button)
 		vbox.addWidget(self.all_nations_button)
@@ -138,8 +138,7 @@ class ParseWindow(Widgets.QWidget):
 			start = time.process_time()
 			print("Start:", start)
 			savegame.datasets, savegame.year, savegame.total_trade_goods, savegame.sorted_tag_list,\
-			savegame.income_tag_list, savegame.income_info_list, savegame.income_x_data,\
-			savegame.income_y_data, savegame.player_tag_indizes, savegame.color_dict,\
+			savegame.income_dict, savegame.color_dict,\
 			savegame.army_battle_list, savegame.navy_battle_list, savegame.province_stats_list,\
 			savegame.great_power_list, savegame.trade_stats_list, savegame.subject_dict,\
 			savegame.hre_reformlevel, savegame.trade_port_dict, savegame.war_list,\

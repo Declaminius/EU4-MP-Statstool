@@ -375,7 +375,7 @@ class ShowStats(Widgets.QWidget):
 		tab.auto_set_font_size(False)
 		tab.set_fontsize(10)
 		table_props = tab.properties()
-		table_cells = table_props['child_artists']
+		table_cells = table_props['children']
 		for cell in table_cells:
 			cell.set_height(0.2)
 		ax3.axis("Off")
@@ -549,7 +549,7 @@ class ShowStats(Widgets.QWidget):
 		tab.auto_set_font_size(False)
 		tab.set_fontsize(8)
 		table_props = tab.properties()
-		table_cells = table_props['child_artists']
+		table_cells = table_props['children']
 		for cell in table_cells:
 			cell.set_height(0.2)
 		ax3.axis("Off")
@@ -577,26 +577,22 @@ class ShowStats(Widgets.QWidget):
 		plt.subplots_adjust(right = 0.85)
 		a = 0
 		color_list = []
-		colortag_list = []
-		for i in savegame.player_tag_indizes:
-			colortag_list.append(savegame.income_tag_list[i])
-		for tag in colortag_list:
+		for tag in savegame.playertags:
 			if tag in savegame.color_dict:
 				color_list.append(savegame.color_dict[tag])
 			else:
 				color_list.append("black")
 		markers = ["o","v","^","<",">","s","p","*","+","x","d","D","h","H"]
-		for i, color in zip(savegame.player_tag_indizes, color_list):
+		for tag, color in zip(savegame.playertags, color_list):
 			marker = markers[a%len(markers)]
-			print(savegame.income_tag_list[i],marker)
-			plt.plot(savegame.income_x_data[i], savegame.income_y_data[i],
-					 label=savegame.income_tag_list[i], color=color, linewidth=1.5, marker = marker)
+			plt.plot(savegame.income_dict[tag][0], savegame.income_dict[tag][1],
+					 label=tag, color=color, linewidth=1.5, marker = marker)
 			a += 1
 		plt.grid(True, which="both")
 		plt.minorticks_on()
 		max_list = []
-		for i in savegame.player_tag_indizes:
-			max_value = max(savegame.income_y_data[i])
+		for tag in savegame.playertags:
+			max_value = max(savegame.income_dict[tag][1])
 			max_list.append(max_value)
 		maxi = max(max_list)
 		plt.axis([1445, int(savegame.year), 0, maxi * 1.05])
@@ -659,10 +655,13 @@ class ShowStats(Widgets.QWidget):
 			sorted_losses_list = list(zip(*sorted(zip(losses_list[7], losses_list[0], losses_list[1], losses_list[2], losses_list[3], losses_list[4], losses_list[5], losses_list[6], losses_list[8]))))
 			sorted_losses_list.insert(7, sorted_losses_list.pop(0))
 			sorted_losses_list[-1] = [int(losses/(int(savegame.year) - int(self.savegame_list[0].year))) for losses in sorted_losses_list[-2]]
+		ylim = 0
 		for i in range(1,9):
 			if not compare:
 				sorted_losses_list = savegame.sorted_losses_list
 			if i != 3:
+				if (m := max(sorted_losses_list[i])) > ylim:
+					ylim = m
 				cell_text.append(['{0:,}'.format(loss) for loss in sorted_losses_list[i]])
 				norm = plt.Normalize(min(sorted_losses_list[i]), max(sorted_losses_list[i]))
 				colors.append(plt.cm.RdYlGn(norm(sorted_losses_list[i])))
@@ -675,9 +674,8 @@ class ShowStats(Widgets.QWidget):
 		tab = ax3.table(cellText=cell_text, cellColours=colors, rowLabels=rows, rowColours=row_colors,
 						colColours=col_colors, colLabels=cols, loc='upper center', fontsize=10)
 		ax3.axis("Off")
-
 		table_props = tab.properties()
-		table_cells = table_props['child_artists']
+		table_cells = table_props['children']
 		x = len(cols) * (len(rows) + 1) + 2
 		table_cells[x]._text.set_color("white")
 		losses_figure.canvas.set_window_title("Army Losses")
@@ -709,6 +707,8 @@ class ShowStats(Widgets.QWidget):
 				edgecolor=col_colors, linewidth=1)
 		ax2.set_xticks(range(len(sorted_losses_list[0])))
 		ax2.set_xticklabels(sorted_losses_list[0])
+		print(ylim)
+		ax2.set_ylim(0,ylim*1.05)
 		ax2.grid(True, axis="y")
 		ax2.legend(prop={'size': 10})
 		if self.save_figures_box.isChecked():
@@ -740,10 +740,12 @@ class ShowStats(Widgets.QWidget):
 			plt.subplots_adjust(hspace = 0.3, wspace = 0)
 
 	def overview(self):
-		column_count = 8
-		header_labels = ["Country", "Effective Development", "Great Power Score", "Development", "Navy Strength", "Income", "Max Manpower", "Total Army Losses"]
+		columns = [i for i in range(8)]
+		column_count = 9
+		header_labels = ["Country", "Effective Development", "Great Power Score", "Development", "Navy Strength", "Income", "Max Manpower", "Total Army Losses", "Total Income over Time"]
 		data = self.savegame_list[1].stats_dict
-		self.switch_overview_window.emit("Overview Window", [i for i in range(7)], column_count, header_labels, data)
+		print(data)
+		self.switch_overview_window.emit("Overview Window",columns , column_count, header_labels, data)
 
 	def tech(self):
 		columns = [i for i in range(6)]

@@ -354,8 +354,8 @@ def parse_incomestat(content, playertag_list, savegame_list, formable_nations_di
 	income_tag_list, income_info_list = country_list[1:-1:3], country_list[2:-1:3]
 	income_x_data = []
 	income_y_data = []
-
-	for info in income_info_list:
+	income_dict = {}
+	for tag, info in zip(income_tag_list,income_info_list):
 		data2 = info.split()
 		income_x_data_set = []
 		income_y_data_set = []
@@ -365,20 +365,10 @@ def parse_incomestat(content, playertag_list, savegame_list, formable_nations_di
 			income_y_data_set.append(int(da[1]))
 		income_x_data.append(income_x_data_set)
 		income_y_data.append(income_y_data_set)
+		income_dict[tag] = [income_x_data_set,income_y_data_set]
 		step += 1000 / len(income_info_list)
 		pbar.setValue(step)
-
-	player_tag_indizes = []
-	old_nations = [formable_nations_dict[tag] for tag in savegame_list[1].playertags if tag in formable_nations_dict.keys()]
-	for tag in income_tag_list:
-		if all_nations_bool:
-			player_tag_indizes.append(income_tag_list.index(tag))
-		else:
-			if tag in (savegame_list[1].playertags + savegame_list[0].playertags + old_nations):
-				player_tag_indizes.append(income_tag_list.index(tag))
-	player_tag_indizes = list(sorted(set(player_tag_indizes)))
-
-	return income_tag_list, income_info_list, income_x_data, income_y_data, player_tag_indizes
+	return income_dict
 
 def parse_trade(content, pbar, plabel):
 	trade_nodes = content.split("trade={")[1].split("tradegoods_total")[0].split("\n\tnode={")[1:]
@@ -596,8 +586,7 @@ def parse(filename, savegame_list, formable_nations_dict, all_nations_bool, pbar
 		stats_list, sorted_tag_list, great_power_list,\
 		subject_dict, playertag_list, color_dict,\
 		trade_port_dict, tech_dict = parse_countries(content, pbar, plabel)
-		income_tag_list, income_info_list, income_x_data,\
-		income_y_data, player_tag_indizes = parse_incomestat(content, playertag_list, savegame_list, formable_nations_dict, pbar, plabel, all_nations_bool)
+		income_dict = parse_incomestat(content, playertag_list, savegame_list, formable_nations_dict, pbar, plabel, all_nations_bool)
 		trade_stats_list = parse_trade(content, pbar, plabel)
 		parse_history(content)
 		data = []
@@ -647,4 +636,4 @@ def parse(filename, savegame_list, formable_nations_dict, all_nations_bool, pbar
 				datasets[n].append(i)
 	pbar.reset()
 	plabel.clear()
-	return datasets, year, total_trade_goods, sorted_tag_list, income_tag_list, income_info_list, income_x_data, income_y_data, player_tag_indizes, color_dict, army_battle_list, navy_battle_list, province_stats_list, great_power_list, trade_stats_list, subject_dict, hre_reformlevel, trade_port_dict, war_list, war_dict, tech_dict
+	return datasets, year, total_trade_goods, sorted_tag_list, income_dict, color_dict, army_battle_list, navy_battle_list, province_stats_list, great_power_list, trade_stats_list, subject_dict, hre_reformlevel, trade_port_dict, war_list, war_dict, tech_dict
