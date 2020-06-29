@@ -373,7 +373,8 @@ def parse_incomestat(content, savegame_list, formable_nations_dict, pbar, plabel
 			income_x_data.append(income_x_data_set)
 			income_y_data.append(income_y_data_set)
 			income_dict[tag] = [income_x_data_set, income_y_data_set]
-			stats_dict[tag]["total_income"] = sum(income_y_data_set)
+			if tag in stats_dict.keys():
+				stats_dict[tag]["total_income"] = sum(income_y_data_set)
 		step += 1000 / len(income_info_list)
 		pbar.setValue(step)
 	return income_dict

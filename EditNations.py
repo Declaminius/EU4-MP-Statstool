@@ -54,7 +54,6 @@ class EditNations(Widgets.QWidget):
 
 	def change_nation(self):
 		text = self.choose_nation.currentText()
-		print(text)
 		index = self.choose_nation.currentIndex()
 		if self.b:
 			if text:

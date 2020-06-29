@@ -24,8 +24,14 @@ class ParseWindow(Widgets.QWidget):
 		self.savegame_list = savegame_list
 		self.playertags = playertags
 		self.tag_list = self.savegame_list[1].tag_list
-		self.old_nations_list = ["CAS", "ENG", "MOS", "POL", "SWE", "BRA", "LAN", "TUS", "TIM"]
-		self.new_nations_list = ["SPA", "GBR", "RUS", "PLC", "SCA", "PRU", "TUS", "ITA", "MUG"]
+		self.old_nations_list = ["RVA", "ORL"]
+		self.new_nations_list = ["WES", "FRA"]
+		self.playertags.remove("HUN")
+		self.playertags.remove("CAS")
+		self.playertags.remove("SPA")
+		self.playertags.remove("MOS")
+		self.playertags.remove("CRI")
+		self.playertags.remove("MCM")
 		self.formable_nations_dict = dict(zip(self.new_nations_list, self.old_nations_list))
 
 		self.first_label = Widgets.QLabel("Standard Nation Formations:", self)
