@@ -28,7 +28,7 @@ class Controller:
 
 	def show_parse_window(self):
 		try:
-			self.parse_window = ParseWindow(self.setup_window.savegame_list)
+			self.parse_window = ParseWindow(self.setup_window.savegame_list, self.setup_window.playertags)
 			self.parse_window.switch_back.connect(self.back_to_setup)
 			self.parse_window.switch_edit_nations.connect(self.show_edit_nations)
 			self.parse_window.switch_configure_nations.connect(self.show_configure_nations)
@@ -47,24 +47,20 @@ class Controller:
 		self.parse_window.close()
 
 	def show_edit_nations(self, b):
-		self.edit_nations_window = EditNations(b, self.parse_window.savegame_list)
+		self.edit_nations_window = EditNations(b, self.parse_window.playertags, self.parse_window.tag_list)
 		self.edit_nations_window.set_playertags.connect(self.set_playertags)
 		self.edit_nations_window.show()
 
 	def set_playertags(self):
 		self.parse_window.playertags_table.clear()
-		self.parse_window.playertags_table.setRowCount(max(len(self.parse_window.savegame_list[0].playertags),
-													 len(self.parse_window.savegame_list[1].playertags)))
-		j = 1
-		for sg in self.parse_window.savegame_list:
-			j += 1
-			for i, x in zip(range(len(sg.playertags)), sg.playertags):
-				item = Widgets.QTableWidgetItem()
-				item.setData(Core.Qt.DisplayRole, x)
-				item.setFlags(Core.Qt.ItemIsEnabled)
-				self.parse_window.playertags_table.setItem(i-1, j, item)
-		self.parse_window.playertags_table.setHorizontalHeaderLabels(["Savegame 1", "Savegame 2"])
-		if self.parse_window.savegame_list[0].playertags + self.parse_window.savegame_list[1].playertags:
+		self.parse_window.playertags_table.setRowCount(len(self.parse_window.playertags))
+		for i in range(len(self.parse_window.playertags)):
+			item = Widgets.QTableWidgetItem()
+			item.setData(Core.Qt.DisplayRole, self.parse_window.playertags[i])
+			item.setFlags(Core.Qt.ItemIsEnabled)
+			self.parse_window.playertags_table.setItem(i, 0, item)
+		self.parse_window.playertags_table.setHorizontalHeaderLabels(["Player-Tags"])
+		if self.parse_window.playertags:
 			self.parse_window.remove_all_button.setEnabled(True)
 			self.parse_window.remove_button.setEnabled(True)
 		else:
@@ -85,7 +81,8 @@ class Controller:
 			label.setText("{0} {1} {2}".format(value, chr(10230), key))
 
 	def show_main_window(self):
-		self.main_window = MainWindow(self.parse_window.savegame_list, self.parse_window.formable_nations_dict)
+		self.main_window = MainWindow(self.parse_window.savegame_list,\
+		self.parse_window.formable_nations_dict, self.parse_window.playertags)
 		self.main_window.main.switch_table_window.connect(self.show_table_window)
 		self.main_window.main.back_to_parse_window.connect(self.back_to_parse_window)
 		self.main_window.main.switch_overview_window.connect(self.show_overview_window)
@@ -129,12 +126,13 @@ class Controller:
 		if category == "province":
 			self.table_window.provinceTable(data)
 
-	def show_overview_window(self, title, columns, column_count, header_labels, data):
-		self.overview_window = Overview(self.parse_window.savegame_list, title, columns, column_count, header_labels, data)
+	def show_overview_window(self, title, categories, colormap_options, header_labels, data):
+		self.overview_window = Overview(self.parse_window.savegame_list, self.parse_window.playertags,
+										title, categories, colormap_options, header_labels, data)
 		self.overview_window.show()
 
 	def show_error_window(self,e):
-		self.error_window = ErrorWindow("Something went wrong. Check Nation Formations.\nError: \n{0}".format(e))
+		self.error_window = ErrorWindow(e)
 		self.error_window.show()
 
 	def back_to_parse_window(self):

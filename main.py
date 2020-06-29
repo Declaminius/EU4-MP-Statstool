@@ -43,6 +43,9 @@ Changelog 2.1.:
 	> Compatability with 1.30
 	> Fixed remove nation bug
 	> Made Income-Stat-Plot more readable
+	> Major Code Restructuring
+	> Code Readability Improvements
+	> Added Total Income over Time to Overview Window
 """
 
 
@@ -57,12 +60,14 @@ import sys
 import PyQt5.QtWidgets as Widgets
 from Controller import Controller
 
+
 def main():
 	Widgets.QApplication.setStyle(Widgets.QStyleFactory.create("Fusion"))
 	app = Widgets.QApplication(sys.argv)
 	app.lastWindowClosed.connect(app.quit)
 	window = Controller()
 	sys.exit(app.exec_())
+
 
 if __name__ == '__main__':
 	main()

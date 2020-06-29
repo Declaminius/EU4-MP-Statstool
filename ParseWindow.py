@@ -9,7 +9,7 @@ import PyQt5.QtWidgets as Widgets
 import PyQt5.QtGui as Gui
 import PyQt5.QtCore as Core
 import time
-import parserfunctions as parser
+import parserfunctions as parserfunctions
 
 icon_dir = "files/attack_move.png"
 
@@ -19,9 +19,11 @@ class ParseWindow(Widgets.QWidget):
 	switch_configure_nations = Core.pyqtSignal()
 	switch_main_window = Core.pyqtSignal()
 
-	def __init__(self, savegame_list):
+	def __init__(self, savegame_list, playertags):
 		super().__init__()
 		self.savegame_list = savegame_list
+		self.playertags = playertags
+		self.tag_list = self.savegame_list[1].tag_list
 		self.old_nations_list = ["CAS", "ENG", "MOS", "POL", "SWE", "BRA", "LAN", "TUS", "TIM"]
 		self.new_nations_list = ["SPA", "GBR", "RUS", "PLC", "SCA", "PRU", "TUS", "ITA", "MUG"]
 		self.formable_nations_dict = dict(zip(self.new_nations_list, self.old_nations_list))
@@ -55,18 +57,15 @@ class ParseWindow(Widgets.QWidget):
 
 		self.was_player_button.setChecked(True)
 		self.playertags_table = Widgets.QTableWidget()
-		self.playertags_table.setColumnCount(2)
-		self.playertags_table.setHorizontalHeaderLabels(["Old Nations", "New Nations"])
-		self.playertags_table.setRowCount(max(len(self.savegame_list[0].playertags), len(self.savegame_list[1].playertags)))
+		self.playertags_table.setColumnCount(1)
+		self.playertags_table.setHorizontalHeaderLabels(["Player-Tags"])
+		self.playertags_table.setRowCount(len(self.playertags))
 
-		j = 1
-		for savegame in self.savegame_list:
-			j += 1
-			for i, x in zip(range(len(savegame.playertags)), savegame.playertags):
-				item = Widgets.QTableWidgetItem()
-				item.setData(Core.Qt.DisplayRole, x)
-				item.setFlags(Core.Qt.ItemIsEnabled)
-				self.playertags_table.setItem(i-1, j, item)
+		for i in range(len(self.playertags)):
+			item = Widgets.QTableWidgetItem()
+			item.setData(Core.Qt.DisplayRole, self.playertags[i])
+			item.setFlags(Core.Qt.ItemIsEnabled)
+			self.playertags_table.setItem(i, 0, item)
 
 		vbox = Widgets.QVBoxLayout()
 		vbox.addWidget(self.was_player_button)
@@ -125,63 +124,26 @@ class ParseWindow(Widgets.QWidget):
 		self.switch_configure_nations.emit()
 
 	def remove_all(self):
-		self.savegame_list[0].playertags = []
-		self.savegame_list[1].playertags = []
+		self.playertags = []
 		self.playertags_table.clear()
-		self.playertags_table.setHorizontalHeaderLabels(["Old Nations", "New Nations"])
+		self.playertags_table.setHorizontalHeaderLabels(["Player-Tags"])
+		self.playertags_table.setRowCount(1)
 		self.remove_all_button.setEnabled(False)
 		self.remove_button.setEnabled(False)
-
 
 	def create_statistic(self):
 		for savegame in self.savegame_list[:2]:
 			start = time.process_time()
 			print("Start:", start)
-			savegame.datasets, savegame.year, savegame.total_trade_goods, savegame.sorted_tag_list,\
+			savegame.stats_dict, savegame.year, savegame.total_trade_goods, savegame.sorted_tag_list,\
 			savegame.income_dict, savegame.color_dict,\
 			savegame.army_battle_list, savegame.navy_battle_list, savegame.province_stats_list,\
-			savegame.great_power_list, savegame.trade_stats_list, savegame.subject_dict,\
+			savegame.trade_stats_list, savegame.subject_dict,\
 			savegame.hre_reformlevel, savegame.trade_port_dict, savegame.war_list,\
-			savegame.war_dict, savegame.tech_dict = parser.parse(savegame.file, self.savegame_list, 
-													 self.formable_nations_dict, self.all_nations_button.isChecked(), self.pbar, self.plabel)
+			savegame.war_dict, savegame.tech_dict =\
+			parserfunctions.parse(savegame.file, self.playertags, self.savegame_list,
+			self.formable_nations_dict, self.all_nations_button.isChecked(), self.pbar, self.plabel)
 			end = time.process_time()
 			print("End:", end)
 			print("Time elapsed:", end - start)
-
-			savegame.great_power_y, savegame.great_power_x = parser.sort_two_lists(savegame.datasets[3], savegame.datasets[1])
-			savegame.effective_development_y, savegame.effective_development_x = parser.sort_two_lists(savegame.datasets[2], savegame.datasets[1])
-			savegame.income_y, savegame.income_x = parser.sort_two_lists(savegame.datasets[6], savegame.datasets[1])
-			savegame.manpower_y, savegame.manpower_x = parser.sort_two_lists(savegame.datasets[8], savegame.datasets[7])
-			savegame.dummy, savegame.manpower_table = parser.sort_two_lists(savegame.datasets[6], savegame.datasets[7])
-			savegame.max_manpower_y, savegame.max_manpower_x = parser.sort_two_lists(savegame.datasets[8], savegame.datasets[1])
-			savegame.table_y, savegame.table_x = parser.sort_two_lists(savegame.datasets[3], savegame.datasets[2])
-			savegame.tm_y, savegame.tm_x = parser.sort_two_lists(savegame.datasets[6], savegame.datasets[8])
-			savegame.losses_list = [savegame.datasets[1]]
-
-			savegame.goods = savegame.datasets[10]
-			for i in range(8):
-				savegame.losses_list.append([])
-			for losses in savegame.datasets[9]:
-				savegame.losses_list[1].append(losses[0] + losses[1]) # Infantry
-				savegame.losses_list[2].append(losses[3] + losses[4]) # Cavalry
-				savegame.losses_list[3].append(losses[0] + losses[1] + losses[3] + losses[4]) # Inf + Cav
-				savegame.losses_list[4].append(losses[6] + losses[7]) # Artillery
-				savegame.losses_list[5].append(losses[0] + losses[3] + losses[6]) # Combat
-				savegame.losses_list[6].append(losses[1] + losses[4] + losses[7]) # Attrition
-				savegame.losses_list[7].append(losses[0] + losses[1] + losses[3] + losses[4] + losses[6] + losses[7]) # Total
-				savegame.losses_list[8].append(int((losses[0] + losses[1] + losses[3] + losses[4] + losses[6] + losses[7]) / (int(savegame.year)-1445))) # Per Year
-			indexes = []
-			for i in range(len(savegame.losses_list[0])):
-				indexes.append(i)
-			indexes.sort(key=savegame.losses_list[7].__getitem__)
-			savegame.sorted_losses_list = []
-			for losses in savegame.losses_list:
-				savegame.sorted_losses_list.append(list(map(losses.__getitem__, indexes)))
-
-			savegame.stats_dict = dict(zip(savegame.datasets[1], zip([savegame.datasets[(x+2)][i] for x in range(len(savegame.datasets)-2)] for i in range(len(savegame.datasets[1])))))
-			for key, value in zip(savegame.stats_dict, savegame.stats_dict.values()):
-				savegame.stats_dict[key] = value[0]
-			savegame.legend = ["effective_development", "great_power_score", "development",
-					  "navy_strength", "income", "current_manpower", "max_manpower", "losses",
-					  "trade goods"]
 		self.switch_main_window.emit()

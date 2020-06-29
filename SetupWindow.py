@@ -15,7 +15,7 @@ icon_dir = "files/attack_move.png"
 
 class SetupWindow(Widgets.QMainWindow):
 	switch_window = Core.pyqtSignal()
-	
+
 	def __init__(self):
 		super().__init__()
 		self.savegame_list = [[],[]]
@@ -92,4 +92,5 @@ class SetupWindow(Widgets.QMainWindow):
 			self.FILEDIR = fileName
 
 	def parse(self):
+		self.playertags = sorted(list(set(self.savegame_list[0].playertags + self.savegame_list[1].playertags)))
 		self.switch_window.emit()

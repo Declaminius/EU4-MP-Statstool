@@ -2,14 +2,8 @@ from re import DOTALL, split, compile, findall
 import numpy as np
 import matplotlib.pyplot as plt
 
-def sort_two_lists(x, y):
-	""" Sorting two lists after first one in descending order. """
 
-	sorted_x, sorted_y = zip(*sorted(zip(x, y)))
-	sorted_x, sorted_y = (list(t) for t in zip(*sorted(zip(sorted_x, sorted_y), reverse=True)))
-	return sorted_x, sorted_y
-
-def colormap(values, mode = 0, output_range = 1):
+def colormap(values, mode=0, output_range=1):
 	""" Green - Red Colormap with min, max & mean
 		Takes list of values, 0,1,2 to specify mode and the output_range (1, 255 mainly) as input.
 		Mode 0: Colormap with Min - Median - Max
@@ -20,24 +14,27 @@ def colormap(values, mode = 0, output_range = 1):
 	values = [float(v) for v in values]
 	mini = min(values)
 	maxi = max(values)
-	if (mode == 1 and mini < 0):
+	if mode == 1 and mini < 0:
 		# if both positive and negative values are present, set median to 0.
 		median = 0
 	else:
 		median = np.median(values)
-	normal1 = plt.Normalize(mini, median, clip=True)
-	normal2 = plt.Normalize(median, maxi, clip=True)
-	normal = (normal1(values) + normal2(values)) / 2
+	if (mini != median) and (median != maxi):
+		normal1 = plt.Normalize(mini, median, clip=True)
+		normal2 = plt.Normalize(median, maxi, clip=True)
+		normal = (normal1(values) + normal2(values)) / 2
+	else:
+		normal = plt.Normalize(mini, maxi, clip=True)(values)
 	color_values = []
 	for n in normal:
-
 		b = 0
-		r = (1 - n) * output_range
-		g = n * output_range
+		if mode == 0:
+			r = (1 - n) * output_range
+			g = n * output_range
 
 		if mode == 1:
 			r = ((1 - n) / 2) * output_range
-			g = (n/2 + 0.5) * output_range
+			g = (n / 2 + 0.5) * output_range
 
 		if mode == 2:
 			r = n * output_range
@@ -45,6 +42,7 @@ def colormap(values, mode = 0, output_range = 1):
 
 		color_values.append((r, g, b))
 	return color_values
+
 
 def edit_parse(filename):
 	""" Pre-Parser: Parsing player nations and real (alive) nations
@@ -54,7 +52,7 @@ def edit_parse(filename):
 	with open(filename, 'r') as sg:
 		content = sg.read()
 		compile_player = compile("was_player=yes")
-		compile_real_nations = compile("\n\t\tdevelopment") # Dead nations don't have development
+		compile_real_nations = compile("\n\t\tdevelopment")  # Dead nations don't have development
 		countries = split("\n\t([A-Z0-9]{3})", content.split("\ncountries={")[1].split('active_advisors')[0])
 		tag_list, info_list = countries[1:-1:2], countries[2:-1:2]
 		playertag_list = []
@@ -68,15 +66,16 @@ def edit_parse(filename):
 				if result:
 					playertag_list.append(tag)
 
-
 	return playertag_list, sorted(real_nations_list)
 
-def parse_regions_files(filename, data):
+
+def parse_regions_files(filename):
 	"""	 Reads data about areas, regions and superregion from
 			another file, which contains the already parsed input. """
 	with open(filename, "r") as sg:
 		data = eval(sg.read())
 	return data
+
 
 def parse_provinces(provinces, pbar, plabel):
 	""" First part of the main parser.
@@ -84,16 +83,16 @@ def parse_provinces(provinces, pbar, plabel):
 		Takes only content from start till end of province information of the savegame.
 		Return list of lists with all revelant stats for each province.
 		Each Province has its own sub-list with following information (in order):
-		[Province_ID, Name, Owner, Tax, Production, Manpower, Development, Trade Node, Culture, Religion, Trade Good, Area, Region, Superregion]
+		[Province_ID, Name, Owner, Tax, Production, Manpower, Development, Trade Node, Culture,
+		Religion, Trade Good, Area, Region, Superregion]
 		"""
 	step = 0
 	plabel.setText("Loading Province Data...")
 
-	area_dict, region_dict, superregion_dict = {},{},{}
 	id_index_dict = {}
-	area_dict = parse_regions_files("files/area.txt", area_dict)
-	region_dict = parse_regions_files("files/region.txt", region_dict)
-	superregion_dict = parse_regions_files("files/superregion.txt", superregion_dict)
+	area_dict = parse_regions_files("files/area.txt")
+	region_dict = parse_regions_files("files/region.txt")
+	superregion_dict = parse_regions_files("files/superregion.txt")
 
 	province_stats_list = []
 	province_list = split("-\d+=[{]", provinces)[1:]
@@ -101,20 +100,20 @@ def parse_provinces(provinces, pbar, plabel):
 		province_list[x] = province.split("history")[0]
 		province_list[x] += province.split("discovered_by=")[-1]
 
-	province_regex = "name=\"(?P<name>[^\n]+)\".+?trade=\"(?P<trade_node>[^\n]+)\".+?"\
-					 "base_tax=(?P<base_tax>[^\n]+).+?"\
-					 "base_production=(?P<base_production>[^\n]+).+?base_manpower=(?P<base_manpower>[^\n]+).+?"\
+	province_regex = "name=\"(?P<name>[^\n]+)\".+?trade=\"(?P<trade_node>[^\n]+)\".+?" \
+					 "base_tax=(?P<base_tax>[^\n]+).+?" \
+					 "base_production=(?P<base_production>[^\n]+).+?base_manpower=(?P<base_manpower>[^\n]+).+?" \
 					 "trade_goods=(?P<trade_goods>[^\n]+)"
-	province_regex2 = "owner=\"(?P<owner>[^\n]+)\"" # Seperated from main regex, because uncolonized provinces don't have a owner.
-	province_regex3 = "religion=(?P<religion>[^\n]+)" # Because some provinces have no fucking religion!
-	province_regex4 = "culture=(?P<culture>[^\n]+)" # Because some provinces have no fucking culture!
+	province_regex2 = "owner=\"(?P<owner>[^\n]+)\""  # Seperated from main regex, because uncolonized provinces don't have a owner.
+	province_regex3 = "religion=(?P<religion>[^\n]+)"  # Because some provinces have no fucking religion!
+	province_regex4 = "culture=(?P<culture>[^\n]+)"  # Because some provinces have no fucking culture!
 	province_regex5 = "trade_power=(?P<trade_power>[^\n]+)"
 	province_x = compile(province_regex, DOTALL)
 	province_x2 = compile(province_regex2, DOTALL)
 	province_x3 = compile(province_regex3, DOTALL)
 	province_x4 = compile(province_regex4, DOTALL)
 	province_x5 = compile(province_regex5, DOTALL)
-	#province_hre = compile("hre=(?P<hre>[^\n]+)")
+	# province_hre = compile("hre=(?P<hre>[^\n]+)")
 	province_id = 0
 
 	for province in province_list:
@@ -122,11 +121,11 @@ def parse_provinces(provinces, pbar, plabel):
 		try:
 			id_index_dict[province_id] = len(province_stats_list)
 			result = list(province_x.search(province).groups())
-			result.insert(2, result.pop(5)) # Move Trade Goods to Index 2
+			result.insert(2, result.pop(5))  # Move Trade Goods to Index 2
 			for i in range(len(result)):
 				if i > 2:
 					result[i] = int(result[i].split(".")[0])
-			result.append(result[3] + result[4] + result[5]) # Total Development
+			result.append(result[3] + result[4] + result[5])  # Total Development
 			result.insert(0, province_id)
 
 			owner = province_x2.search(province)
@@ -176,8 +175,9 @@ def parse_provinces(provinces, pbar, plabel):
 		pbar.setValue(step)
 	for a, b in zip(range(len(province_stats_list)), province_stats_list):
 		for i in range(5):
-			 b.insert(3, b.pop(11)) # Moves Tax, Production, Manpower, Development & Trade Power a little bit up front
+			b.insert(3, b.pop(11))  # Moves Tax, Production, Manpower, Development & Trade Power a little bit up front
 	return province_stats_list
+
 
 def parse_wars(content):
 	""" Second part of the main parser. Reads all relevant information about wars
@@ -185,7 +185,8 @@ def parse_wars(content):
 	the participants in each war."""
 	previous_wars = content.split("previous_war={")[0].split("active_war={")[1:] + content.split("previous_war={")[1:]
 	compile_wars = compile("name=\"(?P<name>.+?)\"\n\thistory", DOTALL)
-	compile_participants = compile("value=(?P<value>.+?)\n\t\ttag=\"(?P<tag>.+?)\".+?members={\n\t\t\t\t(?P<losses>[^\n]+)", DOTALL)
+	compile_participants = compile(
+		"value=(?P<value>.+?)\n\t\ttag=\"(?P<tag>.+?)\".+?members={\n\t\t\t\t(?P<losses>[^\n]+)", DOTALL)
 	war_list = []
 	par_list = []
 	for war in previous_wars:
@@ -200,12 +201,14 @@ def parse_wars(content):
 				pars.append(list(result.groups()))
 				pars[-1][-1] = [int(p) for p in pars[-1][-1].split()]
 				pars[-1][0] = float(pars[-1][0])
-				pars[-1].append(pars[-1][2][0] + pars[-1][2][1]) # Inf
-				pars[-1].append(pars[-1][2][3] + pars[-1][2][4]) # Cav
-				pars[-1].append(pars[-1][2][6] + pars[-1][2][7]) # Art
-				pars[-1].append(pars[-1][2][0] + pars[-1][2][3] + pars[-1][2][6]) # Combat
-				pars[-1].append(pars[-1][2][1] + pars[-1][2][4] + pars[-1][2][7]) # Attrition
-				pars[-1].append(pars[-1][2][0] + pars[-1][2][3] + pars[-1][2][6] + pars[-1][2][1] + pars[-1][2][4] + pars[-1][2][7]) # Total
+				pars[-1].append(pars[-1][2][0] + pars[-1][2][1])  # Inf
+				pars[-1].append(pars[-1][2][3] + pars[-1][2][4])  # Cav
+				pars[-1].append(pars[-1][2][6] + pars[-1][2][7])  # Art
+				pars[-1].append(pars[-1][2][0] + pars[-1][2][3] + pars[-1][2][6])  # Combat
+				pars[-1].append(pars[-1][2][1] + pars[-1][2][4] + pars[-1][2][7])  # Attrition
+				pars[-1].append(
+					pars[-1][2][0] + pars[-1][2][3] + pars[-1][2][6] + pars[-1][2][1] + pars[-1][2][4] + pars[-1][2][
+						7])  # Total
 				del pars[-1][2]
 				pars[-1].insert(0, pars[-1].pop(1))
 
@@ -214,12 +217,13 @@ def parse_wars(content):
 			if result:
 				del war_list[-1]
 	for war in par_list:
-		total_losses = ["Total",0,0,0,0,0,0,0]
+		total_losses = ["Total", 0, 0, 0, 0, 0, 0, 0]
 		for country in war:
 			for i in range(7):
-				total_losses[i+1] += country[i+1]
+				total_losses[i + 1] += country[i + 1]
 		war.append(total_losses)
 	return dict(zip(war_list, par_list)), war_list
+
 
 def parse_battles(content, war_list, pbar, plabel):
 	step = 0
@@ -343,7 +347,9 @@ def parse_battles(content, war_list, pbar, plabel):
 
 	return filtered_army_battle_list, filtered_navy_battle_list
 
-def parse_incomestat(content, playertag_list, savegame_list, formable_nations_dict, pbar, plabel, all_nations_bool):
+
+def parse_incomestat(content, savegame_list, formable_nations_dict, pbar, plabel,\
+					all_nations_bool, stats_dict, playertags):
 	step = 0
 	pbar.reset()
 	plabel.setText("Loading Income Data...")
@@ -355,20 +361,23 @@ def parse_incomestat(content, playertag_list, savegame_list, formable_nations_di
 	income_x_data = []
 	income_y_data = []
 	income_dict = {}
-	for tag, info in zip(income_tag_list,income_info_list):
-		data2 = info.split()
-		income_x_data_set = []
-		income_y_data_set = []
-		for d in data2:
-			da = split("=", d)
-			income_x_data_set.append(int(da[0]))
-			income_y_data_set.append(int(da[1]))
-		income_x_data.append(income_x_data_set)
-		income_y_data.append(income_y_data_set)
-		income_dict[tag] = [income_x_data_set,income_y_data_set]
+	for tag, info in zip(income_tag_list, income_info_list):
+		if (tag in playertags) or all_nations_bool:
+			income_info_split = info.split()
+			income_x_data_set = []
+			income_y_data_set = []
+			for info in income_info_split:
+				info = split("=", info)
+				income_x_data_set.append(int(info[0]))
+				income_y_data_set.append(int(info[1]))
+			income_x_data.append(income_x_data_set)
+			income_y_data.append(income_y_data_set)
+			income_dict[tag] = [income_x_data_set, income_y_data_set]
+			stats_dict[tag]["total_income"] = sum(income_y_data_set)
 		step += 1000 / len(income_info_list)
 		pbar.setValue(step)
 	return income_dict
+
 
 def parse_trade(content, pbar, plabel):
 	trade_nodes = content.split("trade={")[1].split("tradegoods_total")[0].split("\n\tnode={")[1:]
@@ -401,18 +410,21 @@ def parse_trade(content, pbar, plabel):
 			power_values = [float(value) for value in power_values.split()]
 			country_power_dict = dict(zip(countries, power_values))
 			trade_stats_list[-1].append(country_power_dict)
-		result = compile_trade3.search(node.split("REB")[0]) # seperated from compile_trade because if current = 0, there is no current
+		result = compile_trade3.search(
+			node.split("REB")[0])  # seperated from compile_trade because if current = 0, there is no current
 		if result:
 			trade_stats_list[-1].append(float(result.groups()[0]))
 		else:
 			trade_stats_list[-1].append(0.0)
-		countries = split("\n\t\t}\n\t\t([A-Z0-9]{3})={\n\t\t\t", node.split("\n\t\t}\n\t\tincoming={")[0].split("\n\t\t}\n\t\ttrade_goods_size={")[0])[1:]
+		countries = split("\n\t\t}\n\t\t([A-Z0-9]{3})={\n\t\t\t",
+						  node.split("\n\t\t}\n\t\tincoming={")[0].split("\n\t\t}\n\t\ttrade_goods_size={")[0])[1:]
 		step += 1000 / len(trade_nodes)
 		pbar.setValue(step)
 	del trade_stats_list[0]
 	return trade_stats_list
 
-def compile_main(info, tag, stats_list):
+
+def compile_main(info, tag, stats_dict):
 	main_regex = "\n\t\tdevelopment=(?P<effective_development>\d+.\d+).+?" \
 				 "raw_development=(?P<development>\d+.\d+).+?" \
 				 "navy_strength=(?P<navy_strength>\d+.\d+).+?estimated_monthly_income=(?P<income>\d+.\d+).+?" \
@@ -423,47 +435,49 @@ def compile_main(info, tag, stats_list):
 	trade_goods = compile("produced_goods_value={\n(.+)")
 	result = compile_main.search(info)
 	if result:
-		stats = {"country": tag}
-		stats.update(result.groupdict())
+		stats_dict[tag] = {}
+		stats_dict[tag].update(result.groupdict())
+		stats_dict[tag]["losses"] = [int(x) for x in stats_dict[tag]["losses"].split()]
+		# 0: Infantry - Combat, 1: Infantry - Attrition, 3: Cavalry - Combat
+		# 4: Cavalry - Attrition, 6: Artillery - Combat, 7: Artillery - Combat
+		stats_dict[tag]["total_losses"] = sum(stats_dict[tag]["losses"])
 		result = compile_great_power.search(info)
 		if result:
-			stats.update(result.groupdict())
+			stats_dict[tag].update(result.groupdict())
 		else:
-			stats["great_power_score"] = 0
+			stats_dict[tag]["great_power_score"] = 0
 		result = trade_goods.search(info)
 		if result:
-			stats["trade_goods"] = result.group(1)
-		stats_list.append(stats)
+			stats_dict[tag]["trade_goods"] = [float(x) for x in result.group(1).split()]
+
 
 def compile_techcost(info, tag, tech_dict):
 	compile_techcost = compile("technology_cost=(\d+.\d+)")
-	compile_techs = compile("technology={.+?(\d+).+?(\d+).+?(\d+).+?active_idea_groups={([^}]+).+?innovativeness=(\d+.\d+)", DOTALL)
+	compile_techs = compile(
+		"""technology={.+?(?P<adm>\d+).+?(?P<dip>\d+).+?(?P<mil>\d+).+?
+		active_idea_groups={(?P<idea_groups>[^}]+).+?innovativeness=(?P<innovativeness>\d+.\d+)""", DOTALL)
 	result = compile_techcost.search(info)
 	if result:
-		tech_dict[tag] = [round(float(result.group(1))+1,2)]
+		tech_dict[tag] = {"institution_penalty": round(float(result.group(1)) + 1, 2)}
 	else:
-		tech_dict[tag] = [1]
+		tech_dict[tag] = {"institution_penalty": 1}
 	result = compile_techs.search(info)
 	if result:
-		for tech in result.groups():
-			try:
-				tech_dict[tag].append(float(tech))
-			except:
-				pass
-		for i in range(1,4):
-			tech_dict[tag][i] = int(tech_dict[tag][i])
-		total_ideas = sum([int(idea.split("=")[1]) for idea in result.group(4).split()[1:]]) # Important: Don't count unlocked national ideas
-		tech_dict[tag].insert(4, total_ideas)
-		result_dict = {idea.split("=")[0] : int(idea.split("=")[1]) for idea in result.group(4).split()}
-		tech_dict[tag].append(result_dict)
+		tech_dict[tag].update(result.groupdict())
+		for tech in ("adm","dip","mil"):
+			tech_dict[tag][tech] = int(tech_dict[tag][tech])
+
+		tech_dict[tag]["idea_groups"] =\
+		{idea.split("=")[0]: int(idea.split("=")[1]) for idea in tech_dict[tag]["idea_groups"].split()}
+
+		tech_dict[tag]["innovativeness"] = float(tech_dict[tag]["innovativeness"])
+		tech_dict[tag]["number_of_ideas"] = sum([int(idea.split("=")[1])\
+			for idea in result.group(4).split()[1:]])  # Important: Don't count unlocked national ideas
+		tech_dict[tag]["tech_score"] = sum([tech_dict[tag][z] for z in ("adm","dip","mil","number_of_ideas")])*\
+		(1+tech_dict[tag]["innovativeness"]/200)/tech_dict[tag]["institution_penalty"]
 	else:
 		del tech_dict[tag]
 
-def compile_player(info, tag, playertag_list):
-	compile_player = compile("was_player=yes")
-	result = compile_player.search(info)
-	if result:
-		playertag_list.append(tag)
 
 def compile_color(info, tag, color_dict):
 	color_regex = "country_color=[{]\n\t\t\t\t(?P<color>[^\n]+).+?"
@@ -478,7 +492,8 @@ def compile_color(info, tag, color_dict):
 		hex_color = ("#{0:02x}{1:02x}{2:02x}".format(*color))
 		color_dict[stats["country"]] = hex_color
 
-def compile_subjects(info, tag, subject_dict, trade_port_dict, old_version_flag = False):
+
+def compile_subjects(info, tag, subject_dict, trade_port_dict, old_version_flag=False):
 	compile_subjects = compile("\n\t\tsubjects={([^}]+)}")
 	compile_trade_port = compile("trade_port=(.+)")
 	result = compile_subjects.search(info)
@@ -491,7 +506,8 @@ def compile_subjects(info, tag, subject_dict, trade_port_dict, old_version_flag 
 		subject_dict[tag] = []
 	trade_port_dict[tag] = int(compile_trade_port.search(info).group(1))
 
-def compile_points_spent(info, tag, stats_list):
+
+def compile_points_spent(info, tag, stats_dict):
 	adm_points_dict, dip_points_dict, mil_points_dict, total_points_dict = {}, {}, {}, {}
 	for i in range(48):
 		for d in [adm_points_dict, dip_points_dict, mil_points_dict]:
@@ -499,21 +515,21 @@ def compile_points_spent(info, tag, stats_list):
 	try:
 		points_spent = info.split("adm_spent_indexed={")[1].split("innovativeness")[0]
 		adm, dip, mil = points_spent.split("indexed")
-		for cat, dic, string in zip([adm, dip, mil],[adm_points_dict, dip_points_dict, mil_points_dict],["adm","dip","mil"]):
+		for cat, dic, string in zip([adm, dip, mil], [adm_points_dict, dip_points_dict, mil_points_dict],
+									["adm", "dip", "mil"]):
 			cat = findall("\d+=\d+", cat)
 			for c in cat:
 				key, number = c.split("=")
 				dic[int(key)] = int(number)
 			total_points_dict[string] = sum(dic.values())
-		for country in stats_list:
-			if tag == country["country"]:
-				country["points_spent"] = [adm_points_dict, dip_points_dict, mil_points_dict, total_points_dict]
+		total_points_dict["total"] = sum(total_points_dict.values())
+		stats_dict[tag]["points_spent"] = [adm_points_dict, dip_points_dict, mil_points_dict, total_points_dict]
 	except:
-		for country in stats_list:
-			if tag == country["country"]:
-				country["points_spent"] = [adm_points_dict, dip_points_dict, mil_points_dict, total_points_dict]
+		if tag in stats_dict.keys():
+			stats_dict[tag]["points_spent"] = [adm_points_dict, dip_points_dict, mil_points_dict, total_points_dict]
 
-def parse_countries(content, pbar, plabel):
+
+def parse_countries(content, playertags, all_nations_bool, pbar, plabel):
 	step = 0
 	pbar.reset()
 	plabel.setText("Loading Country Data...")
@@ -521,37 +537,34 @@ def parse_countries(content, pbar, plabel):
 	tag_list, info_list = countries[1:-1:2], countries[2:-1:2]
 	sorted_tag_list = sorted(tag_list)
 
-	stats_list, playertag_list = [], []
-	color_dict, subject_dict, trade_port_dict, tech_dict = {}, {}, {}, {}
+	stats_dict, color_dict, subject_dict, trade_port_dict, tech_dict = {}, {}, {}, {}, {}
 
 	for info, tag in zip(info_list, tag_list):
-		compile_main(info, tag, stats_list)
-		compile_techcost(info, tag, tech_dict)
-		compile_player(info, tag, playertag_list)
-		compile_color(info, tag, color_dict)
-		compile_subjects(info, tag, subject_dict, trade_port_dict)
-		compile_points_spent(info, tag, stats_list)
+		if (tag in playertags) or all_nations_bool:
+			compile_main(info, tag, stats_dict)
+			compile_techcost(info, tag, tech_dict)
+			compile_player = compile("was_player=yes")
+			compile_color(info, tag, color_dict)
+			compile_subjects(info, tag, subject_dict, trade_port_dict)
+			compile_points_spent(info, tag, stats_dict)
 		step += 1000 / len(tag_list)
 		pbar.setValue(step)
-	stats_list = sorted(stats_list, key=lambda k: k['country'])
-	great_power_list = [[],[]]
-	cleanup_data(stats_list, great_power_list, tech_dict)
-	return stats_list, sorted_tag_list, great_power_list, subject_dict, playertag_list, color_dict, trade_port_dict, tech_dict
+	cleanup_data(stats_dict, tech_dict)
+	return stats_dict, sorted_tag_list, subject_dict, color_dict, trade_port_dict, tech_dict
 
-def cleanup_data(stats_list, great_power_list, tech_dict):
-	for country in stats_list:
-		for value in country:
+
+def cleanup_data(stats_dict, tech_dict):
+	for tag in stats_dict.keys():
+		for entry_name in stats_dict[tag].keys():
 			try:
-				country[value] = float(country[value])
+				stats_dict[tag][entry_name] = float(stats_dict[tag][entry_name])
 			except (ValueError, TypeError):
 				pass
-		country["manpower"] *= 1000
-		country["manpower"] = int(country["manpower"])
-		country["max_manpower"] *= 1000
-		country["max_manpower"] = int(country["max_manpower"])
-		country["great_power_score"] = round(int(country["great_power_score"]) * (tech_dict[country["country"]][0]))
-		great_power_list[0].append(country["country"])
-		great_power_list[1].append(country["great_power_score"])
+		stats_dict[tag]["manpower"] = int(1000 * stats_dict[tag]["manpower"])
+		stats_dict[tag]["max_manpower"] = int(1000 * stats_dict[tag]["max_manpower"])
+		stats_dict[tag]["great_power_score"] = \
+			round(int(stats_dict[tag]["great_power_score"]) * (tech_dict[tag]["institution_penalty"]))
+
 
 def parse_history(content):
 	countries = split("\n\t([A-Z0-9]{3})", content.split("\ncountries={")[1].split('active_advisors')[0])
@@ -562,19 +575,21 @@ def parse_history(content):
 		result = compile_monarch_id.search(country)
 		if result:
 			monarch_id = result.group(1)
-			compile_monarch_info = compile("id={\n.+id=" + monarch_id + ".+?name=(.+?)\".+?country=\"(.+?)\".+?DIP=(\d).+?ADM=(\d).+?MIL=(\d).+?", DOTALL)
+			compile_monarch_info = compile(
+				"id={\n.+id=" + monarch_id + ".+?name=(.+?)\".+?country=\"(.+?)\".+?DIP=(\d).+?ADM=(\d).+?MIL=(\d).+?",
+				DOTALL)
 			result = compile_monarch_info.search(country.split("original_capital")[0])
 			if result:
 				monarch_dict[tag] = result.groups()
 
-def parse(filename, savegame_list, formable_nations_dict, all_nations_bool, pbar, plabel):
 
+def parse(filename, playertags, savegame_list, formable_nations_dict, all_nations_bool, pbar, plabel):
 	with open(filename, 'r') as sg:
 		content = sg.read()
 		provinces = content.split("\nprovinces={")[1].split("countries={")[0]
 
 		year = findall("date=(?P<year>\d{4})", content)[0]
-		total_trade_goods = list(map(float, list(findall("tradegoods_total_produced={\n(.+)",content)[0].split())))
+		total_trade_goods = list(map(float, list(findall("tradegoods_total_produced={\n(.+)", content)[0].split())))
 		compile_hre_reformlevel = compile("reform_level=(\d)")
 		try:
 			hre_reformlevel = int(compile_hre_reformlevel.search(content).group(1))
@@ -583,57 +598,12 @@ def parse(filename, savegame_list, formable_nations_dict, all_nations_bool, pbar
 		province_stats_list = parse_provinces(provinces, pbar, plabel)
 		war_dict, war_list = parse_wars(content)
 		army_battle_list, navy_battle_list = parse_battles(content, war_list, pbar, plabel)
-		stats_list, sorted_tag_list, great_power_list,\
-		subject_dict, playertag_list, color_dict,\
-		trade_port_dict, tech_dict = parse_countries(content, pbar, plabel)
-		income_dict = parse_incomestat(content, playertag_list, savegame_list, formable_nations_dict, pbar, plabel, all_nations_bool)
+		stats_dict, sorted_tag_list, subject_dict, color_dict, \
+		trade_port_dict, tech_dict = parse_countries(content, playertags, all_nations_bool, pbar, plabel)
+		income_dict = parse_incomestat(content, savegame_list, formable_nations_dict, pbar, plabel,
+									   all_nations_bool, stats_dict, playertags)
 		trade_stats_list = parse_trade(content, pbar, plabel)
 		parse_history(content)
-		data = []
-		old_nations = [formable_nations_dict[tag] for tag in savegame_list[1].playertags if tag in formable_nations_dict.keys()]
-		if all_nations_bool:
-			for nation in stats_list:
-				m = list(nation.values())
-				m.insert(0, [])
-				m.insert(3, m.pop(9))
-				data.append(m)
-				legend = list(nation.keys())
-				legend.insert(0, "empty")
-				legend.insert(3, legend.pop(9))
-
-		else:
-			for nation in stats_list:
-				if nation["country"] in (savegame_list[1].playertags + savegame_list[0].playertags + old_nations):
-					if nation["country"] in formable_nations_dict.values():
-						if list(formable_nations_dict.keys())[list(formable_nations_dict.values()).index(nation["country"])] not in savegame_list[1].playertags:
-							m = list(nation.values())
-							m.insert(0, [])
-							m.insert(3, m.pop(9))
-							data.append(m)
-					else:
-						m = list(nation.values())
-						m.insert(0, [])
-						m.insert(3, m.pop(9))
-						data.append(m)
-				legend = list(nation.keys())
-				legend.insert(0, "empty")
-				legend.insert(3, legend.pop(9))
-
-		datasets = []
-		for entry in data:
-			split_losses = entry[9].split()
-			entry[9] = []
-			for loss in split_losses:
-				entry[9].append(int(loss))
-			split_goods = entry[10].split()
-			entry[10] = []
-			for good in split_goods:
-				entry[10].append(float(good))
-		for i in range(len(data[0])):
-			datasets.append([])
-		for entry in data:
-			for i, n in zip(entry, range(len(entry))):
-				datasets[n].append(i)
 	pbar.reset()
 	plabel.clear()
-	return datasets, year, total_trade_goods, sorted_tag_list, income_dict, color_dict, army_battle_list, navy_battle_list, province_stats_list, great_power_list, trade_stats_list, subject_dict, hre_reformlevel, trade_port_dict, war_list, war_dict, tech_dict
+	return stats_dict, year, total_trade_goods, sorted_tag_list, income_dict, color_dict, army_battle_list, navy_battle_list, province_stats_list, trade_stats_list, subject_dict, hre_reformlevel, trade_port_dict, war_list, war_dict, tech_dict

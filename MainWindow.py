@@ -27,13 +27,14 @@ class ShowStats(Widgets.QWidget):
 	back_to_parse_window = Core.pyqtSignal()
 	change_dir = Core.pyqtSignal()
 	switch_table_window = Core.pyqtSignal(list, str)
-	switch_overview_window = Core.pyqtSignal(str, list, int, list, dict)
+	switch_overview_window = Core.pyqtSignal(str, list, list, list, dict)
 	switch_error_window = Core.pyqtSignal(str)
 
-	def __init__(self, savegame_list, formable_nations_dict):
+	def __init__(self, savegame_list, formable_nations_dict, playertags):
 		super().__init__()
 		self.savegame_list = savegame_list
 		self.formable_nations_dict = formable_nations_dict
+		self.playertags = playertags
 		self.savegame_list.append(Savegame())
 		# Create empty Savegame as placeholer for the comparison between Savegame 1 and 2
 		self.savegame_list[2].year = str(self.savegame_list[0].year) + " - " + str(self.savegame_list[1].year)
@@ -129,7 +130,6 @@ class ShowStats(Widgets.QWidget):
 		groupBox.setLayout(vbox)
 		return groupBox
 
-
 	def initUI(self):
 
 		groupBox1 = Widgets.QGroupBox()
@@ -207,12 +207,13 @@ class ShowStats(Widgets.QWidget):
 		for savegame in self.savegame_list:
 			for box, method in zip(savegame.box_list, savegame.method_list):
 				if box.isChecked():
-					try:
-						method(savegame)
-					except Exception as e:
-						plt.close("all")
-						self.switch_error_window.emit(e)
+					method(savegame)
 					box.setChecked(False)
+					# try:
+					# 	method(savegame)
+					# except Exception as e:
+					# 	plt.close("all")
+					# 	self.switch_error_window.emit(str(e))
 		plt.show()
 
 	def openFileNameDialog(self):
@@ -277,78 +278,82 @@ class ShowStats(Widgets.QWidget):
 		else:
 			compare = False
 
-		dev_x = [sorted(savegame.stats_dict.items(), key = lambda x: x[1][2], reverse = True)[i][0] for i in range(len(savegame.stats_dict))][:20]
-		dev_y = [sorted(savegame.stats_dict.items(), key = lambda x: x[1][2], reverse = True)[i][1][2] for i in range(len(savegame.stats_dict))][:20]
-		effective_development_x = [sorted(savegame.stats_dict.items(), key = lambda x: x[1][0], reverse = True)[i][0] for i in range(len(savegame.stats_dict))][:20]
-		effective_development_y = [sorted(savegame.stats_dict.items(), key = lambda x: x[1][0], reverse = True)[i][1][0] for i in range(len(savegame.stats_dict))][:20]
-		effective_development_table = [sorted(savegame.stats_dict.items(), key = lambda x: x[1][2], reverse = True)[i][1][0] for i in range(len(savegame.stats_dict))][:20]
+		dev = sorted([(savegame.stats_dict[tag]["development"],tag)\
+		for tag in self.playertags],key = lambda x: x[0], reverse = True)
+		eff_dev = sorted([(savegame.stats_dict[tag]["effective_development"],tag)\
+		for tag in self.playertags],key = lambda x: x[0], reverse = True)
+		eff_dev_table = sorted([(savegame.stats_dict[tag]["effective_development"],\
+		savegame.stats_dict[tag]["development"]) for tag in self.playertags],\
+		key = lambda x: x[1], reverse = True)
+
 		if compare:
-			base_effective_development_table = self.stats_data_maker(dev_x, self.savegame_list[0].stats_dict, 0)
-			base_dev_y = []
-			for tag in dev_x:
+			for tag in self.playertags:
 				if tag in self.formable_nations_dict:
-					try:
-						base_dev_y.append(savegame.stats_dict[tag][2] - self.savegame_list[0].stats_dict[self.formable_nations_dict[tag]][2])
-					except KeyError:
-						base_dev_y.append(savegame.stats_dict[tag][2] - self.savegame_list[0].stats_dict[tag][2])
+					if self.formable_nations_dict[tag] in savegame_list[0].stats_dict.keys():
+						savegame.stats_dict[tag]["delta_dev"] = savegame.stats_dict[tag]["development"]\
+						- self.savegame_list[0].stats_dict[self.formable_nations_dict[tag]]["development"]
 				else:
-					base_dev_y.append(savegame.stats_dict[tag][2] - self.savegame_list[0].stats_dict[tag][2])
+					savegame.stats_dict[tag]["delta_dev"] =  savegame.stats_dict[tag]["development"]\
+					- self.savegame_list[0].stats_dict[tag]["development"]
+			delta_dev = [x for _,x in sorted(zip([savegame.stats_dict[tag]["development"]\
+			for tag in self.playertags],[savegame.stats_dict[tag]["delta_dev"]\
+			for tag in self.playertags]), reverse = True)]
+			norm = plt.Normalize(min(delta_dev), max(delta_dev))
+			color_list2 = plt.cm.RdYlGn(norm(delta_dev))
 
-			norm = plt.Normalize(min(base_dev_y), max(base_dev_y))
-			color_list2 = plt.cm.RdYlGn(norm(base_dev_y))
-
-
-
-		for tag in dev_x:
+		for value,tag in dev:
 			if tag in savegame.color_dict:
-				color_list.append(savegame.color_dict[tag])
+				ax1.bar(tag,value, label = "Spieltag-Anfang",\
+				color = savegame.color_dict[tag], edgecolor = "grey", linewidth = 1)
 			else:
-				color_list.append("black")
-		ax1.bar(range(len(dev_y)), dev_y, label = "Spieltag-Anfang", color = color_list, edgecolor = "grey", linewidth = 1)
-		ax1.set_xticks(range(len([sorted(savegame.stats_dict.items(), key = lambda x: x[1][2], reverse = True)[i][1] for i in range(len(savegame.stats_dict))][:20])))
-		ax1.set_xticklabels([sorted(savegame.stats_dict.items(), key = lambda x: x[1][2], reverse = True)[i][0] for i in range(len(savegame.stats_dict))][:20])
+				ax1.bar(tag,value, label = "Spieltag-Anfang",\
+				color = "black", edgecolor = "grey", linewidth = 1)
 
 		if compare:
-			ax1.bar(range(len(base_dev_y)), base_dev_y, label = "Spieltag-Ende", color = color_list2, edgecolor = "black", linewidth = 1)
+			ax1.bar(range(len(delta_dev)), delta_dev, label = "Spieltag-Ende", color = color_list2, edgecolor = "black", linewidth = 1)
 
-			base_effective_development_y = []
-			for tag in effective_development_x:
-				try:
-					base_effective_development_y.append(savegame.stats_dict[tag][0] - self.savegame_list[0].stats_dict[tag][0])
-				except KeyError:
-					if tag in self.formable_nations_dict:
-						base_effective_development_y.append(savegame.stats_dict[tag][0] - self.savegame_list[0].stats_dict[self.formable_nations_dict[tag]][0])
-			norm = plt.Normalize(min(base_effective_development_y), max(base_effective_development_y))
-			color_list2 = plt.cm.RdYlGn(norm(base_effective_development_y))
+			for value,tag in eff_dev:
+				if tag in self.formable_nations_dict:
+					if self.formable_nations_dict[tag] in savegame_list[0].stats_dict.keys():
+						savegame.stats_dict[tag]["delta_eff_dev"] = savegame.stats_dict[tag]["effective_development"]\
+						- self.savegame_list[0].stats_dict[tag]["effective_development"]
+				else:
+					savegame.stats_dict[tag]["delta_eff_dev"] = savegame.stats_dict[tag]["effective_development"]\
+					- self.savegame_list[0].stats_dict[tag]["effective_development"]
+			delta_eff_dev_plot = [x for _,x in sorted(zip([savegame.stats_dict[tag]["effective_development"]\
+			for tag in self.playertags],[savegame.stats_dict[tag]["delta_eff_dev"]\
+			for tag in self.playertags]), reverse = True)]
+			delta_eff_dev_table = [x for _,x in sorted(zip([savegame.stats_dict[tag]["development"]\
+			for tag in self.playertags],[savegame.stats_dict[tag]["delta_eff_dev"]\
+			for tag in self.playertags]), reverse = True)]
+			norm = plt.Normalize(min(delta_eff_dev_plot), max(delta_eff_dev_plot))
+			color_list2 = plt.cm.RdYlGn(norm(delta_eff_dev_plot))
 
 		ax2.grid(True, axis="y")
 		ax2.minorticks_on()
 		ax2.set_title("Effective Development")
 		color_list = []
-		for tag in effective_development_x:
+		for value,tag in eff_dev:
 			if tag in savegame.color_dict:
-				color_list.append(savegame.color_dict[tag])
+				ax2.bar(tag,value, color = savegame.color_dict[tag], edgecolor = "grey", linewidth = 1)
 			else:
-				color_list.append("black")
-		ax2.bar(range(len(effective_development_y)), effective_development_y, color=color_list, edgecolor = "grey", linewidth = 1)
-		ax2.set_xticks(range(len(effective_development_x)))
-		ax2.set_xticklabels(effective_development_x)
+				ax2.bar(tag,value, color = "black", edgecolor = "grey", linewidth = 1)
 
 		if compare:
-			ax2.bar(range(len(base_effective_development_y)), base_effective_development_y, label = "Spieltag-Ende", color = color_list2, edgecolor = "black", linewidth = 1)
+			ax2.bar(range(len(delta_eff_dev_plot)), delta_eff_dev_plot, label = "Spieltag-Ende", color = color_list2, edgecolor = "black", linewidth = 1)
 
 		colors = []
 		cell_text = []
-		cell_text.append(["" for x in range(len(dev_y))])
-		cell_text.append(dev_y)
-		cell_text.append([int(x) for x in effective_development_table])
+		cell_text.append(["" for x in dev])
+		cell_text.append([int(value) for value,tag in dev])
+		cell_text.append([int(x[0]) for x in eff_dev_table])
 		if compare:
-			cell_text.append(["" for x in range(len(dev_y))])
-			cell_text.append(["{0}{1}".format(str([x for x in ["+"] if a > 0])[2:-2], int(a)) for a in base_dev_y])
-			cell_text.append(["{0}{1}".format(str([x for x in ["+"] if int(a - b) > 0])[2:-2], int(a - b)) for a,b in zip(effective_development_table, base_effective_development_table)])
-			cell_text.append(["" for x in range(len(dev_y))])
-			cell_text.append([int(a - b) for a,b in zip(dev_y, base_dev_y)])
-			cell_text.append([int(x) for x in base_effective_development_table])
+			cell_text.append(["" for x in dev])
+			cell_text.append(["+{}".format(int(a)) if a > 0 else str(int(a)) for a in delta_dev])
+			cell_text.append(["+{}".format(int(a)) if a > 0 else str(int(a)) for a in delta_eff_dev_table])
+			cell_text.append(["" for x in dev])
+			cell_text.append([int(a[0] - b) for a,b in zip(dev, delta_dev)])
+			cell_text.append([int(a[0] - b) for a,b in zip(eff_dev_table, delta_eff_dev_table)])
 			rows = [savegame.year, "Development", "Effective Development", self.savegame_list[2].year, "Development", "Effective Development", self.savegame_list[0].year, "Development", "Effective Development"]
 			row_colors = ["white", "gold", "salmon", "white", "gold", "salmon", "white", "gold", "salmon"]
 		else:
@@ -360,14 +365,14 @@ class ShowStats(Widgets.QWidget):
 				norm = plt.Normalize(min(clean_data), max(clean_data))
 				colors.append(plt.cm.RdYlGn(norm(clean_data)))
 			except:
-				colors.append(["white" for x in range(len(dev_y))])
+				colors.append(["white" for x in dev])
 		col_colors = []
-		for tag in dev_x:
+		for value,tag in dev:
 			if tag in savegame.color_dict:
 				col_colors.append(savegame.color_dict[tag])
 			else:
 				col_colors.append("black")
-		cols = dev_x
+		cols = [x[1] for x in dev]
 
 
 		tab = ax3.table(cellText=cell_text, cellColours=colors, rowLabels=rows, rowColours=row_colors,
@@ -394,18 +399,6 @@ class ShowStats(Widgets.QWidget):
 				pass
 			plt.savefig("{0}/development_figure.png".format(directory), dpi=200)
 
-	def stats_data_maker(self, tag_list, data, index):
-		stats_list = []
-		for tag in tag_list:
-			if tag in self.formable_nations_dict:
-				try:
-					stats_list.append(data[self.formable_nations_dict[tag]][index])
-				except KeyError:
-					stats_list.append(data[tag][index])
-			else:
-				stats_list.append(data[tag][index])
-		return stats_list
-
 	def income_manpower(self, savegame):
 		income_manpower_figure = plt.figure("Income & Manpower - {0}".format(savegame.year))
 		compare = False
@@ -426,124 +419,108 @@ class ShowStats(Widgets.QWidget):
 		if savegame == self.savegame_list[2]:
 			savegame = self.savegame_list[1]
 			compare = True
-		income_x = [sorted(savegame.stats_dict.items(), key = lambda x: x[1][4], reverse = True)[i][0] for i in range(len(savegame.stats_dict))]
-		income_y = [sorted(savegame.stats_dict.items(), key = lambda x: x[1][4], reverse = True)[i][1][4] for i in range(len(savegame.stats_dict))]
-		max_manpower_x = [sorted(savegame.stats_dict.items(), key = lambda x: x[1][6], reverse = True)[i][0] for i in range(len(savegame.stats_dict))]
-		max_manpower_y = [sorted(savegame.stats_dict.items(), key = lambda x: x[1][6], reverse = True)[i][1][6] for i in range(len(savegame.stats_dict))]
-		max_manpower_table = [sorted(savegame.stats_dict.items(), key = lambda x: x[1][4], reverse = True)[i][1][6] for i in range(len(savegame.stats_dict))]
-		for tag in income_x:
+
+		income = sorted([(savegame.stats_dict[tag]["income"],tag)\
+		for tag in self.playertags],key = lambda x: x[0], reverse = True)
+
+		max_manpower = sorted([(savegame.stats_dict[tag]["max_manpower"],tag)\
+		for tag in self.playertags],key = lambda x: x[0], reverse = True)
+
+		max_manpower_table = [x for _,x in sorted([(savegame.stats_dict[tag]["income"],\
+		savegame.stats_dict[tag]["max_manpower"]) for tag in self.playertags], reverse = True)]
+
+		for value,tag in income:
 			if tag in savegame.color_dict:
-				color_list.append(savegame.color_dict[tag])
+				ax1.bar(tag, value, color = savegame.color_dict[tag], edgecolor = "grey", linewidth = 1)
 			else:
-				color_list.append("black")
-		ax1.bar(range(len(income_y)), income_y, color=color_list, edgecolor = "grey", linewidth = 1)
-		ax1.set_xticks(range(len(income_x)))
-		ax1.set_xticklabels(income_x)
+				ax1.bar(tag, value, color = "black", edgecolor = "grey", linewidth = 1)
 
 		if compare:
-			base_income_y = []
-			for tag in income_x:
+			for tag in self.playertags:
 				if tag in self.formable_nations_dict:
-					try:
-						base_income_y.append(savegame.stats_dict[tag][4] - self.savegame_list[0].stats_dict[self.formable_nations_dict[tag]][4])
-					except KeyError:
-						base_income_y.append(savegame.stats_dict[tag][4] - self.savegame_list[0].stats_dict[tag][4])
+					if self.formable_nations_dict[tag] in savegame_list[0].stats_dict.keys():
+						savegame.stats_dict[tag]["delta_income"] =\
+						stats_dict[tag]["income"] - self.savegame_list[0].stats_dict\
+						[self.formable_nations_dict[tag]]["income"]
 				else:
-					base_income_y.append(savegame.stats_dict[tag][4] - self.savegame_list[0].stats_dict[tag][4])
+					savegame.stats_dict[tag]["delta_income"] =\
+					savegame.stats_dict[tag]["income"] - self.savegame_list[0].stats_dict[tag]["income"]
+			delta_income = [x for _,x in sorted(zip([savegame.stats_dict[tag]["income"]\
+			for tag in self.playertags],[savegame.stats_dict[tag]["delta_income"]\
+			for tag in self.playertags]), reverse = True)]
+			norm = plt.Normalize(min(delta_income), max(delta_income))
+			color_list2 = plt.cm.RdYlGn(norm(delta_income))
+			ax1.bar(range(len(delta_income)), delta_income, color=color_list2,\
+			edgecolor = "black", linewidth = 1)
 
-			norm = plt.Normalize(min(base_income_y), max(base_income_y))
-			color_list2 = plt.cm.RdYlGn(norm(base_income_y))
-			ax1.bar(range(len(base_income_y)), base_income_y, color=color_list2, edgecolor = "black", linewidth = 1)
-
-
-		color_list = []
-		for tag in max_manpower_x:
+		for value,tag in max_manpower:
 			if tag in savegame.color_dict:
-				color_list.append(savegame.color_dict[tag])
+				ax2.bar(tag, value, color=savegame.color_dict[tag],\
+				edgecolor = "grey", linewidth = 1)
 			else:
-				color_list.append("black")
+				ax2.bar(tag, value, "black", edgecolor = "grey", linewidth = 1)
 		ax2.grid(True, axis="y")
 		ax2.minorticks_on()
 		ax2.set_title("Maximum Manpower")
 		ax2.set_xlabel("Nation")
-		ax2.bar(range(len(max_manpower_y)), max_manpower_y, color=color_list, edgecolor = "grey", linewidth = 1)
-		#ax2.bar(range(len(manpower_y)), manpower_y, color=color_list)
-		ax2.set_xticks(range(len(max_manpower_x)))
-		ax2.set_xticklabels(max_manpower_x)
 
 		if compare:
-			base_max_manpower_y = []
-			for tag in max_manpower_x:
+			for tag in self.playertags:
 				if tag in self.formable_nations_dict:
-					try:
-						base_max_manpower_y.append(savegame.stats_dict[tag][6] - self.savegame_list[0].stats_dict[self.formable_nations_dict[tag]][6])
-					except KeyError:
-						base_max_manpower_y.append(savegame.stats_dict[tag][6] - self.savegame_list[0].stats_dict[tag][6])
+					if self.formable_nations_dict[tag] in savegame_list[0].stats_dict.keys():
+						savegame.stats_dict[tag]["delta_max_manpower"] = \
+						savegame.stats_dict[tag]["max_manpower"] -\
+						self.savegame_list[0].stats_dict[self.formable_nations_dict[tag]]["max_manpower"]
 				else:
-					base_max_manpower_y.append(savegame.stats_dict[tag][6] - self.savegame_list[0].stats_dict[tag][6])
+					savegame.stats_dict[tag]["delta_max_manpower"] = \
+					savegame.stats_dict[tag]["max_manpower"] -\
+					self.savegame_list[0].stats_dict[tag]["max_manpower"]
+			delta_max_manpower = [x for _,x in sorted(zip([savegame.stats_dict[tag]["max_manpower"]\
+			for tag in self.playertags],[savegame.stats_dict[tag]["delta_max_manpower"]\
+			for tag in self.playertags]), reverse = True)]
 
-			norm = plt.Normalize(min(base_max_manpower_y), max(base_max_manpower_y))
-			color_list2 = plt.cm.RdYlGn(norm(base_max_manpower_y))
-			ax2.bar(range(len(base_max_manpower_y)), base_max_manpower_y, color=color_list2, edgecolor = "black", linewidth = 1)
+			delta_max_manpower_table = [x for _,x in sorted(zip([savegame.stats_dict[tag]["income"]\
+			for tag in self.playertags],[savegame.stats_dict[tag]["delta_max_manpower"]\
+			for tag in self.playertags]), reverse = True)]
 
-			base_max_manpower_table = []
-			for tag in income_x:
-				if tag in self.formable_nations_dict:
-					try:
-						base_max_manpower_table.append(self.savegame_list[0].stats_dict[self.formable_nations_dict[tag]][6])
-					except KeyError:
-						base_max_manpower_table.append(self.savegame_list[0].stats_dict[tag][6])
-				else:
-					base_max_manpower_table.append(self.savegame_list[0].stats_dict[tag][6])
-
+			norm = plt.Normalize(min(delta_max_manpower), max(delta_max_manpower))
+			color_list2 = plt.cm.RdYlGn(norm(delta_max_manpower))
+			ax2.bar(range(len(delta_max_manpower)), delta_max_manpower, color=color_list2, edgecolor = "black", linewidth = 1)
 
 		cell_text = []
-		cell_text.append(["" for x in range(len(income_y))])
-		cell_text.append(income_y)
+		cell_text.append(["" for x in income])
+		cell_text.append([str(value) for value,tag in income])
 		cell_text.append(['{0:,}'.format(mp) for mp in max_manpower_table])
 		if compare:
-			cell_text.append(["" for x in range(len(income_y))])
-			cell_text.append(["{0}{1}".format(str([x for x in ["+"] if a > 0])[2:-2], int(a*100)/100) for a in base_income_y])
-			cell_text.append(["{0}{1:,}".format(str([x for x in ["+"] if int(a - b) > 0])[2:-2], int(a - b)) for a,b in zip(max_manpower_table, base_max_manpower_table)])
-			cell_text.append(["" for x in range(len(income_y))])
-			cell_text.append([int((a - b)*100)/100 for a,b in zip(income_y, base_income_y)])
-			cell_text.append(['{0:,}'.format(int(x)) for x in base_max_manpower_table])
-		# formatted = []
-		# for manpower in manpower_table:
-		#	 formatted.append('{0:,}'.format(manpower))
-		# cell_text.append(formatted)
-		colors = []
-		data_list = []
-		data_list.append(["" for x in range(len(income_y))])
-		data_list.append(income_y)
-		data_list.append(max_manpower_table)
-		if compare:
-			data_list.append(["" for x in range(len(income_y))])
-			data_list.append(base_income_y)
-			data_list.append(["{0}{1}".format(str([x for x in ["+"] if int(a - b) > 0])[2:-2], int(a - b)) for a,b in zip(max_manpower_table, base_max_manpower_table)])
-			data_list.append(["" for x in range(len(income_y))])
-			data_list.append([(a - b) for a,b in zip(income_y, base_income_y)])
-			data_list.append([int(x) for x in base_max_manpower_table])
+			cell_text.append(["" for x in income])
+			cell_text.append(["+{}".format(int(a*100)/100) if a > 0 else str(int(a*100)/100)\
+			for a in delta_income])
+			cell_text.append(["+{0:,}".format(int(a)) if a > 0 else "{0:,}".format(int(a))\
+			for a in delta_max_manpower_table])
+			cell_text.append(["" for x in income])
+			cell_text.append([str(int((a[0] - b)*100)/100) for a,b in zip(income, delta_income)])
+			cell_text.append(['{0:,}'.format(int(a-b))\
+			for a,b in zip(max_manpower_table,delta_max_manpower_table)])
 			rows = [savegame.year, "Income", "Maximum Manpower", self.savegame_list[2].year, "Income", "Maximum Manpower", self.savegame_list[0].year, "Income", "Maximum Manpower"] #, "Current Manpower"]
 			row_colors = ["white", "gold", "grey", "white", "gold", "grey", "white", "gold", "grey"] #, "dodgerblue"]
 		else:
 			rows = [savegame.year, "Income", "Maximum Manpower"]
 			row_colors = ["white", "gold", "grey"]
-		#data_list.append(manpower_table)
-		for data in data_list:
+		colors = []
+		for data in cell_text:
 			try:
-				clean_data = [float(d) for d in data]
+				clean_data = [float(d.replace(",","")) for d in data]
 				norm = plt.Normalize(min(clean_data), max(clean_data))
 				colors.append(plt.cm.RdYlGn(norm(clean_data)))
 			except:
-				colors.append(["white" for x in range(len(income_y))])
+				colors.append(["white" for x in income])
 		col_colors = []
-		for tag in income_x:
+		for value, tag in income:
 			if tag in savegame.color_dict:
 				col_colors.append(savegame.color_dict[tag])
 			else:
 				col_colors.append("black")
-		cols = income_x
+		cols = [tag for value,tag in income]
 		tab = ax3.table(cellText=cell_text, cellColours=colors, rowLabels=rows, rowColours=row_colors,
 						colColours=col_colors, colLabels=cols, loc='center')
 		tab.auto_set_font_size(False)
@@ -585,16 +562,18 @@ class ShowStats(Widgets.QWidget):
 		markers = ["o","v","^","<",">","s","p","*","+","x","d","D","h","H"]
 		for tag, color in zip(savegame.playertags, color_list):
 			marker = markers[a%len(markers)]
-			plt.plot(savegame.income_dict[tag][0], savegame.income_dict[tag][1],
-					 label=tag, color=color, linewidth=1.5, marker = marker)
+			if tag in savegame.income_dict.keys():
+				plt.plot(savegame.income_dict[tag][0], savegame.income_dict[tag][1],
+						 label=tag, color=color, linewidth=1.5, marker = marker)
 			a += 1
 		plt.grid(True, which="both")
 		plt.minorticks_on()
-		max_list = []
+		maxi = 0
 		for tag in savegame.playertags:
-			max_value = max(savegame.income_dict[tag][1])
-			max_list.append(max_value)
-		maxi = max(max_list)
+			if tag in savegame.income_dict.keys():
+				max_value = max(savegame.income_dict[tag][1])
+				if max_value > maxi:
+					maxi = max_value
 		plt.axis([1445, int(savegame.year), 0, maxi * 1.05])
 		plt.title("Income Overview")
 		xlab = plt.xlabel("Year")
@@ -619,9 +598,14 @@ class ShowStats(Widgets.QWidget):
 	def losses(self, savegame):
 		losses_figure = plt.figure("Army Losses - {0}".format(savegame.year))
 		losses_figure.suptitle(savegame.year, fontsize = 20)
-		year = savegame.year
-		compare = False
-		losses_figure.suptitle(savegame.year, fontsize = 20)
+		losses_figure.canvas.set_window_title("Army Losses")
+		losses_figure.set_size_inches(16, 10)
+		if savegame == self.savegame_list[2]:
+			savegame = self.savegame_list[1]
+			compare = True
+		else:
+			compare = False
+		year = int(savegame.year)
 		ax1 = plt.subplot2grid((3, 2), (0, 0), rowspan=2)
 		ax2 = plt.subplot2grid((3, 2), (0, 1), rowspan=2, sharey=ax1)
 		ax3 = plt.subplot2grid((3, 2), (2, 0), colspan=2)
@@ -629,48 +613,102 @@ class ShowStats(Widgets.QWidget):
 		ax2.set_title("Army Losses")
 		ax1.tick_params(axis='both', which='major', labelsize=8)
 		ax2.tick_params(axis='both', which='major', labelsize=8)
+
+		infantry = [x for _,x in sorted([(sum(savegame.stats_dict[tag]["losses"]),\
+		savegame.stats_dict[tag]["losses"][0] +\
+		savegame.stats_dict[tag]["losses"][1]) for tag in self.playertags], reverse = True)]
+
+		cavalry = [x for _,x in sorted([(sum(savegame.stats_dict[tag]["losses"]),\
+		savegame.stats_dict[tag]["losses"][3] +\
+		savegame.stats_dict[tag]["losses"][4]) for tag in self.playertags], reverse = True)]
+
+		artillery = [x for _,x in sorted([(sum(savegame.stats_dict[tag]["losses"]),\
+		savegame.stats_dict[tag]["losses"][6] +\
+		savegame.stats_dict[tag]["losses"][7]) for tag in self.playertags], reverse = True)]
+
+		combat = [x for _,x in sorted([(sum(savegame.stats_dict[tag]["losses"]),\
+		savegame.stats_dict[tag]["losses"][0] +\
+		savegame.stats_dict[tag]["losses"][3] +\
+		savegame.stats_dict[tag]["losses"][6]) for tag in self.playertags], reverse = True)]
+
+		attrition = [x for _,x in sorted([(sum(savegame.stats_dict[tag]["losses"]),\
+		savegame.stats_dict[tag]["losses"][1] +\
+		savegame.stats_dict[tag]["losses"][4] +\
+		savegame.stats_dict[tag]["losses"][7]) for tag in self.playertags], reverse = True)]
+
+		total = sorted([sum(savegame.stats_dict[tag]["losses"]) for tag in self.playertags], reverse = True)
+		per_year = [int(x/year) for x in total]
+
+		tags = [x for _,x in sorted([(sum(savegame.stats_dict[tag]["losses"]),tag)\
+		for tag in self.playertags], reverse = True)]
+
+		if compare:
+			total,tags = [list(x) for x in zip(*sorted(zip([total[i] -\
+			sum(self.savegame_list[0].stats_dict[tags[i]]["losses"])\
+			for i in range(len(tags))],tags), reverse = True))]
+
+			per_year = [int(x/year) for x in total]
+
+			infantry = [infantry[i] -
+			(self.savegame_list[0].stats_dict[tags[i]]["losses"][0] +\
+			self.savegame_list[0].stats_dict[tags[i]]["losses"][1]) for i in range(len(tags))]
+
+			cavalry = [cavalry[i] -
+			(self.savegame_list[0].stats_dict[tags[i]]["losses"][3] +\
+			self.savegame_list[0].stats_dict[tags[i]]["losses"][4]) for i in range(len(tags))]
+
+			artillery = [artillery[i] -
+			(self.savegame_list[0].stats_dict[tags[i]]["losses"][6] +\
+			self.savegame_list[0].stats_dict[tags[i]]["losses"][7]) for i in range(len(tags))]
+
+			combat = [combat[i] -
+			(self.savegame_list[0].stats_dict[tags[i]]["losses"][0] +\
+			self.savegame_list[0].stats_dict[tags[i]]["losses"][3] +\
+			self.savegame_list[0].stats_dict[tags[i]]["losses"][6]) for i in range(len(tags))]
+
+			attrition = [attrition[i] -
+			(self.savegame_list[0].stats_dict[tags[i]]["losses"][1] +\
+			self.savegame_list[0].stats_dict[tags[i]]["losses"][4] +\
+			self.savegame_list[0].stats_dict[tags[i]]["losses"][7]) for i in range(len(tags))]
+
+
+		col_colors = []
+		for tag in tags:
+			col_colors.append(savegame.color_dict[tag])
+		ylim = max(total)
+
+		ax1.set_xlabel("Nation")
+		ax1.set_ylabel("Number of Soldiers")
+		ax1.ticklabel_format(style='plain')
+		ax1.get_yaxis().set_major_formatter(plt.FuncFormatter(lambda x, loc: "{:,}".format(int(x))))
+		ax1.bar(tags, infantry, label="Infantry", color="royalblue",
+				edgecolor=col_colors, linewidth=1)
+		ax1.bar(tags, cavalry, bottom=infantry, label="Cavalry", color="saddlebrown",
+				edgecolor=col_colors, linewidth=1)
+		ax1.bar(tags, artillery, bottom=[x+y for x,y in zip(infantry,cavalry)],
+				label="Artillery", color="k", edgecolor=col_colors, linewidth=1)
+		ax1.grid(True, axis="y")
+		ax1.legend(prop={'size': 10})
+
+		ax2.set_xlabel("Nation")
+		ax2.get_yaxis().set_major_formatter(plt.FuncFormatter(lambda x, loc: "{:,}".format(int(x))))
+		ax2.bar(tags, combat,
+				label="Combat", color="indianred", edgecolor=col_colors, linewidth=1)
+		ax2.bar(tags, attrition, bottom=combat, label="Atrittion",
+				color="dimgray", edgecolor=col_colors, linewidth=1)
+		ax2.set_ylim(0,ylim*1.05)
+		ax2.grid(True, axis="y")
+		ax2.legend(prop={'size': 10})
+
 		cell_text = []
 		colors = []
-		if savegame == self.savegame_list[2]:
-			compare = True
-			savegame = self.savegame_list[1]
-			base_losses_dict = dict(zip(self.savegame_list[0].sorted_losses_list[0], [[self.savegame_list[0].sorted_losses_list[i][j] for i in range(9)] for j in range(len(self.savegame_list[0].sorted_losses_list[0]))]))
-			losses_list = []
-			for tag in savegame.sorted_losses_list[0]:
-				try:
-					losses_list.append([(savegame.sorted_losses_list[i][savegame.sorted_losses_list[0].index(tag)] - base_losses_dict[tag][i] ) for i in range(1,9)])
-				except KeyError:
-					if tag in self.formable_nations_dict:
-						losses_list.append([(savegame.sorted_losses_list[i][savegame.sorted_losses_list[0].index(tag)] - base_losses_dict[self.formable_nations_dict[tag]][i]) for i in range(1,9)])
-
-			losses_list = [savegame.sorted_losses_list[0]]
-			for i in range(1,9):
-				losses_list.append([])
-				for tag in savegame.sorted_losses_list[0]:
-					try:
-						losses_list[i].append((savegame.sorted_losses_list[i][savegame.sorted_losses_list[0].index(tag)] - base_losses_dict[tag][i]))
-					except KeyError:
-						losses_list[i].append((savegame.sorted_losses_list[i][savegame.sorted_losses_list[0].index(tag)] - base_losses_dict[self.formable_nations_dict[tag]][i]))
-			losses_list[-1] = [int(loss*100)/100 for loss in losses_list[-1]]
-			sorted_losses_list = list(zip(*sorted(zip(losses_list[7], losses_list[0], losses_list[1], losses_list[2], losses_list[3], losses_list[4], losses_list[5], losses_list[6], losses_list[8]))))
-			sorted_losses_list.insert(7, sorted_losses_list.pop(0))
-			sorted_losses_list[-1] = [int(losses/(int(savegame.year) - int(self.savegame_list[0].year))) for losses in sorted_losses_list[-2]]
-		ylim = 0
-		for i in range(1,9):
-			if not compare:
-				sorted_losses_list = savegame.sorted_losses_list
-			if i != 3:
-				if (m := max(sorted_losses_list[i])) > ylim:
-					ylim = m
-				cell_text.append(['{0:,}'.format(loss) for loss in sorted_losses_list[i]])
-				norm = plt.Normalize(min(sorted_losses_list[i]), max(sorted_losses_list[i]))
-				colors.append(plt.cm.RdYlGn(norm(sorted_losses_list[i])))
+		for row in [infantry,cavalry,artillery,combat,attrition,total,per_year]:
+			cell_text.append(['{0:,}'.format(loss) for loss in row])
+			norm = plt.Normalize(min(row), max(row))
+			colors.append(plt.cm.RdYlGn(norm(row)))
 		rows = ["Infantry", "Cavalry", "Artillery", "Combat", "Atrittion", "Total", "Per Year"]
-		cols = sorted_losses_list[0]
+		cols = tags
 		row_colors = ["royalblue", "saddlebrown", "k", "indianred", "dimgray", "white", "white"]
-		col_colors = []
-		for tag in sorted_losses_list[0]:
-			col_colors.append(savegame.color_dict[tag])
 		tab = ax3.table(cellText=cell_text, cellColours=colors, rowLabels=rows, rowColours=row_colors,
 						colColours=col_colors, colLabels=cols, loc='upper center', fontsize=10)
 		ax3.axis("Off")
@@ -678,39 +716,9 @@ class ShowStats(Widgets.QWidget):
 		table_cells = table_props['children']
 		x = len(cols) * (len(rows) + 1) + 2
 		table_cells[x]._text.set_color("white")
-		losses_figure.canvas.set_window_title("Army Losses")
-		losses_figure.set_size_inches(16, 10)
+		for cell in table_cells:
+			cell.set_height(0.15)
 
-		ax1.set_xlabel("Nation")
-		ax1.set_ylabel("Number of Soldiers")
-		ax1.ticklabel_format(style='plain')
-		ax1.get_yaxis().set_major_formatter(plt.FuncFormatter(lambda x, loc: "{:,}".format(int(x))))
-		ax1.bar(range(len(sorted_losses_list[1])), sorted_losses_list[1],
-				label="Infantry", color="royalblue", edgecolor=col_colors, linewidth=1)
-		ax1.bar(range(len(sorted_losses_list[2])), sorted_losses_list[2],
-				bottom=sorted_losses_list[1], label="Cavalry", color="saddlebrown",
-				edgecolor=col_colors, linewidth=1)
-		ax1.bar(range(len(sorted_losses_list[4])), sorted_losses_list[4],
-				bottom=sorted_losses_list[3], label="Artillery", color="k", edgecolor=col_colors,
-				linewidth=1)
-		ax1.set_xticks(range(len(sorted_losses_list[0])))
-		ax1.set_xticklabels(sorted_losses_list[0])
-		ax1.grid(True, axis="y")
-		ax1.legend(prop={'size': 10})
-
-		ax2.set_xlabel("Nation")
-		ax2.get_yaxis().set_major_formatter(plt.FuncFormatter(lambda x, loc: "{:,}".format(int(x))))
-		ax2.bar(range(len(sorted_losses_list[5])), sorted_losses_list[5],
-				label="Combat", color="indianred", edgecolor=col_colors, linewidth=1)
-		ax2.bar(range(len(sorted_losses_list[6])), sorted_losses_list[6],
-				bottom=sorted_losses_list[5], label="Atrittion", color="dimgray",
-				edgecolor=col_colors, linewidth=1)
-		ax2.set_xticks(range(len(sorted_losses_list[0])))
-		ax2.set_xticklabels(sorted_losses_list[0])
-		print(ylim)
-		ax2.set_ylim(0,ylim*1.05)
-		ax2.grid(True, axis="y")
-		ax2.legend(prop={'size': 10})
 		if self.save_figures_box.isChecked():
 			try:
 				directory = self.directory
@@ -728,59 +736,79 @@ class ShowStats(Widgets.QWidget):
 	def trade_goods(self, savegame):
 		savegame.trade_goods_figure = plt.figure("Trade Goods - {0}".format(savegame.year), figsize=(18, 9))
 		ax_list = []
-		labels = savegame.datasets[1] + ["Rest"]
 		for i in range(1,30):
 			ax_list.append(plt.subplot2grid((10,4),((i-1)//4,(i-1)%4)))
-			sizes = [good[i] for good in savegame.goods]
+			sizes = [savegame.stats_dict[tag]["trade_goods"][i] for tag in self.playertags]
 			sizes.append(savegame.total_trade_goods[i] - sum(sizes))
-			colors = [savegame.color_dict[tag] for tag in labels[:-1]]
+			colors = [savegame.color_dict[tag] for tag in self.playertags]
 			colors.append("grey")
 			ax_list[i-1].pie(sizes, colors = colors)
 			ax_list[i-1].set_title(trade_goods_list[i])
 			plt.subplots_adjust(hspace = 0.3, wspace = 0)
 
 	def overview(self):
-		columns = [i for i in range(8)]
-		column_count = 9
-		header_labels = ["Country", "Effective Development", "Great Power Score", "Development", "Navy Strength", "Income", "Max Manpower", "Total Army Losses", "Total Income over Time"]
+		header_labels = ["Country", "Effective Development", "Great Power Score", "Development",\
+		"Navy Strength", "Income", "Max Manpower", "Total Army Losses", "Total Income over Time"]
+		categories = ["effective_development","great_power_score","development","navy_strength",\
+		"income","max_manpower","total_losses","total_income"]
 		data = self.savegame_list[1].stats_dict
-		print(data)
-		self.switch_overview_window.emit("Overview Window",columns , column_count, header_labels, data)
+		colormap_options = [0]*len(categories)
+		self.switch_overview_window.emit("Overview Window", categories, colormap_options, header_labels, data)
 
 	def tech(self):
-		columns = [i for i in range(6)]
-		column_count = 8
-		header_labels = ["Country", "Institution Penalty", "Adm-Tech", "Dip-Tech", "Mil-Tech", "Ideas", "Innovativeness", "Tech Score"]
+		header_labels = ["Country", "Institution Penalty", "Adm-Tech", "Dip-Tech",\
+		"Mil-Tech", "Ideas", "Innovativeness", "Tech Score"]
+		categories = ["institution_penalty","adm","dip","mil","number_of_ideas","innovativeness","tech_score"]
 		data = self.savegame_list[1].tech_dict
-		self.switch_overview_window.emit("Tech Window", columns, column_count, header_labels, data)
+		colormap_options = [2] + [0]*(len(categories) - 1)
+		self.switch_overview_window.emit("Tech Window", categories, colormap_options, header_labels, data)
 
 	def adm_points_spent(self):
-		columns = [0,1,2,7,15,17]
-		column_count = len(columns)+2
-		header_labels = ["Country", "Ideas", "Tech", "Stability","Development", "Reduce Inflation", "Cores", "Total"]
-		data = {tag: list(self.savegame_list[1].stats_dict[tag][-1][0].values()) for tag in self.savegame_list[1].playertags}
-		self.switch_overview_window.emit("Adm-Points Spent Total", columns, column_count, header_labels, data)
+		header_labels = ["Country", "Ideas", "Tech", "Stability","Development",\
+		"Reduce Inflation", "Cores", "Total"]
+
+		categories = [0,1,2,7,15,17,-1]
+		colormap_options = [0]*len(categories)
+		data = {tag: list(self.savegame_list[1].stats_dict[tag]["points_spent"][0].values())\
+		+ [self.savegame_list[1].stats_dict[tag]["points_spent"][3]["adm"]]\
+		for tag in self.playertags}
+		self.switch_overview_window.emit("Adm-Points Spent Total", categories,\
+		colormap_options, header_labels, data)
 
 	def dip_points_spent(self):
-		columns = [0,1,7,14,20,22,27,34,47]
-		column_count = len(columns)+2
-		header_labels = ["Country", "Ideas", "Tech","Development", "DipCost Peacedeal", "Culture Conversions", "Reduce War Exhaustion", "Merkantilism", "Promote Culture", "Admirals", "Total"]
-		data = {tag: list(self.savegame_list[1].stats_dict[tag][-1][1].values()) for tag in self.savegame_list[1].playertags}
-		self.switch_overview_window.emit("Dip-Points Spent Total", columns, column_count, header_labels, data)
+		header_labels = ["Country", "Ideas", "Tech","Development", "DipCost Peacedeal",\
+		"Culture Conversions", "Reduce War Exhaustion", "Merkantilism",\
+		"Promote Culture", "Admirals", "Total"]
+
+		categories = [0,1,7,14,20,22,27,34,47,-1]
+		colormap_options = [0]*len(categories)
+		data = {tag: list(self.savegame_list[1].stats_dict[tag]["points_spent"][1].values())\
+		+ [self.savegame_list[1].stats_dict[tag]["points_spent"][3]["dip"]]\
+		for tag in self.playertags}
+		self.switch_overview_window.emit("Dip-Points Spent Total", categories,\
+		colormap_options, header_labels, data)
 
 	def mil_points_spent(self):
-		columns = [0,1,7,21,36,39,46,47]
-		column_count = len(columns)+2
-		header_labels = ["Country", "Ideas", "Tech", "Development", "Suppress Rebels", "Strengthen Government", "Artillery Barrage", "Force March", "Generals", "Total"]
-		data = {tag: list(self.savegame_list[1].stats_dict[tag][-1][2].values()) for tag in self.savegame_list[1].playertags}
-		self.switch_overview_window.emit("Mil-Points Spent Total", columns, column_count, header_labels, data)
+		header_labels = ["Country", "Ideas", "Tech", "Development",\
+		"Suppress Rebels", "Strengthen Government", "Artillery Barrage",\
+		"Force March", "Generals", "Total"]
+
+		categories = [0,1,7,21,36,39,46,47,-1]
+		colormap_options = [0]*len(categories)
+		data = {tag: list(self.savegame_list[1].stats_dict[tag]["points_spent"][2].values())\
+		+ [self.savegame_list[1].stats_dict[tag]["points_spent"][3]["mil"]]\
+		for tag in self.playertags}
+		self.switch_overview_window.emit("Mil-Points Spent Total", categories,\
+		colormap_options, header_labels, data)
 
 	def total_points_spent(self):
-		columns = [0,1,2]
-		column_count = len(columns)+2
 		header_labels = ["Country", "Adm", "Dip", "Mil", "Total"]
-		data = {tag: list(self.savegame_list[1].stats_dict[tag][-1][3].values()) for tag in self.savegame_list[1].playertags}
-		self.switch_overview_window.emit("Total Points Spent", columns, column_count, header_labels, data)
+		categories = [0,1,2,3]
+		colormap_options = [0,0,0,0]
+		data = {tag: list(self.savegame_list[1].stats_dict[tag]["points_spent"][3].values())\
+		for tag in self.playertags}
+		self.switch_overview_window.emit("Total Points Spent", categories,\
+		colormap_options, header_labels, data)
 
 	def close_stats(self):
 		plt.close("all")
@@ -788,9 +816,9 @@ class ShowStats(Widgets.QWidget):
 class MainWindow(Widgets.QMainWindow):
 	change_dir = Core.pyqtSignal()
 
-	def __init__(self, savegame_list, formable_nations_dict):
+	def __init__(self, savegame_list, formable_nations_dict, playertags):
 		super().__init__()
-		self.main = ShowStats(savegame_list, formable_nations_dict)
+		self.main = ShowStats(savegame_list, formable_nations_dict, playertags)
 		self.setGeometry(0, 30, 640, 480)
 		self.setWindowTitle("Decla's Stats-Tool")
 		self.setWindowIcon(Gui.QIcon(icon_dir))
