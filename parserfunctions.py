@@ -362,7 +362,7 @@ def parse_incomestat(content, savegame_list, formable_nations_dict, pbar, plabel
 	income_y_data = []
 	income_dict = {}
 	for tag, info in zip(income_tag_list, income_info_list):
-		if (tag in playertags) or all_nations_bool:
+		if (tag in stats_dict.keys()) or all_nations_bool:
 			income_info_split = info.split()
 			income_x_data_set = []
 			income_y_data_set = []
@@ -526,8 +526,7 @@ def compile_points_spent(info, tag, stats_dict):
 		total_points_dict["total"] = sum(total_points_dict.values())
 		stats_dict[tag]["points_spent"] = [adm_points_dict, dip_points_dict, mil_points_dict, total_points_dict]
 	except:
-		if tag in stats_dict.keys():
-			stats_dict[tag]["points_spent"] = [adm_points_dict, dip_points_dict, mil_points_dict, total_points_dict]
+		stats_dict[tag]["points_spent"] = [adm_points_dict, dip_points_dict, mil_points_dict, total_points_dict]
 
 
 def parse_countries(content, playertags, all_nations_bool, pbar, plabel):
@@ -543,6 +542,7 @@ def parse_countries(content, playertags, all_nations_bool, pbar, plabel):
 	for info, tag in zip(info_list, tag_list):
 		if (tag in playertags) or all_nations_bool:
 			compile_main(info, tag, stats_dict)
+		if tag in stats_dict.keys():
 			compile_techcost(info, tag, tech_dict)
 			compile_player = compile("was_player=yes")
 			compile_color(info, tag, color_dict)

@@ -20,6 +20,7 @@ class Overview(Widgets.QWidget):
 		self.data = data
 		self.categories = categories
 		self.colormap_options = colormap_options
+		self.tag_list = self.data.keys()
 		self.setGeometry(0, 30, 1920, 800)
 		self.setWindowTitle(title)
 		self.setWindowIcon(Gui.QIcon(icon_dir))
@@ -27,23 +28,9 @@ class Overview(Widgets.QWidget):
 		vbox = Widgets.QVBoxLayout()
 		self.table = Widgets.QTableWidget()
 		self.table.setColumnCount(len(header_labels))
-		self.table.setRowCount(len(self.savegame_list[1].stats_dict))
+		self.table.setRowCount(len(self.tag_list))
 		self.table.setSortingEnabled(True)
 		self.table.setHorizontalHeaderLabels(header_labels)
-
-		self.color_list = []
-		total_list = []
-
-		# Inserting nation tags
-		i = 0
-		for tag in self.playertags:
-			item = Widgets.QTableWidgetItem()
-			item.setData(Core.Qt.DisplayRole, tag)
-			self.table.setItem(i, 0, item)
-			if tag in self.savegame_list[1].color_dict:
-				self.table.item(i, 0).setBackground\
-				(Gui.QColor(self.savegame_list[1].color_dict[self.table.item(i, 0).text()]))
-			i += 1
 
 		self.overview()
 
@@ -60,12 +47,22 @@ class Overview(Widgets.QWidget):
 		self.show()
 
 	def overview(self):
+		# Inserting nation tags
+		i = 0
+		for tag in self.tag_list:
+			item = Widgets.QTableWidgetItem()
+			item.setData(Core.Qt.DisplayRole, tag)
+			self.table.setItem(i, 0, item)
+			if tag in self.savegame_list[1].color_dict:
+				self.table.item(i, 0).setBackground\
+				(Gui.QColor(self.savegame_list[1].color_dict[self.table.item(i, 0).text()]))
+			i += 1
 		y = 1
 		for category in self.categories:
 			x = 0
-			color = colormap([self.data[tag][category] for tag in self.playertags],\
+			color = colormap([self.data[tag][category] for tag in self.tag_list],\
 			self.colormap_options[y - 1], 255)
-			for tag in self.playertags:
+			for tag in self.tag_list:
 				item = Widgets.QTableWidgetItem()
 				item.setData(Core.Qt.DisplayRole, self.data[tag][category])
 				self.table.setItem(x, y, item)
