@@ -146,7 +146,7 @@ class ParseWindow(Widgets.QWidget):
 			savegame.army_battle_list, savegame.navy_battle_list, savegame.province_stats_list,\
 			savegame.trade_stats_list, savegame.subject_dict,\
 			savegame.hre_reformlevel, savegame.trade_port_dict, savegame.war_list,\
-			savegame.war_dict, savegame.tech_dict, savegame.monarch_list =\
+			savegame.war_dict, savegame.tech_dict, savegame.monarch_list, self.localisation_dict =\
 			parse(savegame.file, self.playertags, self.savegame_list,
 			self.formable_nations_dict, self.all_nations_button.isChecked(), self.pbar, self.plabel)
 			end = time.process_time()

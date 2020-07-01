@@ -15,6 +15,7 @@ import copy
 from os import makedirs
 import matplotlib.pyplot as plt
 from parserfunctions import colormap, parse
+from math import sqrt
 
 trade_goods_list = ['', 'Getreide', 'Wein', 'Wolle', 'Tuch', 'Fisch', 'Pelze', 'Salz',
 					'Schiffsbedarf', 'Kupfer', 'Gold', 'Eisen', 'Sklaven', 'Elfenbein',
@@ -31,6 +32,7 @@ class ShowStats(Widgets.QWidget):
 	switch_overview_window = Core.pyqtSignal(str, list, list, list, dict)
 	switch_monarch_table_window = Core.pyqtSignal(str, list, list)
 	switch_error_window = Core.pyqtSignal(str)
+	switch_nation_profile = Core.pyqtSignal(str)
 
 	def __init__(self, savegame_list, formable_nations_dict, playertags):
 		super().__init__()
@@ -169,12 +171,24 @@ class ShowStats(Widgets.QWidget):
 		grid4.addWidget(self.upload_button, 0, 1)
 		groupBox4.setLayout(grid4)
 
+		groupBox5 = Widgets.QGroupBox("Nation Profiles")
+		grid5 = Widgets.QGridLayout()
+		m = int(sqrt(len(self.savegame_list[1].stats_dict.keys())))
+		i = 0
+		for tag in self.savegame_list[1].stats_dict.keys():
+			self.profile_button = Widgets.QPushButton(tag, self)
+			self.profile_button.released.connect(self.nation_profiles)
+			grid5.addWidget(self.profile_button,i//m,i%m)
+			i += 1
+		groupBox5.setLayout(grid5)
+
 		vbox = Widgets.QVBoxLayout()
 		hbox = Widgets.QHBoxLayout()
 		hbox.addStretch(1)
 		hbox.addWidget(self.create_groupbox(self.savegame_list[0], "Savegame 1", 0))
 		hbox.addWidget(self.create_groupbox(self.savegame_list[1], "Savegame 2", 1))
 		hbox.addWidget(self.create_groupbox(self.savegame_list[2], "Vergleich", 2, False))
+		hbox.addWidget(groupBox5)
 		hbox.addStretch(1)
 		vbox.addLayout(hbox)
 
@@ -834,6 +848,10 @@ class ShowStats(Widgets.QWidget):
 		for tag in self.savegame_list[1].stats_dict.keys()}
 		self.switch_overview_window.emit("Total Points Spent", categories,\
 		colormap_options, header_labels, data)
+
+	def nation_profiles(self):
+		tag = self.sender().text()
+		self.switch_nation_profile.emit(tag)
 
 	def close_stats(self):
 		plt.close("all")

@@ -46,6 +46,7 @@ Changelog 2.1.:
 	> Major Code Restructuring
 	> Code Readability Improvements
 	> Added Total Income over Time to Overview Window
+	> Changed Calculation of Tech Score to: (Number of Techs + Number of Ideas)*(1+Innovatiness/200)/(Institution Penalty)
 	> Added Monarch Window
 """
 

@@ -17,6 +17,7 @@ from TableWindows import OverviewTable, IndividualWarTable, ProvinceTableWindow,
 from Selecter import NationSelecter, WarSelecter, CommanderSelecter
 from ProvinceFilter import ProvinceFilter
 from ErrorWindow import ErrorWindow
+from ProfileWindow import ProfileWindow
 
 class Controller:
 
@@ -88,6 +89,7 @@ class Controller:
 		self.main_window.main.switch_overview_window.connect(self.show_overview_window)
 		self.main_window.main.switch_monarch_table_window.connect(self.show_monarch_table_window)
 		self.main_window.main.switch_error_window.connect(self.show_error_window)
+		self.main_window.main.switch_nation_profile.connect(self.show_nation_profile)
 		self.main_window.show()
 		self.parse_window.close()
 
@@ -155,6 +157,9 @@ class Controller:
 	def show_error_window(self,e):
 		self.error_window = ErrorWindow(e)
 		self.error_window.show()
+
+	def show_nation_profile(self,tag):
+		self.nation_profile = ProfileWindow(tag, self.parse_window.localisation_dict)
 
 	def back_to_parse_window(self):
 		self.parse_window.show()

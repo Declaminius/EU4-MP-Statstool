@@ -69,7 +69,7 @@ def edit_parse(filename):
 	return playertag_list, sorted(real_nations_list)
 
 
-def parse_regions_files(filename):
+def parse_paradox_files(filename):
 	"""	 Reads data about areas, regions and superregion from
 			another file, which contains the already parsed input. """
 	with open(filename, "r") as sg:
@@ -90,9 +90,10 @@ def parse_provinces(provinces, pbar, plabel):
 	plabel.setText("Loading Province Data...")
 
 	id_index_dict = {}
-	area_dict = parse_regions_files("files/area.txt")
-	region_dict = parse_regions_files("files/region.txt")
-	superregion_dict = parse_regions_files("files/superregion.txt")
+	area_dict = parse_paradox_files("files/area.txt")
+	region_dict = parse_paradox_files("files/region.txt")
+	superregion_dict = parse_paradox_files("files/superregion.txt")
+	localisation_dict = parse_paradox_files("files/tags.txt")
 
 	province_stats_list = []
 	province_list = split("-\d+=[{]", provinces)[1:]
@@ -175,7 +176,7 @@ def parse_provinces(provinces, pbar, plabel):
 	for a, b in zip(range(len(province_stats_list)), province_stats_list):
 		for i in range(5):
 			b.insert(3, b.pop(11))  # Moves Tax, Production, Manpower, Development & Trade Power a little bit up front
-	return province_stats_list
+	return province_stats_list, localisation_dict
 
 
 def parse_wars(content):
@@ -606,7 +607,7 @@ def parse(filename, playertags, savegame_list, formable_nations_dict, all_nation
 			hre_reformlevel = int(compile_hre_reformlevel.search(content).group(1))
 		except:
 			hre_reformlevel = 0
-		province_stats_list = parse_provinces(provinces, pbar, plabel)
+		province_stats_list, localisation_dict = parse_provinces(provinces, pbar, plabel)
 		war_dict, war_list = parse_wars(content)
 		army_battle_list, navy_battle_list = parse_battles(content, war_list, pbar, plabel)
 		stats_dict, sorted_tag_list, subject_dict, color_dict, \
@@ -620,4 +621,4 @@ def parse(filename, playertags, savegame_list, formable_nations_dict, all_nation
 	return stats_dict, year, total_trade_goods, sorted_tag_list, income_dict,\
 		color_dict, army_battle_list, navy_battle_list, province_stats_list,\
 		trade_stats_list, subject_dict, hre_reformlevel, trade_port_dict,\
-		war_list, war_dict, tech_dict, monarch_list
+		war_list, war_dict, tech_dict, monarch_list, localisation_dict
