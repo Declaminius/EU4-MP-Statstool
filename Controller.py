@@ -13,8 +13,7 @@ from ParseWindow import ParseWindow
 from EditNations import EditNations
 from ConfigureNationFormations import ConfigureNationFormations
 from MainWindow import MainWindow
-from TableWindow import TableWindow
-from Overview import Overview
+from TableWindows import OverviewTable, IndividualWarTable, ProvinceTableWindow, TableWindow, MonarchTableWindow
 from Selecter import NationSelecter, WarSelecter, CommanderSelecter
 from ProvinceFilter import ProvinceFilter
 from ErrorWindow import ErrorWindow
@@ -84,8 +83,10 @@ class Controller:
 		self.main_window = MainWindow(self.parse_window.savegame_list,\
 		self.parse_window.formable_nations_dict, self.parse_window.playertags)
 		self.main_window.main.switch_table_window.connect(self.show_table_window)
+		self.main_window.main.switch_province_table_window.connect(self.show_province_table_window)
 		self.main_window.main.back_to_parse_window.connect(self.back_to_parse_window)
 		self.main_window.main.switch_overview_window.connect(self.show_overview_window)
+		self.main_window.main.switch_monarch_table_window.connect(self.show_monarch_table_window)
 		self.main_window.main.switch_error_window.connect(self.show_error_window)
 		self.main_window.show()
 		self.parse_window.close()
@@ -95,11 +96,17 @@ class Controller:
 		self.table_window.switch_nation_selecter.connect(self.show_nation_selecter)
 		self.table_window.switch_commander_selecter.connect(self.show_commander_selecter)
 		self.table_window.switch_war_selecter.connect(self.show_war_selecter)
-		self.table_window.switch_province_filter.connect(self.show_province_filter)
+		self.table_window.switch_to_individual_war.connect(self.show_individual_war)
 		self.table_window.show()
 
-	def show_nation_selecter(self):
-		self.nation_select_window = NationSelecter(self.table_window.data, self.parse_window.savegame_list)
+	def show_province_table_window(self, data, title):
+		self.province_table_window = ProvinceTableWindow(self.parse_window.savegame_list, data, title)
+		self.province_table_window.switch_province_filter.connect(self.show_province_filter)
+		self.province_table_window.switch_nation_selecter.connect(self.show_nation_selecter)
+		self.province_table_window.show()
+
+	def show_nation_selecter(self, data):
+		self.nation_select_window = NationSelecter(data, self.parse_window.savegame_list)
 		self.nation_select_window.update_table.connect(self.update_table)
 		self.nation_select_window.show()
 
@@ -118,18 +125,32 @@ class Controller:
 		self.province_filter.update_table.connect(self.update_table)
 		self.province_filter.show()
 
+	def show_individual_war(self, war):
+		self.individual_war_window = IndividualWarTable(self.parse_window.savegame_list[1].war_dict[war],war,self.parse_window.savegame_list)
+		self.individual_war_window.back_to_table_window.connect(self.back_to_table_window)
+		self.individual_war_window.show()
+		self.table_window.close()
+
+	def back_to_table_window(self):
+		self.table_window.show()
+		self.individual_war_window.close()
+
 	def update_table(self, category, data):
 		if category == "army":
 			self.table_window.armyTable(data)
 		if category == "navy":
 			self.table_window.navyTable(data)
 		if category == "province":
-			self.table_window.provinceTable(data)
+			self.province_table_window.provinceTable(data)
 
 	def show_overview_window(self, title, categories, colormap_options, header_labels, data):
-		self.overview_window = Overview(self.parse_window.savegame_list, self.parse_window.playertags,
+		self.overview_window = OverviewTable(self.parse_window.savegame_list, self.parse_window.playertags,
 										title, categories, colormap_options, header_labels, data)
 		self.overview_window.show()
+
+	def show_monarch_table_window(self, title, data, labels):
+		self.monarch_table_window = MonarchTableWindow(title, data, labels, self.parse_window.savegame_list[1].color_dict)
+		self.monarch_table_window.show()
 
 	def show_error_window(self,e):
 		self.error_window = ErrorWindow(e)

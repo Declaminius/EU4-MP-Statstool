@@ -1,6 +1,6 @@
 # Author: Florian Schager
 # Version: 2.1.
-# Last edited: 27.06.2020
+# Last edited: 01.07.2020
 
 """
 Changelog 2.0.:
@@ -46,6 +46,7 @@ Changelog 2.1.:
 	> Major Code Restructuring
 	> Code Readability Improvements
 	> Added Total Income over Time to Overview Window
+	> Added Monarch Window
 """
 
 

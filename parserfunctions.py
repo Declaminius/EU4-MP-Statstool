@@ -113,7 +113,6 @@ def parse_provinces(provinces, pbar, plabel):
 	province_x3 = compile(province_regex3, DOTALL)
 	province_x4 = compile(province_regex4, DOTALL)
 	province_x5 = compile(province_regex5, DOTALL)
-	# province_hre = compile("hre=(?P<hre>[^\n]+)")
 	province_id = 0
 
 	for province in province_list:
@@ -567,21 +566,32 @@ def cleanup_data(stats_dict, tech_dict):
 			round(int(stats_dict[tag]["great_power_score"]) * (tech_dict[tag]["institution_penalty"]))
 
 
-def parse_history(content):
+def compile_monarchs(tag, country, monarch_list, monarch_id):
+	compile_monarch_info = compile(
+		"id={\n.+?id=" + monarch_id + ".+?name=\"(.+?)\".+?DIP=(\d).+?ADM=(\d).+?MIL=(\d).+?",
+		DOTALL)
+	result = compile_monarch_info.search(country.split("original_capital")[0])
+	if result:
+		temp = [int(i) for i in result.groups()[1:]]
+		result = [tag] + list(result.groups()) + [sum(temp)]
+		monarch_list.append(result)
+
+def parse_history(content, stats_dict):
 	countries = split("\n\t([A-Z0-9]{3})", content.split("\ncountries={")[1].split('active_advisors')[0])
 	tag_list, info_list = countries[1:-1:2], countries[2:-1:2]
 	compile_monarch_id = compile("\tmonarch={\n\t\t\tid=(\d+)")
-	monarch_dict = {}
+	compile_previous_monarchs_id = compile("\tprevious_monarch={\n\t\t\tid=(\d+)")
+	monarch_list = []
 	for tag, country in zip(tag_list, info_list):
-		result = compile_monarch_id.search(country)
-		if result:
-			monarch_id = result.group(1)
-			compile_monarch_info = compile(
-				"id={\n.+id=" + monarch_id + ".+?name=(.+?)\".+?country=\"(.+?)\".+?DIP=(\d).+?ADM=(\d).+?MIL=(\d).+?",
-				DOTALL)
-			result = compile_monarch_info.search(country.split("original_capital")[0])
-			if result:
-				monarch_dict[tag] = result.groups()
+		if tag in stats_dict.keys():
+			result1 = compile_previous_monarchs_id.findall(country)
+			result2 = compile_monarch_id.search(country)
+			if result1:
+				for monarch in result1:
+					compile_monarchs(tag, country, monarch_list, monarch)
+			if result2:
+				compile_monarchs(tag, country, monarch_list, result2.group(1))
+	return monarch_list
 
 
 def parse(filename, playertags, savegame_list, formable_nations_dict, all_nations_bool, pbar, plabel):
@@ -604,7 +614,10 @@ def parse(filename, playertags, savegame_list, formable_nations_dict, all_nation
 		income_dict = parse_incomestat(content, savegame_list, formable_nations_dict, pbar, plabel,
 									   all_nations_bool, stats_dict, playertags)
 		trade_stats_list = parse_trade(content, pbar, plabel)
-		parse_history(content)
+		monarch_list = parse_history(content, stats_dict)
 	pbar.reset()
 	plabel.clear()
-	return stats_dict, year, total_trade_goods, sorted_tag_list, income_dict, color_dict, army_battle_list, navy_battle_list, province_stats_list, trade_stats_list, subject_dict, hre_reformlevel, trade_port_dict, war_list, war_dict, tech_dict
+	return stats_dict, year, total_trade_goods, sorted_tag_list, income_dict,\
+		color_dict, army_battle_list, navy_battle_list, province_stats_list,\
+		trade_stats_list, subject_dict, hre_reformlevel, trade_port_dict,\
+		war_list, war_dict, tech_dict, monarch_list

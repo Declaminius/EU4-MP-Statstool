@@ -27,7 +27,9 @@ class ShowStats(Widgets.QWidget):
 	back_to_parse_window = Core.pyqtSignal()
 	change_dir = Core.pyqtSignal()
 	switch_table_window = Core.pyqtSignal(list, str)
+	switch_province_table_window = Core.pyqtSignal(list, str)
 	switch_overview_window = Core.pyqtSignal(str, list, list, list, dict)
+	switch_monarch_table_window = Core.pyqtSignal(str, list, list)
 	switch_error_window = Core.pyqtSignal(str)
 
 	def __init__(self, savegame_list, formable_nations_dict, playertags):
@@ -66,6 +68,9 @@ class ShowStats(Widgets.QWidget):
 
 		self.tech_button = Widgets.QPushButton("Tech Table", self)
 		self.tech_button.released.connect(self.tech)
+
+		self.monarchs_button = Widgets.QPushButton("Monarchs Table", self)
+		self.monarchs_button.released.connect(self.monarchs)
 
 		self.adm_points_spent_button = Widgets.QPushButton("Adm-Points Spent Table", self)
 		self.adm_points_spent_button.released.connect(self.adm_points_spent)
@@ -152,6 +157,7 @@ class ShowStats(Widgets.QWidget):
 		grid3.addWidget(self.overview_button, 0, 0)
 		grid3.addWidget(self.total_points_spent_button, 0, 1)
 		grid3.addWidget(self.tech_button, 0, 2)
+		grid3.addWidget(self.monarchs_button, 0, 3)
 		grid3.addWidget(self.adm_points_spent_button, 1, 0)
 		grid3.addWidget(self.dip_points_spent_button, 1, 1)
 		grid3.addWidget(self.mil_points_spent_button, 1, 2)
@@ -245,13 +251,13 @@ class ShowStats(Widgets.QWidget):
 		self.switch_table_window.emit(d, "Wars")
 
 	def army_battle(self):
-		self.switch_table_window.emit(self.savegame_list[1].army_battle_list, "Army battles")
+		self.switch_table_window.emit(self.savegame_list[1].army_battle_list, "Army Battles")
 
 	def navy_battle(self):
 		self.switch_table_window.emit(self.savegame_list[1].navy_battle_list, "Navy Battles")
 
 	def provinces(self):
-		self.switch_table_window.emit(self.savegame_list[1].province_stats_list, "Province Table")
+		self.switch_province_table_window.emit(self.savegame_list[1].province_stats_list, "Province Table")
 
 	def development(self, savegame):
 		savegame.development_figure = plt.figure("Development - {0}".format(savegame.year))
@@ -774,15 +780,20 @@ class ShowStats(Widgets.QWidget):
 		"Mil-Tech", "Ideas", "Innovativeness", "Tech Score"]
 		categories = ["institution_penalty","adm","dip","mil","number_of_ideas","innovativeness","tech_score"]
 		data = self.savegame_list[1].tech_dict
-		colormap_options = [2] + [0]*(len(categories) - 1)
+		colormap_options = [0] + [2] + [0]*(len(categories) - 1)
 		self.switch_overview_window.emit("Tech Window", categories, colormap_options, header_labels, data)
+
+	def monarchs(self):
+		header_labels = ["Country", "Name", "Adm", "Dip", "Mil", "Total Pips"]
+		data = self.savegame_list[1].monarch_list
+		self.switch_monarch_table_window.emit("Monarch Table", data, header_labels)
 
 	def adm_points_spent(self):
 		header_labels = ["Country", "Ideas", "Tech", "Stability","Development",\
 		"Reduce Inflation", "Cores", "Total"]
 
 		categories = [0,1,2,7,15,17,-1]
-		colormap_options = [0]*len(categories)
+		colormap_options = [0] + [0]*len(categories)
 		data = {tag: list(self.savegame_list[1].stats_dict[tag]["points_spent"][0].values())\
 		+ [self.savegame_list[1].stats_dict[tag]["points_spent"][3]["adm"]]\
 		for tag in self.savegame_list[1].stats_dict.keys()}
@@ -795,7 +806,7 @@ class ShowStats(Widgets.QWidget):
 		"Promote Culture", "Admirals", "Total"]
 
 		categories = [0,1,7,14,20,22,27,34,47,-1]
-		colormap_options = [0]*len(categories)
+		colormap_options = [0] + [0]*len(categories)
 		data = {tag: list(self.savegame_list[1].stats_dict[tag]["points_spent"][1].values())\
 		+ [self.savegame_list[1].stats_dict[tag]["points_spent"][3]["dip"]]\
 		for tag in self.savegame_list[1].stats_dict.keys()}
@@ -808,7 +819,7 @@ class ShowStats(Widgets.QWidget):
 		"Force March", "Generals", "Total"]
 
 		categories = [0,1,7,21,36,39,45,46,-1]
-		colormap_options = [0]*len(categories)
+		colormap_options = [0] + [0]*len(categories)
 		data = {tag: list(self.savegame_list[1].stats_dict[tag]["points_spent"][2].values())\
 		+ [self.savegame_list[1].stats_dict[tag]["points_spent"][3]["mil"]]\
 		for tag in self.savegame_list[1].stats_dict.keys()}
@@ -818,7 +829,7 @@ class ShowStats(Widgets.QWidget):
 	def total_points_spent(self):
 		header_labels = ["Country", "Adm", "Dip", "Mil", "Total"]
 		categories = [0,1,2,3]
-		colormap_options = [0,0,0,0]
+		colormap_options = [0,0,0,0,0]
 		data = {tag: list(self.savegame_list[1].stats_dict[tag]["points_spent"][3].values())\
 		for tag in self.savegame_list[1].stats_dict.keys()}
 		self.switch_overview_window.emit("Total Points Spent", categories,\

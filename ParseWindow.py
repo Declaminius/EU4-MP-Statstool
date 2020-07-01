@@ -9,7 +9,7 @@ import PyQt5.QtWidgets as Widgets
 import PyQt5.QtGui as Gui
 import PyQt5.QtCore as Core
 import time
-import parserfunctions as parserfunctions
+from parserfunctions import parse
 
 icon_dir = "files/attack_move.png"
 
@@ -146,8 +146,8 @@ class ParseWindow(Widgets.QWidget):
 			savegame.army_battle_list, savegame.navy_battle_list, savegame.province_stats_list,\
 			savegame.trade_stats_list, savegame.subject_dict,\
 			savegame.hre_reformlevel, savegame.trade_port_dict, savegame.war_list,\
-			savegame.war_dict, savegame.tech_dict =\
-			parserfunctions.parse(savegame.file, self.playertags, self.savegame_list,
+			savegame.war_dict, savegame.tech_dict, savegame.monarch_list =\
+			parse(savegame.file, self.playertags, self.savegame_list,
 			self.formable_nations_dict, self.all_nations_button.isChecked(), self.pbar, self.plabel)
 			end = time.process_time()
 			print("End:", end)
