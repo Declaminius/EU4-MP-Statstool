@@ -68,7 +68,7 @@ class OverviewTable(Widgets.QWidget):
 		for category in self.categories:
 			x = 0
 			color = colormap([self.data[tag][category] for tag in self.tag_list],\
-			self.colormap_options[y - 1], 255)
+			self.colormap_options[y], 255)
 			for tag in self.tag_list:
 				item = Widgets.QTableWidgetItem()
 				item.setData(Core.Qt.DisplayRole, self.data[tag][category])

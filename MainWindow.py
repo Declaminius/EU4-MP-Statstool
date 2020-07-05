@@ -307,9 +307,8 @@ class ShowStats(Widgets.QWidget):
 
 		if compare:
 			for tag in savegame.stats_dict.keys():
-				if tag in self.formable_nations_dict.keys():
-					if self.formable_nations_dict[tag] in self.savegame_list[0].stats_dict.keys():
-						savegame.stats_dict[tag]["delta_dev"] = savegame.stats_dict[tag]["development"]\
+				if (tag in self.formable_nations_dict.keys()) and (self.formable_nations_dict[tag] in self.savegame_list[0].stats_dict.keys()):
+					savegame.stats_dict[tag]["delta_dev"] = savegame.stats_dict[tag]["development"]\
 						- self.savegame_list[0].stats_dict[self.formable_nations_dict[tag]]["development"]
 				else:
 					savegame.stats_dict[tag]["delta_dev"] =  savegame.stats_dict[tag]["development"]\
@@ -332,9 +331,8 @@ class ShowStats(Widgets.QWidget):
 			ax1.bar(range(len(delta_dev)), delta_dev, label = "Spieltag-Ende", color = color_list2, edgecolor = "black", linewidth = 1)
 
 			for value,tag in eff_dev:
-				if tag in self.formable_nations_dict.keys():
-					if self.formable_nations_dict[tag] in self.savegame_list[0].stats_dict.keys():
-						savegame.stats_dict[tag]["delta_eff_dev"] = savegame.stats_dict[tag]["effective_development"]\
+				if (tag in self.formable_nations_dict.keys()) and (self.formable_nations_dict[tag] in self.savegame_list[0].stats_dict.keys()):
+					savegame.stats_dict[tag]["delta_eff_dev"] = savegame.stats_dict[tag]["effective_development"]\
 						- self.savegame_list[0].stats_dict[self.formable_nations_dict[tag]]["effective_development"]
 				else:
 					savegame.stats_dict[tag]["delta_eff_dev"] = savegame.stats_dict[tag]["effective_development"]\
@@ -456,11 +454,10 @@ class ShowStats(Widgets.QWidget):
 
 		if compare:
 			for tag in savegame.stats_dict.keys():
-				if tag in self.formable_nations_dict.keys():
-					if self.formable_nations_dict[tag] in self.savegame_list[0].stats_dict.keys():
-						savegame.stats_dict[tag]["delta_income"] =\
-						savegame.stats_dict[tag]["income"] - self.savegame_list[0].stats_dict\
-						[self.formable_nations_dict[tag]]["income"]
+				if (tag in self.formable_nations_dict.keys()) and (self.formable_nations_dict[tag] in self.savegame_list[0].stats_dict.keys()):
+					savegame.stats_dict[tag]["delta_income"] =\
+					savegame.stats_dict[tag]["income"] - self.savegame_list[0].stats_dict\
+					[self.formable_nations_dict[tag]]["income"]
 				else:
 					savegame.stats_dict[tag]["delta_income"] =\
 					savegame.stats_dict[tag]["income"] - self.savegame_list[0].stats_dict[tag]["income"]
@@ -485,11 +482,10 @@ class ShowStats(Widgets.QWidget):
 
 		if compare:
 			for tag in savegame.stats_dict.keys():
-				if tag in self.formable_nations_dict.keys():
-					if self.formable_nations_dict[tag] in self.savegame_list[0].stats_dict.keys():
-						savegame.stats_dict[tag]["delta_max_manpower"] = \
-						savegame.stats_dict[tag]["max_manpower"] -\
-						self.savegame_list[0].stats_dict[self.formable_nations_dict[tag]]["max_manpower"]
+				if tag in (self.formable_nations_dict.keys()) and (self.formable_nations_dict[tag] in self.savegame_list[0].stats_dict.keys()):
+					savegame.stats_dict[tag]["delta_max_manpower"] = \
+					savegame.stats_dict[tag]["max_manpower"] -\
+					self.savegame_list[0].stats_dict[self.formable_nations_dict[tag]]["max_manpower"]
 				else:
 					savegame.stats_dict[tag]["delta_max_manpower"] = \
 					savegame.stats_dict[tag]["max_manpower"] -\
@@ -786,7 +782,7 @@ class ShowStats(Widgets.QWidget):
 		categories = ["effective_development","great_power_score","development","navy_strength",\
 		"income","max_manpower","total_losses","total_income"]
 		data = self.savegame_list[1].stats_dict
-		colormap_options = [0]*len(categories)
+		colormap_options = [0] + [0]*len(categories)
 		self.switch_overview_window.emit("Overview Window", categories, colormap_options, header_labels, data)
 
 	def tech(self):
@@ -841,10 +837,10 @@ class ShowStats(Widgets.QWidget):
 		colormap_options, header_labels, data)
 
 	def total_points_spent(self):
-		header_labels = ["Country", "Adm", "Dip", "Mil", "Total"]
-		categories = [0,1,2,3]
-		colormap_options = [0,0,0,0,0]
-		data = {tag: list(self.savegame_list[1].stats_dict[tag]["points_spent"][3].values())\
+		header_labels = ["Country", "Adm", "Dip", "Mil", "Tech", "Ideas", "Development", "Total"]
+		categories = ["adm","dip","mil","tech","ideas","dev","total"]
+		colormap_options = [0,0,0,0,0,0,0,0]
+		data = {tag: self.savegame_list[1].stats_dict[tag]["points_spent"][3]\
 		for tag in self.savegame_list[1].stats_dict.keys()}
 		self.switch_overview_window.emit("Total Points Spent", categories,\
 		colormap_options, header_labels, data)

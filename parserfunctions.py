@@ -348,8 +348,7 @@ def parse_battles(content, war_list, pbar, plabel):
 	return filtered_army_battle_list, filtered_navy_battle_list
 
 
-def parse_incomestat(content, savegame_list, formable_nations_dict, pbar, plabel,\
-					all_nations_bool, stats_dict, playertags):
+def parse_incomestat(content, savegame_list, formable_nations_dict, pbar, plabel, all_nations_bool, stats_dict, playertags):
 	step = 0
 	pbar.reset()
 	plabel.setText("Loading Income Data...")
@@ -524,6 +523,9 @@ def compile_points_spent(info, tag, stats_dict):
 				dic[int(key)] = int(number)
 			total_points_dict[string] = sum(dic.values())
 		total_points_dict["total"] = sum(total_points_dict.values())
+		total_points_dict["ideas"] = adm_points_dict[0] + dip_points_dict[0] + mil_points_dict[0]
+		total_points_dict["tech"] = adm_points_dict[1] + dip_points_dict[1] + mil_points_dict[1]
+		total_points_dict["dev"] = adm_points_dict[7] + dip_points_dict[7] + mil_points_dict[7]
 		stats_dict[tag]["points_spent"] = [adm_points_dict, dip_points_dict, mil_points_dict, total_points_dict]
 	except:
 		stats_dict[tag]["points_spent"] = [adm_points_dict, dip_points_dict, mil_points_dict, total_points_dict]
