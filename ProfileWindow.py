@@ -8,7 +8,7 @@ Created on Wed Dec 25 02:47:44 2019
 import PyQt5.QtWidgets as Widgets
 import PyQt5.QtGui as Gui
 import PyQt5.QtCore as Core
-icon_dir = "files/attack_move.png"
+from config import icon_dir
 
 
 class ProfileWindow(Widgets.QWidget):

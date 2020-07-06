@@ -7,7 +7,7 @@ Created on Wed Dec 25 02:50:59 2019
 
 import PyQt5.QtWidgets as Widgets
 import PyQt5.QtGui as Gui
-icon_dir = "files/attack_move.png"
+from config import icon_dir
 
 class WarWindow(Widgets.QWidget):
 	def __init__(self):

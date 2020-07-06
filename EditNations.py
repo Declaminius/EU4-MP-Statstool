@@ -8,7 +8,7 @@ Created on Wed Dec 25 02:32:09 2019
 import PyQt5.QtWidgets as Widgets
 import PyQt5.QtGui as Gui
 import PyQt5.QtCore as Core
-icon_dir = "files/attack_move.png"
+from config import icon_dir
 
 class EditNations(Widgets.QWidget):
 	set_playertags = Core.pyqtSignal()

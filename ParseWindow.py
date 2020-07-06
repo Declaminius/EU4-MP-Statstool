@@ -10,8 +10,7 @@ import PyQt5.QtGui as Gui
 import PyQt5.QtCore as Core
 import time
 from parserfunctions import parse
-
-icon_dir = "files/attack_move.png"
+from config import icon_dir, old_nations_list, new_nations_list, remove_nations_list
 
 class ParseWindow(Widgets.QWidget):
 	switch_back = Core.pyqtSignal()
@@ -24,12 +23,11 @@ class ParseWindow(Widgets.QWidget):
 		self.savegame_list = savegame_list
 		self.playertags = playertags
 		self.tag_list = self.savegame_list[1].tag_list
-		self.old_nations_list = ["RVA", "PRO", "ANS", "NOV", "ORL"]
-		self.new_nations_list = ["WES", "KOJ", "FKN", "RUS", "FRA"]
-		self.playertags.remove("HUN")
-		self.playertags.remove("SPA")
-		self.playertags.remove("MOS")
-		self.playertags.remove("CRI")
+		self.old_nations_list = old_nations_list
+		self.new_nations_list = new_nations_list
+		for tag in remove_nations_list:
+			if tag in self.playertags:
+				self.playertags.remove(tag)
 		self.formable_nations_dict = dict(zip(self.new_nations_list, self.old_nations_list))
 
 		self.first_label = Widgets.QLabel("Standard Nation Formations:", self)

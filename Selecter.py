@@ -8,11 +8,11 @@ Created on Wed Dec 25 02:47:44 2019
 import PyQt5.QtWidgets as Widgets
 import PyQt5.QtGui as Gui
 import PyQt5.QtCore as Core
-icon_dir = "files/attack_move.png"
+from config import icon_dir
 
 class NationSelecter(Widgets.QWidget):
 	update_table = Core.pyqtSignal(str, list)
-	
+
 	def __init__(self, data, savegame_list):
 		super().__init__()
 		self.data = data
@@ -42,7 +42,7 @@ class NationSelecter(Widgets.QWidget):
 
 class WarSelecter(Widgets.QWidget):
 	update_table = Core.pyqtSignal(str, list)
-	
+
 	def __init__(self, data, savegame_list):
 		super().__init__()
 		self.data = data
@@ -74,7 +74,7 @@ class WarSelecter(Widgets.QWidget):
 
 class CommanderSelecter(Widgets.QWidget):
 	update_table = Core.pyqtSignal(str, list)
-	
+
 	def __init__(self, data, savegame_list):
 		super().__init__()
 		self.data = data

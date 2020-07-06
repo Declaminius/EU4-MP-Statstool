@@ -8,11 +8,11 @@ Created on Wed Dec 25 02:48:40 2019
 import PyQt5.QtWidgets as Widgets
 import PyQt5.QtGui as Gui
 import PyQt5.QtCore as Core
-icon_dir = "files/attack_move.png"
+from config import icon_dir
 
 class ProvinceFilter(Widgets.QWidget):
 	update_table = Core.pyqtSignal(str, list)
-	
+
 	def __init__(self, index, data):
 		super().__init__()
 		self.data = data

@@ -10,8 +10,7 @@ import PyQt5.QtGui as Gui
 import PyQt5.QtCore as Core
 from parserfunctions import edit_parse
 from Savegame import Savegame
-
-icon_dir = "files/attack_move.png"
+from config import icon_dir
 
 class SetupWindow(Widgets.QMainWindow):
 	switch_window = Core.pyqtSignal()

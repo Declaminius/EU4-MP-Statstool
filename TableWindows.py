@@ -9,7 +9,7 @@ import PyQt5.QtWidgets as Widgets
 import PyQt5.QtGui as Gui
 import PyQt5.QtCore as Core
 from parserfunctions import colormap
-icon_dir = "files/attack_move.png"
+from config import icon_dir
 
 def multiple_column_colors(columns, data, table):
 	color = colormap([int(a[x]) for a in data for x in columns], 0, 255)
