@@ -1,4 +1,4 @@
-# -*- coding: utf-8 -*-
+# -*- coding: windows-1252 -*-
 """
 Created on Wed Dec 25 02:14:51 2019
 
@@ -70,7 +70,8 @@ class SetupWindow(Widgets.QMainWindow):
 			self.status.showMessage("")
 		except AttributeError:
 			pass
-		except (IndexError, UnicodeDecodeError):
+		except (IndexError, UnicodeDecodeError) as e:
+			print(e)
 			self.status.showMessage("{} is not a EU4-Savegame".format(self.FILEDIR))
 		try:
 			savegame = Savegame(self.playertags, self.tag_list, self.FILEDIR)

@@ -1,3 +1,4 @@
+# coding=windows-1252
 # Author: Florian Schager
 # Version: 2.1.
 # Last edited: 01.07.2020
