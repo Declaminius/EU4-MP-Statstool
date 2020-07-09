@@ -9,8 +9,8 @@ class SavegameSelectForm(FlaskForm):
     submit = SubmitField("Parse")
 
 class TagSetupForm(FlaskForm):
-    remove = SelectField("Remove Nation")
-    add = SelectField("Add Nation")
     submit = SubmitField("Parse")
-    remove_button = SubmitField("Remove Nation")
-    add_button = SubmitField("Add Nation")
+
+class NewNationForm(FlaskForm):
+    select = SelectField("Add Nation")
+    submit = SubmitField("Confirm")

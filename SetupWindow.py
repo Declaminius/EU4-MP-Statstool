@@ -61,7 +61,7 @@ class SetupWindow(Widgets.QMainWindow):
 		sender = self.sender()
 		self.openFileNameDialog()
 		try:
-			self.playertags, self.tag_list = edit_parse(self.FILEDIR)
+			self.playertags, self.tag_list, self.localisation_dict = edit_parse(self.FILEDIR)
 			self.FILENAME = self.FILEDIR.split("/")[-1]
 			if sender.text() == "Savegame 1":
 				self.line1.setText(self.FILEDIR)

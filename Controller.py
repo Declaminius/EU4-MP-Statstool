@@ -159,7 +159,7 @@ class Controller:
 		self.error_window.show()
 
 	def show_nation_profile(self,tag):
-		self.nation_profile = ProfileWindow(tag, self.parse_window.localisation_dict)
+		self.nation_profile = ProfileWindow(tag, self.setup_window.localisation_dict)
 
 	def back_to_parse_window(self):
 		self.parse_window.show()

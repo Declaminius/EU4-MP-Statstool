@@ -4,7 +4,7 @@
   <form method = "POST" action = "" enctype="multipart/form-data">
     {{ form.hidden_tag() }}
     <fieldset class = "form-group">
-      <legend class = "border-bottom mb-4">Select the savegames you want to compare</legend>
+      <legend class = "border-bottom mb-4 text-center">Select the savegames you want to compare</legend>
       <div class = "form-group">
         {{ form.savegame1.label(class = "form-control_label")}}
 
@@ -31,7 +31,7 @@
         {% endif %}
       </div>
     </fieldset>
-  <div class = "form-group">
+  <div class = "form-group text-center">
     {{ form.submit(class = "btn btn-outline-info")}}
   </div>
   </form>

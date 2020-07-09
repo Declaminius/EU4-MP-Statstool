@@ -1,5 +1,5 @@
 body {
-  background: #fafafa;
+  background: #dbd5d5;
   color: #333333;
   margin-top: 5rem;
 }
@@ -7,6 +7,8 @@ body {
 h1, h2, h3, h4, h5, h6 {
   color: #444444;
 }
+
+#table1 caption { caption-side: top; }
 
 .bg-steel {
   background-color: #5f788a;

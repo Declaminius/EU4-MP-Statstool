@@ -1,49 +1,45 @@
 {% extends "layout.html" %}
 {% block content %}
+<h1 style="text-align:center"> Select the nations you want to analyze </h1>
 <div class = "content-section">
-  <fieldset class = "form-group">
-    <legend class = "border-bottom mb-4">Configure which nation tags you want to analyze</legend>
-    {{ form.remove.label}}
-    {{ form.remove}}
-    {{ form.add.label}}
-    {{ form.add}}
-  </fieldset>
-  <table class="table">
-      <thead>
-        <tr>
-          <th>Nation Tags</th>
-        </tr>
-      </thead>
-      <tbody>
-          {% for tag in playertags %}
-              <tr>
-                <td>{{ tag }}</td>
-              </tr>
-          {% endfor %}
-      </tbody>
-  </table>
-  <div class="modal fade" id="deleteModal" tabindex="-1" role="dialog" aria-labelledby="deleteModalLabel" aria-hidden="true">
-    <div class="modal-dialog" role="document">
-      <div class="modal-content">
-        <div class="modal-header">
-          <h5 class="modal-title" id="deleteModalLabel">Delete Post?</h5>
-          <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-            <span aria-hidden="true">&times;</span>
-          </button>
-        </div>
-        <div class="modal-footer">
-          <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
-          <form action="{{ url_for('delete_post', post_id=post.id) }}" method="POST">
-            <input class="btn btn-danger" type="submit" value="Delete">
-          </form>
-        </div>
-      </div>
+  <form method = "POST" action = "" enctype="multipart/form-data">
+    {{ form.hidden_tag() }}
+    <div id = "table1">
+      <table class="table">
+         <caption style="text-align:center">Nation Tags. Total: {{playertags|length}}</caption>
+          <thead>
+            <th style="text-align:center">
+              <div>
+                <a class="btn btn-secondary btn mt-1 mb-1"
+                href = "{{url_for('new_nation', sg_id1 = sg_id1, sg_id2 = sg_id2)}}">New Nation</a>
+              </div>
+            </th>
+            <th style="text-align:center">
+              <div>
+                <a class="tn btn-danger btn mt-1 mb-1"
+                href = "{{url_for('remove_all', sg_id1 = sg_id1, sg_id2 = sg_id2)}}">Remove All</a>
+              </div>
+            </th>
+          </thead>
+          <tbody>
+              {% for tag, label in playertags %}
+                  <tr>
+                    <td style="text-align:center">{{ label }}</td>
+                    <td style="text-align:center">
+                      <div>
+                        <a class="tn btn-danger btn-sm m-1"
+                        href = "{{url_for('remove_nation', sg_id1 = sg_id1, sg_id2 = sg_id2, tag = tag)}}">Remove</a>
+                      </div>
+                    </td>
+                  </tr>
+              {% endfor %}
+          </tbody>
+      </table>
     </div>
-  </div>
-  <div class = "form-group">
-    {{ form.remove_button(class = "btn btn-outline-info")}}
-    {{ form.add_button(class = "btn btn-outline-info")}}
-    {{ form.submit(class = "btn btn-outline-info")}}
-  </div>
+
+    <div class = "form-group text-center">
+      {{ form.submit(class = "btn btn-outline-info")}}
+    </div>
+  </form>
 </div>
 {% endblock content %}
