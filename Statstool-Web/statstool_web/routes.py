@@ -19,7 +19,11 @@ def home():
             file.save(path)
             try:
                 playertags, tag_list = edit_parse(path)
-                savegame = Savegame(playertags = playertags, tag_list = tag_list, file = random)
+                savegame = Savegame(file = random)
+                for tag in tag_list:
+                    savegame.nations.append(Nation.get(tag))
+                    if tag in playertags:
+                        savegame.playernations.append(Nation.get(tag))
                 db.session.add(savegame)
                 db.session.commit()
                 sg_ids.append(savegame.id)
@@ -82,12 +86,11 @@ def remove_all(sg_id1,sg_id2):
 def main(sg_id1,sg_id2):
     for id in (sg_id1,sg_id2):
         savegame = Savegame.query.get(id)
-        savegame.stats_dict, savegame.year, savegame.total_trade_goods, savegame.sorted_tag_list,\
-        savegame.income_dict, savegame.color_dict,\
-        savegame.army_battle_list, savegame.navy_battle_list, savegame.province_stats_list,\
-        savegame.trade_stats_list, savegame.subject_dict,\
-        savegame.hre_reformlevel, savegame.trade_port_dict, savegame.war_list,\
-        savegame.war_dict, savegame.tech_dict, savegame.monarch_list, self.localisation_dict =\
-        parse(savegame.file, savegame.playertags, self.savegame_list,
-        self.formable_nations_dict, self.pbar, self.plabel)
+        # savegame.stats_dict, savegame.year, savegame.total_trade_goods, savegame.sorted_tag_list,\
+        # savegame.income_dict, savegame.color_dict,\
+        # savegame.army_battle_list, savegame.navy_battle_list, savegame.province_stats_list,\
+        # savegame.trade_stats_list, savegame.subject_dict,\
+        # savegame.hre_reformlevel, savegame.trade_port_dict, savegame.war_list,\
+        # savegame.war_dict, savegame.tech_dict, savegame.monarch_list, self.localisation_dict =\
+        # parse(savegame.file, savegame.playertags, self.formable_nations_dict, self.pbar, self.plabel)
     return render_template("main.html")

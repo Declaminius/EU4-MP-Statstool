@@ -347,7 +347,7 @@ def parse_battles(content, war_list, pbar, plabel):
 	return filtered_army_battle_list, filtered_navy_battle_list
 
 
-def parse_incomestat(content, savegame_list, formable_nations_dict, pbar, plabel, all_nations_bool, stats_dict, playertags):
+def parse_incomestat(content, formable_nations_dict, pbar, plabel, all_nations_bool, stats_dict, playertags):
 	step = 0
 	pbar.reset()
 	plabel.setText("Loading Income Data...")
@@ -596,7 +596,7 @@ def parse_history(content, stats_dict):
 	return monarch_list
 
 
-def parse(filename, playertags, savegame_list, formable_nations_dict, all_nations_bool, pbar, plabel):
+def parse(filename, playertags, formable_nations_dict, all_nations_bool, pbar, plabel):
 	with open(filename, 'r', encoding = 'windows-1252') as sg:
 		content = sg.read()
 		provinces = content.split("\nprovinces={")[1].split("countries={")[0]
@@ -613,7 +613,7 @@ def parse(filename, playertags, savegame_list, formable_nations_dict, all_nation
 		army_battle_list, navy_battle_list = parse_battles(content, war_list, pbar, plabel)
 		stats_dict, sorted_tag_list, subject_dict, color_dict, \
 		trade_port_dict, tech_dict = parse_countries(content, playertags, all_nations_bool, pbar, plabel)
-		income_dict = parse_incomestat(content, savegame_list, formable_nations_dict, pbar, plabel,
+		income_dict = parse_incomestat(content, formable_nations_dict, pbar, plabel,
 									   all_nations_bool, stats_dict, playertags)
 		trade_stats_list = parse_trade(content, pbar, plabel)
 		monarch_list = parse_history(content, stats_dict)

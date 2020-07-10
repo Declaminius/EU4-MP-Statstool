@@ -285,7 +285,7 @@ class ShowStats(Widgets.QWidget):
 		return color_list, values
 
 	def development(self, savegame):
-		savegame.development_figure = plt.figure("Development - {0}".format(savegame.year))
+		development_figure = plt.figure("Development - {0}".format(savegame.year))
 
 		ax1 = plt.subplot2grid((5, 2), (0, 0), rowspan=3)
 		ax2 = plt.subplot2grid((5, 2), (0, 1), sharey=ax1, rowspan=3)
@@ -743,7 +743,7 @@ class ShowStats(Widgets.QWidget):
 			plt.savefig("{0}/army_losses_figure_{1}.png".format(directory, title), dpi=200)
 
 	def trade_goods(self, savegame):
-		savegame.trade_goods_figure = plt.figure("Trade Goods - {0}".format(savegame.year), figsize=(18, 9))
+		trade_goods_figure = plt.figure("Trade Goods - {0}".format(savegame.year), figsize=(18, 9))
 		ax_list = []
 		for i in range(1,30):
 			ax_list.append(plt.subplot2grid((10,4),((i-1)//4,(i-1)%4)))
