@@ -1,8 +1,8 @@
 from flask import render_template, url_for, send_from_directory, request, redirect, flash
 from statstool_web.forms import SavegameSelectForm, TagSetupForm, NewNationForm
 from statstool_web import app, db
-from statstool_web.parserfunctions import edit_parse
-from statstool_web.models import Savegame
+from statstool_web.parserfunctions import edit_parse, parse
+from statstool_web.models import Savegame, Nation
 from werkzeug.utils import secure_filename
 import os
 import secrets
@@ -19,16 +19,25 @@ def home():
             file.save(path)
             try:
                 playertags, tag_list = edit_parse(path)
-                savegame = Savegame(file = random)
+                savegame = Savegame(file = path)
                 for tag in tag_list:
-                    savegame.nations.append(Nation.get(tag))
+                    if not Nation.query.get(tag):
+                        if tag in app.config["LOCALISATION_DICT"].keys():
+                            t = Nation(tag = tag, name = app.config["LOCALISATION_DICT"][tag])
+                        else:
+                            t = Nation(tag = tag, name = tag)
+                        db.session.add(t)
+                        db.session.commit()
+
+                    savegame.nations.append(Nation.query.get(tag))
                     if tag in playertags:
-                        savegame.playernations.append(Nation.get(tag))
+                        savegame.player_nations.append(Nation.query.get(tag))
+
                 db.session.add(savegame)
                 db.session.commit()
                 sg_ids.append(savegame.id)
-            except AttributeError:
-                pass
+            except AttributeError as e:
+                print(e)
             except (IndexError, UnicodeDecodeError) as e:
                 print(e)
         flash(f'Configure the nation tags you want to analyze.', 'success')
@@ -38,9 +47,9 @@ def home():
 @app.route("/setup/<int:sg_id1>/<int:sg_id2>", methods = ["GET", "POST"])
 def setup(sg_id1,sg_id2):
     form = TagSetupForm()
-    playertags = sorted([(tag,app.config["LOCALISATION_DICT"][tag]) \
-    if tag in app.config["LOCALISATION_DICT"].keys() else (tag,tag) \
-    for tag in set(Savegame.query.get(sg_id1).playertags + Savegame.query.get(sg_id2).playertags)], key = lambda x: x[1])
+    playertags = sorted([(nation.tag,app.config["LOCALISATION_DICT"][nation.tag]) \
+    if nation.tag in app.config["LOCALISATION_DICT"].keys() else (nation.tag,nation.tag) \
+    for nation in set(Savegame.query.get(sg_id1).player_nations + Savegame.query.get(sg_id2).player_nations)], key = lambda x: x[1])
     if request.method == "GET":
         return render_template("setup.html", form = form, playertags = playertags,\
                 sg_id1 = sg_id1, sg_id2 = sg_id2)
@@ -86,11 +95,6 @@ def remove_all(sg_id1,sg_id2):
 def main(sg_id1,sg_id2):
     for id in (sg_id1,sg_id2):
         savegame = Savegame.query.get(id)
-        # savegame.stats_dict, savegame.year, savegame.total_trade_goods, savegame.sorted_tag_list,\
-        # savegame.income_dict, savegame.color_dict,\
-        # savegame.army_battle_list, savegame.navy_battle_list, savegame.province_stats_list,\
-        # savegame.trade_stats_list, savegame.subject_dict,\
-        # savegame.hre_reformlevel, savegame.trade_port_dict, savegame.war_list,\
-        # savegame.war_dict, savegame.tech_dict, savegame.monarch_list, self.localisation_dict =\
-        # parse(savegame.file, savegame.playertags, self.formable_nations_dict, self.pbar, self.plabel)
+        parse(savegame)
+        db.session.commit()
     return render_template("main.html")

@@ -595,31 +595,25 @@ def parse_history(content, stats_dict):
 				compile_monarchs(tag, country, monarch_list, result2.group(1))
 	return monarch_list
 
-
-def parse(filename, playertags, formable_nations_dict, all_nations_bool, pbar, plabel):
-	with open(filename, 'r', encoding = 'windows-1252') as sg:
+def parse(savegame):
+	with open(savegame.file, 'r', encoding = 'windows-1252') as sg:
 		content = sg.read()
 		provinces = content.split("\nprovinces={")[1].split("countries={")[0]
+		savegame.year = findall("date=(?P<year>\d{4})", content)[0]
+		total_trade_goods = list(findall("tradegoods_total_produced={\n(.+)", content)[0].split())
+		for value in total_trade_goods:
+			savegame.total_trade_goods
+		print(total_trade_goods)
 
-		year = findall("date=(?P<year>\d{4})", content)[0]
-		total_trade_goods = list(map(float, list(findall("tradegoods_total_produced={\n(.+)", content)[0].split())))
-		compile_hre_reformlevel = compile("reform_level=(\d)")
-		try:
-			hre_reformlevel = int(compile_hre_reformlevel.search(content).group(1))
-		except:
-			hre_reformlevel = 0
-		province_stats_list = parse_provinces(provinces, pbar, plabel)
+		province_stats_list = parse_provinces(provinces)
 		war_dict, war_list = parse_wars(content)
-		army_battle_list, navy_battle_list = parse_battles(content, war_list, pbar, plabel)
+		army_battle_list, navy_battle_list = parse_battles(content, war_list)
 		stats_dict, sorted_tag_list, subject_dict, color_dict, \
-		trade_port_dict, tech_dict = parse_countries(content, playertags, all_nations_bool, pbar, plabel)
-		income_dict = parse_incomestat(content, formable_nations_dict, pbar, plabel,
-									   all_nations_bool, stats_dict, playertags)
-		trade_stats_list = parse_trade(content, pbar, plabel)
+		trade_port_dict, tech_dict = parse_countries(content, playertags)
+		income_dict = parse_incomestat(content, formable_nations_dict, stats_dict, playertags)
+		trade_stats_list = parse_trade(content)
 		monarch_list = parse_history(content, stats_dict)
-	pbar.reset()
-	plabel.clear()
 	return stats_dict, year, total_trade_goods, sorted_tag_list, income_dict,\
 		color_dict, army_battle_list, navy_battle_list, province_stats_list,\
-		trade_stats_list, subject_dict, hre_reformlevel, trade_port_dict,\
+		trade_stats_list, subject_dict, trade_port_dict,\
 		war_list, war_dict, tech_dict, monarch_list
