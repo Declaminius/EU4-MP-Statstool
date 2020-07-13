@@ -6,6 +6,7 @@ from statstool_web.models import Savegame, Nation
 from werkzeug.utils import secure_filename
 import os
 import secrets
+from pathlib import Path
 
 @app.route("/", methods = ["GET", "POST"])
 @app.route("/home", methods = ["GET", "POST"])
@@ -13,8 +14,9 @@ def home():
     form = SavegameSelectForm()
     if form.validate_on_submit():
         sg_ids = []
+        Path(os.path.join(app.root_path, app.config['UPLOAD_FOLDER'])).mkdir(parents=True, exist_ok=True)
         for file in (request.files[form.savegame1.name],request.files[form.savegame2.name]):
-            random = secrets.token_hex(8)
+            random = secrets.token_hex(8) + ".eu4"
             path = os.path.join(app.root_path, app.config['UPLOAD_FOLDER'], random)
             file.save(path)
             try:
@@ -60,16 +62,17 @@ def setup(sg_id1,sg_id2):
 @app.route("/setup/new_nation/<int:sg_id1>/<int:sg_id2>", methods = ["GET", "POST"])
 def new_nation(sg_id1,sg_id2):
     form = NewNationForm()
-    new_tag_list = [tag for tag in Savegame.query.get(sg_id2).tag_list \
-            if tag not in Savegame.query.get(sg_id2).playertags]
+    playertags = [nation.tag for nation in Savegame.query.get(sg_id2).player_nations]
+    new_tag_list = [nation.tag for nation in Savegame.query.get(sg_id2).nations \
+            if nation.tag not in playertags]
     form.select.choices = \
         sorted([(tag,app.config["LOCALISATION_DICT"][tag]) \
         if tag in app.config["LOCALISATION_DICT"].keys() else (tag,tag) \
         for tag in new_tag_list], key = lambda x: x[1])
     if request.method == "POST":
         sg = Savegame.query.get(sg_id2)
-        if form.select.data not in sg.playertags:
-            sg.playertags = sg.playertags + [form.select.data]
+        if form.select.data not in sg.player_nations:
+            sg.player_nations.append(Nation.query.get(form.select.data))
         db.session.commit()
         return redirect(url_for("setup", sg_id1 = sg_id1, sg_id2 = sg_id2))
     return render_template("new_nation.html", form = form)
@@ -78,8 +81,9 @@ def new_nation(sg_id1,sg_id2):
 def remove_nation(sg_id1,sg_id2,tag):
     for id in (sg_id1,sg_id2):
         sg = Savegame.query.get(id)
-        if tag in sg.playertags:
-            sg.playertags = [t for t in sg.playertags if t != tag]
+        playertags = [nation.tag for nation in sg.player_nations]
+        if tag in playertags:
+            sg.player_nations.remove(Nation.query.get(tag))
             db.session.commit()
     return redirect(url_for("setup", sg_id1 = sg_id1, sg_id2 = sg_id2))
 
@@ -87,7 +91,7 @@ def remove_nation(sg_id1,sg_id2,tag):
 def remove_all(sg_id1,sg_id2):
     for id in (sg_id1,sg_id2):
         sg = Savegame.query.get(id)
-        sg.playertags = []
+        sg.player_nations = []
         db.session.commit()
     return redirect(url_for("setup", sg_id1 = sg_id1, sg_id2 = sg_id2))
 

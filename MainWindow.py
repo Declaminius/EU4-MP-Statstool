@@ -295,8 +295,8 @@ class ShowStats(Widgets.QWidget):
 		ax2.tick_params(axis='both', which='major', labelsize=8)
 
 		plt.subplots_adjust(hspace = 0.05)
-		savegame.development_figure.suptitle(savegame.year, fontsize = 20)
-		savegame.development_figure.set_size_inches(16, 8)
+		development_figure.suptitle(savegame.year, fontsize = 20)
+		development_figure.set_size_inches(16, 8)
 		ax1.grid(True, axis="y")
 		ax1.minorticks_on()
 		ax1.set_title("Development")

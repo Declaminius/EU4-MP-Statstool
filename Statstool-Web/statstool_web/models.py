@@ -109,7 +109,6 @@ class Savegame(db.Model):
     file = db.Column(db.String(120), nullable = False)
     nations = db.relationship("Nation", secondary = savegame_nations)
     player_nations = db.relationship("Nation", secondary = savegame_player_nations)
-    total_goods_produced = db.relationship("TradeGood", secondary = savegame_goods_produced)
     army_battles = db.relationship("ArmyBattle", secondary = savegame_army_battles)
     wars = db.relationship("War", secondary = savegame_wars)
 
@@ -171,9 +170,8 @@ class TotalGoodsProduced(db.Model):
     savegame_id = db.Column(db.Integer, db.ForeignKey('savegame.id'), primary_key = True)
     trade_good_id = db.Column(db.Integer, db.ForeignKey('trade_good.id'), primary_key = True)
     amount = db.Column(db.Float, default = 0)
-    savegame = db.relationship(Community, backref="total_trade_goods")
-    trade_good = db.relationship(User, backref="total_trade_goods")
-
+    savegame = db.relationship("Savegame", backref="total_trade_goods")
+    trade_good = db.relationship("TradeGood", backref="total_trade_goods")
 
 class PointsSpent(db.Model):
     __tablename__ = 'points_spent'
