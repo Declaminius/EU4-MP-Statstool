@@ -49,7 +49,7 @@ def edit_parse(filename):
 		in order to enable dynamic nation selection.
 		Returns list of Player-Nations-Tag and list of all real nations tag in alphabetical order. """
 
-	with open(filename, 'r', encoding = 'windows-1252') as sg:
+	with open(filename, 'r', encoding = 'utf-8') as sg:
 		content = sg.read()
 		localisation_dict = parse_paradox_files("files/tags.txt")
 		compile_player = compile("was_player=yes")
@@ -73,7 +73,7 @@ def edit_parse(filename):
 def parse_paradox_files(filename):
 	"""	 Reads data about areas, regions and superregion from
 			another file, which contains the already parsed input. """
-	with open(filename, "r", encoding = 'windows-1252') as sg:
+	with open(filename, "r", encoding = 'utf-8') as sg:
 		data = eval(sg.read())
 	return data
 
@@ -598,7 +598,7 @@ def parse_history(content, stats_dict):
 
 
 def parse(filename, playertags, savegame_list, formable_nations_dict, all_nations_bool, pbar, plabel):
-	with open(filename, 'r', encoding = 'windows-1252') as sg:
+	with open(filename, 'r', encoding = 'utf-8') as sg:
 		content = sg.read()
 		provinces = content.split("\nprovinces={")[1].split("countries={")[0]
 

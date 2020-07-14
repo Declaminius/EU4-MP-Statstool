@@ -1,6 +1,9 @@
-from re import DOTALL, split, compile, findall
+from re import DOTALL, split, compile, findall, search
 import numpy as np
 import matplotlib.pyplot as plt
+from statstool_web import db
+from statstool_web.models import *
+import datetime
 
 
 def colormap(values, mode=0, output_range=1):
@@ -43,13 +46,12 @@ def colormap(values, mode=0, output_range=1):
 		color_values.append((r, g, b))
 	return color_values
 
-
 def edit_parse(filename):
 	""" Pre-Parser: Parsing player nations and real (alive) nations
 		in order to enable dynamic nation selection.
 		Returns list of Player-Nations-Tag and list of all real nations tag in alphabetical order. """
 
-	with open(filename, 'r', encoding = 'windows-1252') as sg:
+	with open(filename, 'r', encoding = 'cp1252') as sg:
 		content = sg.read()
 		compile_player = compile("was_player=yes")
 		compile_real_nations = compile("\n\t\tdevelopment")  # Dead nations don't have development
@@ -69,15 +71,7 @@ def edit_parse(filename):
 	return playertag_list, sorted(real_nations_list)
 
 
-def parse_paradox_files(filename):
-	"""	 Reads data about areas, regions and superregion from
-			another file, which contains the already parsed input. """
-	with open(filename, "r", encoding = 'windows-1252') as sg:
-		data = eval(sg.read())
-	return data
-
-
-def parse_provinces(provinces, pbar, plabel):
+def parse_provinces(provinces):
 	""" First part of the main parser.
 		Parses all province-related information.
 		Takes only content from start till end of province information of the savegame.
@@ -86,23 +80,14 @@ def parse_provinces(provinces, pbar, plabel):
 		[Province_ID, Name, Owner, Tax, Production, Manpower, Development, Trade Node, Culture,
 		Religion, Trade Good, Area, Region, Superregion]
 		"""
-	step = 0
-	plabel.setText("Loading Province Data...")
-
-	id_index_dict = {}
-	area_dict = parse_paradox_files("files/area.txt")
-	region_dict = parse_paradox_files("files/region.txt")
-	superregion_dict = parse_paradox_files("files/superregion.txt")
-
-	province_stats_list = []
 	province_list = split("-\d+=[{]", provinces)[1:]
 	for province, x in zip(province_list, range(len(province_list))):
 		province_list[x] = province.split("history")[0]
 		province_list[x] += province.split("discovered_by=")[-1]
 
-	province_regex = "name=\"(?P<name>[^\n]+)\".+?trade=\"(?P<trade_node>[^\n]+)\".+?" \
-					 "base_tax=(?P<base_tax>[^\n]+).+?" \
-					 "base_production=(?P<base_production>[^\n]+).+?base_manpower=(?P<base_manpower>[^\n]+).+?" \
+	province_regex = "name=\"(?P<name>[^\n]+)\".+?" \
+					 "base_tax=(?P<base_tax>\d+).+?" \
+					 "base_production=(?P<base_production>\d+).+?base_manpower=(?P<base_manpower>\d+).+?" \
 					 "trade_goods=(?P<trade_goods>[^\n]+)"
 	province_regex2 = "owner=\"(?P<owner>[^\n]+)\""  # Seperated from main regex, because uncolonized provinces don't have a owner.
 	province_regex3 = "religion=(?P<religion>[^\n]+)"  # Because some provinces have no fucking religion!
@@ -113,123 +98,85 @@ def parse_provinces(provinces, pbar, plabel):
 	province_x3 = compile(province_regex3, DOTALL)
 	province_x4 = compile(province_regex4, DOTALL)
 	province_x5 = compile(province_regex5, DOTALL)
-	province_id = 0
 
 	for province in province_list:
-		province_id += 1
 		try:
-			id_index_dict[province_id] = len(province_stats_list)
-			result = list(province_x.search(province).groups())
-			result.insert(2, result.pop(5))  # Move Trade Goods to Index 2
-			for i in range(len(result)):
-				if i > 2:
-					result[i] = int(result[i].split(".")[0])
-			result.append(result[3] + result[4] + result[5])  # Total Development
-			result.insert(0, province_id)
+			result = province_x.search(province).groupdict()
+			result["development"] = result["base_tax"] + result["base_production"] + result["base_manpower"]
+			result["province_id"] = Province.query.filter_by(name = result["name"]).first().id
+			result["trade_good_id"] = TradeGood.query.filter_by(name = result["trade_goods"]).first().id
+			del result["name"], result["trade_goods"]
 
 			owner = province_x2.search(province)
 			if owner:
-				result.insert(2, owner.group(1))
-			else:
-				result.insert(2, "uncolonized")
+				result["nation_tag"] =  owner.group(1)
 
 			religion = province_x3.search(province)
 			if religion:
-				result.insert(4, religion.group(1))
-			else:
-				result.insert(4, "no religion")
+				result["religion"] = religion.group(1)
 
 			culture = province_x4.search(province)
 			if culture:
-				result.insert(4, culture.group(1))
-			else:
-				result.insert(4, "no culture")
+				result["culture"] = culture.group(1)
+
 			trade_power = province_x5.search(province)
 			if trade_power:
-				result.append(float(trade_power.group(1)))
-			else:
-				result.append(0.0)
-			province_stats_list.append(result)
-		except AttributeError:
+				result["trade_power"] = float(trade_power.group(1))
+
+			prov = NationSavegameProvinces(**result)
+		except AttributeError as e:
 			pass
-		step += 400 / len(province_list)
-		pbar.setValue(step)
+	db.session.commit()
 
-	for area in area_dict:
-		for province_id in area_dict[area]:
-			if len(province_stats_list[id_index_dict[province_id]]) == 12:
-				province_stats_list[id_index_dict[province_id]].append(area)
-		step += 200 / len(area_dict)
-		pbar.setValue(step)
-
-	for province in province_stats_list:
-		for region in region_dict:
-			if province[-1] in region_dict[region]:
-				province.append(region)
-
-		for superregion in superregion_dict:
-			if province[-1] in superregion_dict[superregion]:
-				province.append(superregion)
-		step += 400 / len(province_list)
-		pbar.setValue(step)
-	for a, b in zip(range(len(province_stats_list)), province_stats_list):
-		for i in range(5):
-			b.insert(3, b.pop(11))  # Moves Tax, Production, Manpower, Development & Trade Power a little bit up front
-	return province_stats_list
-
-
-def parse_wars(content):
+def parse_wars(content, savegame):
 	""" Second part of the main parser. Reads all relevant information about wars
 	from the savegame. Returns a list of all wars, as well as a dictionary about
 	the participants in each war."""
+
 	previous_wars = content.split("previous_war={")[0].split("active_war={")[1:] + content.split("previous_war={")[1:]
 	compile_wars = compile("name=\"(?P<name>.+?)\"\n\thistory", DOTALL)
-	compile_participants = compile(
-		"value=(?P<value>.+?)\n\t\ttag=\"(?P<tag>.+?)\".+?members={\n\t\t\t\t(?P<losses>[^\n]+)", DOTALL)
-	war_list = []
-	par_list = []
+	compile_participants = compile("value=(?P<participation_score>.+?)\n\t\ttag=\"(?P<nation_tag>.+?)\".+?members={\n\t\t\t\t(?P<losses>[^\n]+)", DOTALL)
 	for war in previous_wars:
 		result = compile_wars.search(war)
 		if result:
-			war_list.append(result.group(1))
+			w = War(name = result.group(1), savegame_id = savegame.id)
+			db.session.add(w)
+			db.session.commit()
 		participants = war.split("participants={")[1:]
 		if participants:
-			pars = []
 			for par in participants:
-				result = compile_participants.search(par)
-				pars.append(list(result.groups()))
-				pars[-1][-1] = [int(p) for p in pars[-1][-1].split()]
-				pars[-1][0] = float(pars[-1][0])
-				pars[-1].append(pars[-1][2][0] + pars[-1][2][1])  # Inf
-				pars[-1].append(pars[-1][2][3] + pars[-1][2][4])  # Cav
-				pars[-1].append(pars[-1][2][6] + pars[-1][2][7])  # Art
-				pars[-1].append(pars[-1][2][0] + pars[-1][2][3] + pars[-1][2][6])  # Combat
-				pars[-1].append(pars[-1][2][1] + pars[-1][2][4] + pars[-1][2][7])  # Attrition
-				pars[-1].append(
-					pars[-1][2][0] + pars[-1][2][3] + pars[-1][2][6] + pars[-1][2][1] + pars[-1][2][4] + pars[-1][2][
-						7])  # Total
-				del pars[-1][2]
-				pars[-1].insert(0, pars[-1].pop(1))
+				result = compile_participants.search(par).groupdict()
 
-			par_list.append(pars)
-		else:
-			if result:
-				del war_list[-1]
-	for war in par_list:
-		total_losses = ["Total", 0, 0, 0, 0, 0, 0, 0]
-		for country in war:
-			for i in range(7):
-				total_losses[i + 1] += country[i + 1]
-		war.append(total_losses)
-	return dict(zip(war_list, par_list)), war_list
+				result["war_id"] = w.id
+				result["participation_score"] = float(result["participation_score"])
+				result["losses"] = [int(p) for p in result["losses"].split()]
+
+				result["infantry"] = result["losses"][0] + result["losses"][1]
+				w.infantry += result["infantry"]
+
+				result["cavalry"] = result["losses"][3] + result["losses"][4]
+				w.cavalry += result["cavalry"]
+
+				result["artillery"] = result["losses"][6] + result["losses"][7]
+				w.artillery += result["artillery"]
+
+				result["combat"] = result["losses"][0] + result["losses"][3] + result["losses"][6]
+				w.combat += result["combat"]
+
+				result["attrition"] = result["losses"][1] + result["losses"][4] + result["losses"][7]
+				w.attrition += result["attrition"]
+
+				result["total"] = result["combat"] + result["attrition"]
+				w.total += result["total"]
+
+				del result["losses"]
+				war_participant = WarParticipant(**result)
+				db.session.add(war_participant)
+				w.participants.append(war_participant)
+	db.session.commit()
 
 
-def parse_battles(content, war_list, pbar, plabel):
-	step = 0
-	pbar.reset()
-	plabel.setText("Loading Battle Data...")
-
-	war_list = []
+def parse_battles(content, savegame):
 	compile_wars = compile("name=\"(?P<name>.+?)\"\n\thistory", DOTALL)
 
 	battles = content.split("\ncombat={")[1]
@@ -238,40 +185,30 @@ def parse_battles(content, war_list, pbar, plabel):
 	active_wars = active_wars.split("active_war={")[1:]
 	total_wars = active_wars + previous_wars
 
+	battle_list = battles.split("battle={")
+	battle_regex = compile("""name=\"(?P<province>[^\n]+)\".+?result=(?P<result>[^\n]+).+?
+				   attacker=[{](?P<attacker>[^}]+).+?defender=[{](?P<defender>[^}]+).+?
+				   """, DOTALL)
+	category_regex = lambda string: compile("""cavalry=(?P<{0}_cav>\d+).+?artillery=(?P<{0}_art>\d+).+?
+						infantry=(?P<{0}_inf>\d+).+?losses=(?P<{0}_losses>\d+).+?
+						country=\"(?P<{0}_tag>[A-Z0-9]{3})\".+?commander=\"(?P<{0}_leader>.+?)\"
+					 """.format(string), DOTALL)
+
+	date_list = [datetime.date([int(x) for x in battle_list.pop(0).split("\n")[-2].split("={")[0]])]
+
 	for war in total_wars:
-		battle = war.split("battle={")[1:]
+		battle_list = war.split("battle={")[1:]
 		for b in battle:
 			war_list.append(compile_wars.search(war).group(1))
 
-	battle_list = battles.split("battle={")
-	first_year = battle_list.pop(0).split("\n")[-2].split("={")[0].split()
-	battle_regex = "name=\"(?P<province>[^\n]+)\".+?result=(?P<result>[^\n]+).+?" \
-				   "attacker=[{](?P<attacker>[^}]+).+?defender=[{](?P<defender>[^}]+).+?"
-	battle_x = compile(battle_regex, DOTALL)
 
-	result_list = []
 	for battle, i in zip(battle_list, range(len(battle_list))):
-		result = battle_x.findall(battle)
-		result = list(result[0])
-		last_line = battle.split("\n")[-2].split("={")[0].split()
-		commander = result[2].split("commander=")[1].split("\"")[1]
-		result[2] = result[2].split("commander=")[0]
-		result[2] = result[2].split()
-		result[2].append("commander={0}".format(commander))
-		commander = result[3].split("commander=")[1].split("\"")[1]
-		result[3] = result[3].split("commander=")[0]
-		result[3] = result[3].split()
-		result[3].append("commander={0}".format(commander))
-		result.append(last_line)
-		result_list.append(result)
-		if i == 0:
-			result_list[i].insert(-1, first_year)
-		else:
-			result_list[i].insert(-1, result_list[i - 1].pop(-1))
-		if (i + 1) == len(battle_list):
-			del result_list[i][-1]
-		step += 1000 / len(battle_list)
-		pbar.setValue(step)
+		result = battle_regex.search(battle).groupdict()
+		result["date"] = date_list[-1]
+		result += category_regex("attacker").search(result["attacker"])
+		result += category_regex("defender").search(result["defender"])
+
+		date_list.append(datetime.date([int(x) for x in battle.split("\n")[-2].split("={")[0]]))
 	navy_battle_list = []
 	army_battle_list = []
 	for battle, i in zip(result_list, range(len(result_list))):
@@ -344,10 +281,8 @@ def parse_battles(content, war_list, pbar, plabel):
 	filtered_army_battle_list = [battle for battle in army_battle_list if battle[17] >= 10000]
 	filtered_navy_battle_list = [battle for battle in navy_battle_list if battle[19] >= 10]
 
-	return filtered_army_battle_list, filtered_navy_battle_list
 
-
-def parse_incomestat(content, formable_nations_dict, pbar, plabel, all_nations_bool, stats_dict, playertags):
+def parse_incomestat(content, formable_nations_dict, stats_dict, playertags):
 	step = 0
 	pbar.reset()
 	plabel.setText("Loading Income Data...")
@@ -378,7 +313,7 @@ def parse_incomestat(content, formable_nations_dict, pbar, plabel, all_nations_b
 	return income_dict
 
 
-def parse_trade(content, pbar, plabel):
+def parse_trade(content):
 	trade_nodes = content.split("trade={")[1].split("tradegoods_total")[0].split("\n\tnode={")[1:]
 	trade_regex = "definitions=\"(?P<name>[^\n]+)\".+?local_value=(?P<local>[^\n]+).+?total=(?P<total_power>[^\n]+)"
 	trade_regex2 = "top_power={\n\t\t\t\"(?P<power_countries>[^}]+)\"\n\t\t.+?top_power_values={\n\t\t\t(?P<power_values>[^\n]+)"
@@ -492,15 +427,12 @@ def compile_color(info, tag, color_dict):
 		color_dict[stats["country"]] = hex_color
 
 
-def compile_subjects(info, tag, subject_dict, trade_port_dict, old_version_flag=False):
+def compile_subjects(info, tag, subject_dict, trade_port_dict):
 	compile_subjects = compile("\n\t\tsubjects={([^}]+)}")
 	compile_trade_port = compile("trade_port=(.+)")
 	result = compile_subjects.search(info)
 	if result:
-		if old_version_flag:
-			subject_dict[tag] = [country.split("\"")[1] for country in result.group(1).split()]
-		else:
-			subject_dict[tag] = [country for country in result.group(1).split()]
+		subject_dict[tag] = [country for country in result.group(1).split()]
 	else:
 		subject_dict[tag] = []
 	trade_port_dict[tag] = int(compile_trade_port.search(info).group(1))
@@ -530,7 +462,7 @@ def compile_points_spent(info, tag, stats_dict):
 		stats_dict[tag]["points_spent"] = [adm_points_dict, dip_points_dict, mil_points_dict, total_points_dict]
 
 
-def parse_countries(content, playertags, all_nations_bool, pbar, plabel):
+def parse_countries(content, playertags):
 	step = 0
 	pbar.reset()
 	plabel.setText("Loading Country Data...")
@@ -578,6 +510,7 @@ def compile_monarchs(tag, country, monarch_list, monarch_id):
 		result = [tag] + list(result.groups()) + [sum(temp)]
 		monarch_list.append(result)
 
+
 def parse_history(content, stats_dict):
 	countries = split("\n\t([A-Z0-9]{3})", content.split("\ncountries={")[1].split('active_advisors')[0])
 	tag_list, info_list = countries[1:-1:2], countries[2:-1:2]
@@ -596,18 +529,20 @@ def parse_history(content, stats_dict):
 	return monarch_list
 
 def parse(savegame):
-	with open(savegame.file, 'r', encoding = 'windows-1252') as sg:
+	with open(savegame.file, 'r', encoding = 'cp1252') as sg:
 		content = sg.read()
 		provinces = content.split("\nprovinces={")[1].split("countries={")[0]
-		savegame.year = findall("date=(?P<year>\d{4})", content)[0]
+		savegame.year = int(search("date=(?P<year>\d{4})", content).group(1))
 		total_trade_goods = list(findall("tradegoods_total_produced={\n(.+)", content)[0].split())
+		i = 0
 		for value in total_trade_goods:
-			savegame.total_trade_goods
-		print(total_trade_goods)
+			tg = TotalGoodsProduced(savegame_id = savegame.id, trade_good_id = i, amount = value)
+			db.session.add(tg)
+			i += 1
 
-		province_stats_list = parse_provinces(provinces)
-		war_dict, war_list = parse_wars(content)
-		army_battle_list, navy_battle_list = parse_battles(content, war_list)
+		parse_provinces(provinces)
+		parse_wars(content, savegame)
+		parse_battles(content, savegame)
 		stats_dict, sorted_tag_list, subject_dict, color_dict, \
 		trade_port_dict, tech_dict = parse_countries(content, playertags)
 		income_dict = parse_incomestat(content, formable_nations_dict, stats_dict, playertags)

@@ -1,4 +1,4 @@
-# -*- coding: windows-1252 -*-
+# -*- coding: utf-8 -*-
 """
 Created on Wed Dec 25 02:52:26 2019
 

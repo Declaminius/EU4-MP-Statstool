@@ -25,7 +25,7 @@ with open(filename, "r") as sg:
 	b_results = comp.findall(new_land_area)
 	b_list = []
 	for b in b_results:
-		b_list.append([int(c) for c in b.split()])
+		b_list.append(list(set([int(c) for c in b.split()])))
 
 
 with open(savefile, "w") as sg:
