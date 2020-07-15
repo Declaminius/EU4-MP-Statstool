@@ -56,7 +56,6 @@ def setup(sg_id1,sg_id2):
         return render_template("setup.html", form = form, playertags = playertags,\
                 sg_id1 = sg_id1, sg_id2 = sg_id2)
     if request.method == "POST":
-        print("juhu")
         return redirect(url_for("main", sg_id1 = sg_id1, sg_id2 = sg_id2))
 
 @app.route("/setup/new_nation/<int:sg_id1>/<int:sg_id2>", methods = ["GET", "POST"])

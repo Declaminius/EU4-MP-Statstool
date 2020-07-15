@@ -19,16 +19,6 @@ savegame_player_nations = db.Table('savegame_player_nations',
     db.Column('nation_tag', db.String(3), db.ForeignKey('nation.tag'))
 )
 
-army_battle_province = db.Table('army_battle_province',
-    db.Column('battle_id', db.Integer, db.ForeignKey('army_battle.id')),
-    db.Column('province_id', db.Integer, db.ForeignKey('province.id'))
-)
-
-navy_battle_province = db.Table('navy_battle_province',
-    db.Column('battle_id', db.Integer, db.ForeignKey('navy_battle.id')),
-    db.Column('province_id', db.Integer, db.ForeignKey('province.id'))
-)
-
 war_attacker = db.Table('war_attacker',
     db.Column('war_id', db.Integer, db.ForeignKey('war.id')),
     db.Column('attacker_tag', db.String(3), db.ForeignKey('nation.tag'))
@@ -68,14 +58,12 @@ class NationSavegameData(db.Model):
     income = db.Column(db.Float, default = 0)
     manpower = db.Column(db.Integer, default = 0)
     max_manpower = db.Column(db.Integer, default = 0)
-    total_income = db.Column(db.Integer, default = 0)
     adm_tech = db.Column(db.Integer, default = 3)
     dip_tech = db.Column(db.Integer, default = 3)
     mil_tech = db.Column(db.Integer, default = 3)
     number_of_ideas = db.Column(db.Integer, default = 0)
     institution_penalty = db.Column(db.Float, default = 1)
     innovativeness = db.Column(db.Float, default = 0)
-    score = db.Column(db.Float, default = 0)
 
     savegame = db.relationship("Savegame", backref="nation_data")
     nation = db.relationship("Nation", backref="savegame_data")
@@ -105,7 +93,7 @@ class NationSavegameIncomePerYear(db.Model):
     __tablename__ = 'nation_savegame_income_per_year'
     nation_tag = db.Column(db.String(3), db.ForeignKey('nation.tag'), primary_key = True)
     savegame_id = db.Column(db.Integer, db.ForeignKey('savegame.id'), primary_key = True)
-    year = db.Column(db.Integer, db.ForeignKey('year.year'), primary_key = True)
+    year = db.Column(db.Integer, primary_key = True)
     amount = db.Column(db.Integer, default = 0)
 
     savegame = db.relationship("Savegame", backref="nation_income_year")
@@ -182,67 +170,55 @@ class TotalGoodsProduced(db.Model):
     savegame = db.relationship("Savegame", backref="total_trade_goods")
     trade_good = db.relationship("TradeGood", backref="total_trade_goods")
 
-class Year(db.Model):
-    __tablename__ = 'year'
-    year = db.Column(db.Integer, primary_key = True)
-
 class ArmyBattle(db.Model):
     __tablename__ = 'army_battle'
     id = db.Column(db.Integer, primary_key = True)
     savegame_id = db.Column(db.Integer, db.ForeignKey('savegame.id'))
-
+    war_id = db.Column(db.Integer, db.ForeignKey('war.id'))
     date = db.Column(db.Date, nullable = False)
+    result = db.Column(db.String)
 
-    attacker_tag = db.Column(db.String, nullable = False)
-    attacker_inf = db.Column(db.Integer)
-    attacker_cav = db.Column(db.Integer)
-    attacker_art = db.Column(db.Integer)
-    attacker_total = db.Column(db.Integer)
+    attacker_country = db.Column(db.String, db.ForeignKey('nation.tag'))
+    attacker_infantry = db.Column(db.Integer)
+    attacker_cavalry = db.Column(db.Integer)
+    attacker_artillery = db.Column(db.Integer)
     attacker_losses = db.Column(db.Integer)
-    attacker_leader = db.Column(db.String, default = "")
+    attacker_commander = db.Column(db.String, default = "")
 
-    defender_tag = db.Column(db.String, nullable = False)
-    defender_inf = db.Column(db.Integer)
-    defender_cav = db.Column(db.Integer)
-    defender_art = db.Column(db.Integer)
-    defender_total = db.Column(db.Integer)
+    defender_country = db.Column(db.String, db.ForeignKey('nation.tag'))
+    defender_infantry = db.Column(db.Integer)
+    defender_cavalry = db.Column(db.Integer)
+    defender_artillery = db.Column(db.Integer)
     defender_losses = db.Column(db.Integer)
-    defender_leader = db.Column(db.String, default = "")
+    defender_commander = db.Column(db.String, default = "")
 
-    war = db.Column(db.String, nullable = False)
-    total_units = db.Column(db.Integer)
-    total_losses = db.Column(db.Integer)
-
-    province = db.relationship("Province", secondary = army_battle_province)
+    province = db.Column(db.String)
 
 class NavyBattle(db.Model):
     __tablename__ = 'navy_battle'
     id = db.Column(db.Integer, primary_key = True)
     savegame_id = db.Column(db.Integer, db.ForeignKey('savegame.id'))
-
+    war_id = db.Column(db.Integer, db.ForeignKey('war.id'))
     date = db.Column(db.Date, nullable = False)
+    result = db.Column(db.String)
 
-    attacker = db.Column(db.String, nullable = False)
-    attacker_heavy = db.Column(db.Integer)
-    attacker_light = db.Column(db.Integer)
+    attacker_country = db.Column(db.String, db.ForeignKey('nation.tag'))
+    attacker_heavy_ship = db.Column(db.Integer)
+    attacker_light_ship = db.Column(db.Integer)
     attacker_galley = db.Column(db.Integer)
     attacker_transport = db.Column(db.Integer)
     attacker_losses = db.Column(db.Integer)
-    attacker_leader = db.Column(db.String, default = "")
+    attacker_commander = db.Column(db.String, default = "")
 
-    defender = db.Column(db.String, nullable = False)
-    defender_heavy = db.Column(db.Integer)
-    defender_light = db.Column(db.Integer)
+    defender_country = db.Column(db.String, db.ForeignKey('nation.tag'))
+    defender_heavy_ship = db.Column(db.Integer)
+    defender_light_ship = db.Column(db.Integer)
     defender_galley = db.Column(db.Integer)
     defender_transport = db.Column(db.Integer)
     defender_losses = db.Column(db.Integer)
-    defender_leader = db.Column(db.String, default = "")
+    defender_commander = db.Column(db.String, default = "")
 
-    war = db.Column(db.String, nullable = False)
-    total_units = db.Column(db.Integer)
-    total_losses = db.Column(db.Integer)
-
-    province = db.relationship("Province", secondary = navy_battle_province)
+    province = db.Column(db.String)
 
 class Province(db.Model):
     __tablename__ = "province"
@@ -274,7 +250,8 @@ class War(db.Model):
     __tablename__ = "war"
     id = db.Column(db.Integer, primary_key = True)
     savegame_id = db.Column(db.Integer, db.ForeignKey('savegame.id'))
-    name = db.Column(db.String)
+    name = db.Column(db.String, default = False)
+    ongoing = db.Column(db.Boolean)
 
     infantry = db.Column(db.Integer, default = 0)
     cavalry = db.Column(db.Integer, default = 0)
@@ -284,6 +261,8 @@ class War(db.Model):
     total = db.Column(db.Integer, default = 0)
 
     participants = db.relationship("WarParticipant")
+    army_battles = db.relationship("ArmyBattle")
+    navy_battles = db.relationship("NavyBattle")
 
 class WarParticipant(db.Model):
     __tablename__ = "war_participant"
@@ -298,8 +277,15 @@ class WarParticipant(db.Model):
     combat = db.Column(db.Integer)
     total = db.Column(db.Integer)
 
-
 class Monarch(db.Model):
     __tablename__ = "monarch"
     id = db.Column(db.Integer, primary_key = True)
+    nation_tag = db.Column(db.String(3), db.ForeignKey("nation.tag"))
+    savegame_id = db.Column(db.Integer, db.ForeignKey("savegame.id"))
+
+    name = db.Column(db.String)
+    adm = db.Column(db.Integer)
+    dip = db.Column(db.Integer)
+    mil = db.Column(db.Integer)
+
     #TODO
