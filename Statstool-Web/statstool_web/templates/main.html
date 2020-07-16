@@ -1,4 +1,7 @@
 {% extends "layout.html" %}
 {% block content %}
-<h1> Hier könnte ihre Statistik stehen! </h1>
+<div>
+  <a class="btn btn-secondary btn mt-1 mb-1"
+  href = "{{url_for('overview_table', sg_id= sg_id2)}}">Overview Table</a>
+</div>
 {% endblock content %}
