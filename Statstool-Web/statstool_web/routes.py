@@ -7,7 +7,6 @@ from werkzeug.utils import secure_filename
 import os
 import secrets
 from pathlib import Path
-from flask_table import Table, Col
 
 
 @app.route("/", methods = ["GET", "POST"])
@@ -106,32 +105,6 @@ def main(sg_id1,sg_id2):
 
 @app.route("/overview_table/<int:sg_id>", methods = ["GET", "POST"])
 def overview_table(sg_id):
-    class OverviewTable(Table):
-        name = Col('Name')
-        description = Col('Description')
-        allow_sort = True
-
-        def sort_url(self, col_key, reverse=False):
-            if reverse:
-                direction =  'desc'
-            else:
-                direction = 'asc'
-            return url_for('index', sort=col_key, direction=direction)
-
-    class Item(object):
-        def __init__(self, name, description):
-            self.name = name
-            self.description = description
-
-    # Or, more likely, load items from your database with something like
-    items = ItemModel.query.all()
-
-    # Populate the table
-    table = ItemTable(items)
-
-    # Print the html
-    print(table.__html__())
-    # or just {{ table }} from within a Jinja template
     nation_data = [NationSavegameData.query.filter_by(nation_tag = nation.tag, savegame_id = sg_id).first()\
                     for nation in Savegame.query.get(sg_id).player_nations]
     columns = NationSavegameData.__table__.columns.keys()

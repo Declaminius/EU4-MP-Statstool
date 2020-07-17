@@ -49,7 +49,7 @@ def edit_parse(filename):
 		in order to enable dynamic nation selection.
 		Returns list of Player-Nations-Tag and list of all real nations tag in alphabetical order. """
 
-	with open(filename, 'r', encoding = 'utf-8') as sg:
+	with open(filename, 'r', encoding = 'cp1252') as sg:
 		content = sg.read()
 		localisation_dict = parse_paradox_files("files/tags.txt")
 		compile_player = compile("was_player=yes")
@@ -73,7 +73,7 @@ def edit_parse(filename):
 def parse_paradox_files(filename):
 	"""	 Reads data about areas, regions and superregion from
 			another file, which contains the already parsed input. """
-	with open(filename, "r", encoding = 'utf-8') as sg:
+	with open(filename, "r", encoding = 'cp1252') as sg:
 		data = eval(sg.read())
 	return data
 
@@ -357,26 +357,44 @@ def parse_incomestat(content, savegame_list, formable_nations_dict, pbar, plabel
 	country_list = split('\n\tledger_data=[{]\n\t\tname="([A-Z0-9]{3})"\n\t\tdata=[{]\n\t\t\t(.+)\n\t\t[}]\n\t[}]',
 						 income_stats)
 	income_tag_list, income_info_list = country_list[1:-1:3], country_list[2:-1:3]
-	income_x_data = []
-	income_y_data = []
 	income_dict = {}
-	for tag, info in zip(income_tag_list, income_info_list):
-		if (tag in stats_dict.keys()) or all_nations_bool:
-			income_info_split = info.split()
-			income_x_data_set = []
-			income_y_data_set = []
-			for info in income_info_split:
-				info = split("=", info)
-				income_x_data_set.append(int(info[0]))
-				income_y_data_set.append(int(info[1]))
-			income_x_data.append(income_x_data_set)
-			income_y_data.append(income_y_data_set)
-			income_dict[tag] = [income_x_data_set, income_y_data_set]
-			if tag in stats_dict.keys():
-				stats_dict[tag]["total_income"] = sum(income_y_data_set)
+	total_income_dict = {}
+	for tag in formable_nations_dict.values():
+		if tag in income_tag_list:
+			values = set_income_data(income_dict, stats_dict, tag, income_tag_list, income_info_list)
+			total_income_dict[tag] = sum(values)
+
+	for tag in stats_dict.keys():
+		if tag in income_tag_list:
+			values = set_income_data(income_dict, stats_dict, tag, income_tag_list, income_info_list)
+			stats_dict[tag]["total_income"] = sum(values)
+			if tag in formable_nations_dict.keys():
+				if formable_nations_dict[tag] in total_income_dict.keys():
+					stats_dict[tag]["total_income"] += total_income_dict[formable_nations_dict[tag]]
+		elif tag in formable_nations_dict.keys():
+			if formable_nations_dict[tag] in total_income_dict.keys():
+				stats_dict[tag]["total_income"] = total_income_dict[formable_nations_dict[tag]]
+			else:
+				stats_dict[tag]["total_income"] = 0
+		else:
+			stats_dict[tag]["total_income"] = 0
+
 		step += 1000 / len(income_info_list)
 		pbar.setValue(step)
 	return income_dict
+
+def set_income_data(income_dict, stats_dict, tag, income_tag_list, income_info_list):
+	i = income_tag_list.index(tag)
+	info = income_info_list[i]
+	income_info_split = info.split()
+	years = []
+	values = []
+	for info in income_info_split:
+		info = split("=", info)
+		years.append(int(info[0]))
+		values.append(int(info[1]))
+	income_dict[tag] = [years, values]
+	return values
 
 
 def parse_trade(content, pbar, plabel):
@@ -542,12 +560,12 @@ def parse_countries(content, playertags, all_nations_bool, pbar, plabel):
 	stats_dict, color_dict, subject_dict, trade_port_dict, tech_dict = {}, {}, {}, {}, {}
 
 	for info, tag in zip(info_list, tag_list):
+		compile_color(info, tag, color_dict)
 		if (tag in playertags) or all_nations_bool:
 			compile_main(info, tag, stats_dict)
 		if tag in stats_dict.keys():
 			compile_techcost(info, tag, tech_dict)
 			compile_player = compile("was_player=yes")
-			compile_color(info, tag, color_dict)
 			compile_subjects(info, tag, subject_dict, trade_port_dict)
 			compile_points_spent(info, tag, stats_dict)
 		step += 1000 / len(tag_list)
@@ -565,8 +583,7 @@ def cleanup_data(stats_dict, tech_dict):
 				pass
 		stats_dict[tag]["manpower"] = int(1000 * stats_dict[tag]["manpower"])
 		stats_dict[tag]["max_manpower"] = int(1000 * stats_dict[tag]["max_manpower"])
-		stats_dict[tag]["great_power_score"] = \
-			round(int(stats_dict[tag]["great_power_score"]) * (tech_dict[tag]["institution_penalty"]))
+		stats_dict[tag]["great_power_score"] = int(stats_dict[tag]["great_power_score"])
 
 
 def compile_monarchs(tag, country, monarch_list, monarch_id):
@@ -598,7 +615,7 @@ def parse_history(content, stats_dict):
 
 
 def parse(filename, playertags, savegame_list, formable_nations_dict, all_nations_bool, pbar, plabel):
-	with open(filename, 'r', encoding = 'utf-8') as sg:
+	with open(filename, 'r', encoding = 'cp1252') as sg:
 		content = sg.read()
 		provinces = content.split("\nprovinces={")[1].split("countries={")[0]
 

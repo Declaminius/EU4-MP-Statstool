@@ -537,13 +537,13 @@ class ShowStats(Widgets.QWidget):
 		plt.subplots_adjust(right = 0.85)
 		a = 0
 		color_list = []
-		for tag in savegame.playertags:
+		for tag in savegame.income_dict.keys():
 			if tag in savegame.color_dict:
 				color_list.append(savegame.color_dict[tag])
 			else:
 				color_list.append("black")
 		markers = ["o","v","^","<",">","s","p","*","+","x","d","D","h","H"]
-		for tag, color in zip(savegame.playertags, color_list):
+		for tag, color in zip(savegame.income_dict.keys(), color_list):
 			marker = markers[a%len(markers)]
 			if tag in savegame.income_dict.keys():
 				if compare and (year := int(self.savegame_list[0].year)) in savegame.income_dict[tag][0]:
@@ -557,8 +557,7 @@ class ShowStats(Widgets.QWidget):
 		plt.grid(True, which="both")
 		plt.minorticks_on()
 		maxi = 0
-		for tag in savegame.playertags:
-			if tag in savegame.income_dict.keys():
+		for tag in savegame.income_dict.keys():
 				max_value = max(savegame.income_dict[tag][1])
 				if max_value > maxi:
 					maxi = max_value
