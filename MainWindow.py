@@ -419,6 +419,7 @@ class ShowStats(Widgets.QWidget):
 		ax1.set_xlabel("Nation")
 		ax1.tick_params(axis='both', which='major', labelsize=8)
 		ax2.tick_params(axis='both', which='major', labelsize=8)
+		ax2.ticklabel_format(useOffset=False, style='plain')
 
 		if savegame == self.savegame_list[2]:
 			savegame = self.savegame_list[1]

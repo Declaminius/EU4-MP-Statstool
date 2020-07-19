@@ -7,4 +7,4 @@ trade_goods_list = ['', 'Getreide', 'Wein', 'Wolle', 'Tuch', 'Fisch', 'Pelze', '
 					'Papier', 'Edelsteine', '', 'Unbekannt']
 old_nations_list = ["RVA", "PRO", "ANS", "NOV", "ORL", "DTT", "ZAZ"]
 new_nations_list = ["WES", "KOJ", "FKN", "RUS", "FRA", "HAN", "UKR"]
-remove_nations_list = ["HUN", "SPA", "MOS", "CRI"]
+remove_nations_list = ["HUN", "SPA", "MOS", "CRI", "SAX", "LON"]
