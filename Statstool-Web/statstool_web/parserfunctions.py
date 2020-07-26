@@ -72,7 +72,7 @@ def edit_parse(filename):
 	return playertag_list, sorted(real_nations_list)
 
 
-def parse_provinces(provinces):
+def parse_provinces(provinces, savegame):
 	""" First part of the main parser.
 		Parses all province-related information.
 		Takes only content from start till end of province information of the savegame.
@@ -100,34 +100,43 @@ def parse_provinces(provinces):
 	province_x4 = compile(province_regex4, DOTALL)
 	province_x5 = compile(province_regex5, DOTALL)
 
-	for province in province_list:
-		try:
-			result = province_x.search(province).groupdict()
-			result["development"] = result["base_tax"] + result["base_production"] + result["base_manpower"]
-			result["province_id"] = Province.query.filter_by(name = result["name"]).first().id
-			result["trade_good_id"] = TradeGood.query.filter_by(name = result["trade_goods"]).first().id
-			del result["name"], result["trade_goods"]
+	try:
+		for province in province_list:
+			try:
+				result = province_x.search(province).groupdict()
+				for cat in ("base_tax", "base_production", "base_manpower"):
+					result[cat] = int(result[cat])
+				result["development"] = result["base_tax"] + result["base_production"] + result["base_manpower"]
+				result["province_id"] = Province.query.filter_by(name = result["name"]).first().id
+				result["savegame_id"] = savegame.id
+				result["trade_good_id"] = TradeGood.query.filter_by(name = result["trade_goods"]).first().id
+				del result["name"], result["trade_goods"]
 
-			owner = province_x2.search(province)
-			if owner:
-				result["nation_tag"] =  owner.group(1)
+				owner = province_x2.search(province)
+				if owner:
+					result["nation_tag"] =  owner.group(1)
 
-			religion = province_x3.search(province)
-			if religion:
-				result["religion"] = religion.group(1)
+				religion = province_x3.search(province)
+				if religion:
+					result["religion"] = religion.group(1)
 
-			culture = province_x4.search(province)
-			if culture:
-				result["culture"] = culture.group(1)
+				culture = province_x4.search(province)
+				if culture:
+					result["culture"] = culture.group(1)
 
-			trade_power = province_x5.search(province)
-			if trade_power:
-				result["trade_power"] = float(trade_power.group(1))
+				trade_power = province_x5.search(province)
+				if trade_power:
+					result["trade_power"] = float(trade_power.group(1))
 
-			prov = NationSavegameProvinces(**result)
-		except AttributeError as e:
-			pass
-
+				prov = NationSavegameProvinces(**result)
+				db.session.add(prov)
+			except AttributeError as e:
+				pass
+			db.session.flush()
+	except IntegrityError:
+		db.session.rollback()
+	else:
+		db.session.commit()
 
 def parse_wars(content, savegame):
 	""" Second part of the main parser. Reads all relevant information about wars
@@ -432,19 +441,25 @@ def parse(savegame):
 		savegame.year = int(search("date=(?P<year>\d{4})", content).group(1))
 		total_trade_goods = list(findall("tradegoods_total_produced={\n(.+)", content)[0].split())
 		i = 0
-		for value in total_trade_goods:
-			tg = TotalGoodsProduced(savegame_id = savegame.id, trade_good_id = i, amount = value)
-			db.session.add(tg)
-			i += 1
 
-		parse_provinces(provinces)
-		print("Provinzen Done")
-		parse_wars(content, savegame)
-		print("Kriege Done")
-		parse_countries(content, savegame)
-		print("Länder Done")
-		parse_incomestat(content, savegame)
-		print("Einkommen-Stats Done")
-		#parse_trade(content)
+		try:
+			for value in total_trade_goods:
+				tg = TotalGoodsProduced(savegame_id = savegame.id, trade_good_id = i, amount = value)
+				db.session.add(tg)
+				i += 1
+			db.session.flush()
 
-	db.session.commit()
+			parse_provinces(provinces, savegame)
+			print("Provinzen Done")
+			parse_wars(content, savegame)
+			print("Kriege Done")
+			parse_countries(content, savegame)
+			print("Länder Done")
+			parse_incomestat(content, savegame)
+			print("Einkommen-Stats Done")
+			#parse_trade(content)
+			db.session.flush()
+		except IntegrityError:
+			db.session.rollback()
+		else:
+			db.session.commit()

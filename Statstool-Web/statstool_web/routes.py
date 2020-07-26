@@ -7,7 +7,7 @@ from werkzeug.utils import secure_filename
 import os
 import secrets
 from pathlib import Path
-
+from sqlalchemy.orm import load_only
 
 @app.route("/", methods = ["GET", "POST"])
 @app.route("/home", methods = ["GET", "POST"])
@@ -105,7 +105,16 @@ def main(sg_id1,sg_id2):
 
 @app.route("/overview_table/<int:sg_id>", methods = ["GET", "POST"])
 def overview_table(sg_id):
-    nation_data = [NationSavegameData.query.filter_by(nation_tag = nation.tag, savegame_id = sg_id).first()\
-                    for nation in Savegame.query.get(sg_id).player_nations]
-    columns = NationSavegameData.__table__.columns.keys()
-    return render_template("overview_table.html", sg_id = sg_id, data = nation_data, columns = columns)
+    random = secrets.token_hex(8) + ".json"
+    path = os.path.join(app.root_path, 'json', random)
+    columns = ["nation_tag", "adm_tech", "dip_tech", "mil_tech"]
+    nation_data = []
+    for nation in Savegame.query.get(sg_id).player_nations:
+        data = NationSavegameData.query.filter_by(nation_tag = nation.tag, \
+                savegame_id = sg_id).with_entities(*columns).first()._asdict()
+        nation_data.append(data)
+    return render_template("overview_table.html", data = nation_data, columns = columns)
+
+@app.route("/main/<int:sg_id>/test", methods = ["GET", "POST"])
+def test(sg_id):
+    return render_template("test.html")
