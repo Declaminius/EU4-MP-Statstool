@@ -3,6 +3,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 from statstool_web import db
 from statstool_web.models import *
+from sqlalchemy.exc import IntegrityError
 import datetime
 
 

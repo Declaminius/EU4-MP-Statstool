@@ -103,8 +103,8 @@ def main(sg_id1,sg_id2):
         db.session.commit()
     return render_template("main.html", sg_id1 = sg_id1, sg_id2 = sg_id2)
 
-@app.route("/overview_table/<int:sg_id>", methods = ["GET", "POST"])
-def overview_table(sg_id):
+@app.route("/overview_table/<int:sg_id1>/<int:sg_id2>", methods = ["GET", "POST"])
+def overview_table(sg_id1,sg_id2):
     random = secrets.token_hex(8) + ".json"
     path = os.path.join(app.root_path, 'json', random)
     columns = ["nation_tag", "adm_tech", "dip_tech", "mil_tech"]

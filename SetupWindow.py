@@ -10,7 +10,7 @@ import PyQt5.QtGui as Gui
 import PyQt5.QtCore as Core
 from parserfunctions import edit_parse
 from Savegame import Savegame
-from config import icon_dir
+from config import icon_dir, old_nations_list, new_nations_list
 
 class SetupWindow(Widgets.QMainWindow):
 	switch_window = Core.pyqtSignal()
@@ -18,6 +18,8 @@ class SetupWindow(Widgets.QMainWindow):
 	def __init__(self):
 		super().__init__()
 		self.savegame_list = [[],[]]
+		self.old_nations_list = old_nations_list
+		self.new_nations_list = new_nations_list
 		self.status = self.statusBar()
 		self.line1 = Widgets.QLineEdit()
 		self.line1.setReadOnly(True)
@@ -92,5 +94,5 @@ class SetupWindow(Widgets.QMainWindow):
 			self.FILEDIR = fileName
 
 	def parse(self):
-		self.playertags = sorted(list(set(self.savegame_list[0].playertags + self.savegame_list[1].playertags)))
+		self.playertags = sorted(list(set(self.savegame_list[0].playertags + self.savegame_list[1].playertags + self.old_nations_list)))
 		self.switch_window.emit()

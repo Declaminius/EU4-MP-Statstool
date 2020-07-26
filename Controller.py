@@ -68,8 +68,8 @@ class Controller:
 			self.parse_window.remove_button.setEnabled(False)
 
 	def show_configure_nations(self):
-		self.configure_window = ConfigureNationFormations(self.parse_window.savegame_list, self.parse_window.old_nations_list,
-										   self.parse_window.new_nations_list, self.parse_window.formable_nations_dict)
+		self.configure_window = ConfigureNationFormations(self.parse_window.savegame_list, self.setup_window.old_nations_list,
+										   self.setup_window.new_nations_list, self.parse_window.formable_nations_dict)
 		self.configure_window.set_nation_formations.connect(self.set_nation_formations)
 		self.configure_window.show()
 
