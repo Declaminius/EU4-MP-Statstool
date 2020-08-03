@@ -1,0 +1,32 @@
+{% extends "main_layout.html" %}
+{% block content2 %}
+<h1> To ensure that data between is mapped correctly between the savegames,
+  enter all nation formations that happened between the savegames below. </h1>
+<div class = "content-section">
+  <form method = "POST" action = "" enctype="multipart/form-data">
+    {{ form.hidden_tag() }}
+    <fieldset class = "form-group">
+      <div class = "form-group">
+        {{ form.old_nation.label}}
+        {{ form.old_nation}}
+        {{ form.new_nation.label}}
+        {{ form.new_nation}}
+      </div>
+    </fieldset>
+  <div class = "form-group">
+    <div class="col text-center">
+      {{ form.submit(class = "btn btn-outline-info")}}
+    </div>
+  </div>
+  </form>
+  <form class="form-inline">
+    {{ form.old_nation.label}}
+    {{ form.old_nation}}
+    {{ form.new_nation.label}}
+    {{ form.new_nation}}
+    <div class="col text-center">
+      {{ form.submit(class = "btn btn-outline-info")}}
+    </div>
+  </form>
+</div>
+{% endblock content2 %}

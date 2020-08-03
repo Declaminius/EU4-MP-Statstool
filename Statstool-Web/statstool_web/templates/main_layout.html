@@ -4,24 +4,24 @@
 <header class="site-header">
   <nav class="navbar navbar-expand-md navbar-dark bg-steel fixed-top">
     <div class="container">
-      <a class="navbar-brand mr-4" href="/">Decla's Stats-Tool</a>
+      <a class="navbar-brand mr-4" href="{{url_for('main', sg_id1 = sg_id1, sg_id2 = sg_id2)}}">Decla's Stats-Tool</a>
       <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarToggle" aria-controls="navbarToggle" aria-expanded="false" aria-label="Toggle navigation">
         <span class="navbar-toggler-icon"></span>
       </button>
       <div class="collapse navbar-collapse" id="navbarToggle">
         <div class="navbar-nav mr-auto">
           <a class="nav-item nav-link"
-          href = "{{url_for('overview_table', sg_id= sg_id2)}}">Overview</a>
+          href = "{{url_for('overview_table', sg_id1 = sg_id1, sg_id2 = sg_id2)}}">Overview</a>
           <a class="nav-item nav-link"
-          href = "{{url_for('test', sg_id= sg_id2)}}">Income</a>
+          href = "{{url_for('test', sg_id1 = sg_id1, sg_id2 = sg_id2)}}">Income</a>
           <a class="nav-item nav-link"
-          href = "{{url_for('test', sg_id= sg_id2)}}">Manpower</a>
+          href = "{{url_for('test', sg_id1 = sg_id1, sg_id2 = sg_id2)}}">Manpower</a>
           <a class="nav-item nav-link"
-          href = "{{url_for('test', sg_id= sg_id2)}}">Army Losses</a>
+          href = "{{url_for('test', sg_id1 = sg_id1, sg_id2 = sg_id2)}}">Army Losses</a>
           <a class="nav-item nav-link"
-          href = "{{url_for('test', sg_id= sg_id2)}}">Income Over Time</a>
+          href = "{{url_for('income_over_time', sg_id1 = sg_id1, sg_id2 = sg_id2)}}">Income Over Time</a>
           <a class="nav-item nav-link"
-          href = "{{url_for('test', sg_id= sg_id2)}}">Development</a>
+          href = "{{url_for('development', sg_id1 = sg_id1, sg_id2 = sg_id2)}}">Development</a>
         </div>
       </div>
     </div>

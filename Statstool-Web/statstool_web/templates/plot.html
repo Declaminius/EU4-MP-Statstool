@@ -1,0 +1,8 @@
+{% extends "main_layout.html" %}
+{% block content2 %}
+  {% for image_file in image_files %}
+    <div class="media">
+      <img class="img-fluid" src="{{ image_file }}">
+    </div>
+  {% endfor %}
+{% endblock content2 %}

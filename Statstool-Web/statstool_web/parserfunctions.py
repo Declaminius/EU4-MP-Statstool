@@ -5,6 +5,7 @@ from statstool_web import db
 from statstool_web.models import *
 from sqlalchemy.exc import IntegrityError
 import datetime
+from colour import Color
 
 
 def colormap(values, mode=0, output_range=1):
@@ -250,6 +251,9 @@ def compile_main(info, tag, savegame, main, great_power, tech_cost, tech):
 		nation_data["manpower"] = int(nation_data["manpower"].replace(".",""))
 		nation_data["max_manpower"] = int(nation_data["max_manpower"].replace(".",""))
 		nation_data["development"] = int(float(nation_data["development"]))
+		color = [int(x) for x in nation_data["color"].split()]
+		hex_color = Color("#{0:02x}{1:02x}{2:02x}".format(*color))
+		nation_data["color"] = hex_color
 
 		for float_column in ("effective_development","navy_strength","income"):
 			nation_data[float_column] = float(nation_data[float_column])
@@ -368,7 +372,7 @@ def parse_countries(content, savegame):
 	sorted_tag_list = sorted(tag_list)
 
 	main = compile("\n\t\tdevelopment=(?P<effective_development>\d+.\d+).+?" \
-				 "raw_development=(?P<development>\d+.\d+).+?" \
+				 "raw_development=(?P<development>\d+.\d+).+?country_color=[{]\n\t\t\t\t(?P<color>[^\n]+).+?" \
 				 "navy_strength=(?P<navy_strength>\d+.\d+).+?estimated_monthly_income=(?P<income>\d+.\d+).+?" \
 				 "manpower=(?P<manpower>\d+.\d+).+?max_manpower=(?P<max_manpower>\d+.\d+).+?" \
 				 "members=[{]\n\t\t\t\t(?P<losses>[^\n]+)", DOTALL)
@@ -385,6 +389,7 @@ def parse_countries(content, savegame):
 		compile_goods_produced(info, tag, savegame, trade_goods)
 		compile_points_spent(info, tag, savegame)
 		parse_history(info, tag, savegame, monarch_id, previous_monarchs_id)
+
 
 
 def parse_incomestat(content, savegame):
@@ -464,3 +469,4 @@ def parse(savegame):
 			db.session.rollback()
 		else:
 			db.session.commit()
+			savegame.parse_flag = True

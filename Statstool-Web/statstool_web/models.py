@@ -34,6 +34,7 @@ class Savegame(db.Model):
     id = db.Column(db.Integer, primary_key = True)
     year = db.Column(db.Integer, default = None)
     file = db.Column(db.String(120), nullable = False)
+    parse_flag = db.Column(db.Boolean, default = False, nullable = False)
     nations = db.relationship("Nation", secondary = savegame_nations)
     player_nations = db.relationship("Nation", secondary = savegame_player_nations)
     army_battles = db.relationship("ArmyBattle", backref = "savegame")
@@ -44,7 +45,6 @@ class Nation(db.Model):
     __tablename__ = 'nation'
     tag = db.Column(db.String(3), primary_key = True)
     name = db.Column(db.String)
-    color = db.Column(ColorType, default = Color('#ffffff'))
 
 class NationSavegameData(db.Model):
     __tablename__ = "nation_savegame_data"
@@ -64,6 +64,7 @@ class NationSavegameData(db.Model):
     number_of_ideas = db.Column(db.Integer, default = 0)
     institution_penalty = db.Column(db.Float, default = 1)
     innovativeness = db.Column(db.Float, default = 0)
+    color = db.Column(ColorType, default = Color('#ffffff'))
 
     savegame = db.relationship("Savegame", backref="nation_data")
     nation = db.relationship("Nation", backref="savegame_data")

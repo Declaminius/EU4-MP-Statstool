@@ -14,3 +14,8 @@ class TagSetupForm(FlaskForm):
 class NewNationForm(FlaskForm):
     select = SelectField("Add Nation")
     submit = SubmitField("Confirm")
+
+class NationFormationForm(FlaskForm):
+    old_nation = SelectField("Old Nation")
+    new_nation = SelectField("New Nation")
+    submit = SubmitField("Confirm")
