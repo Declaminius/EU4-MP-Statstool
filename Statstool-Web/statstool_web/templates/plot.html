@@ -1,5 +1,9 @@
 {% extends "main_layout.html" %}
 {% block content2 %}
+<div class = "col text-center">
+  <a class="btn btn-secondary btn mt-1 mb-1"
+  href = "{{url_for('reload_plot', sg_id1 = sg_id1, sg_id2 = sg_id2, image_files = image_files)}}">Reload Plot</a>
+</div>
   {% for image_file in image_files %}
     <div class="media">
       <img class="img-fluid" src="{{ image_file }}">

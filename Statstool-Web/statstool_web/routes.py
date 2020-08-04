@@ -10,6 +10,7 @@ from pathlib import Path
 from sqlalchemy.orm import load_only
 from sqlalchemy import asc, desc
 import matplotlib.pyplot as plt
+from sqlalchemy.exc import IntegrityError
 
 @app.route("/", methods = ["GET", "POST"])
 @app.route("/home", methods = ["GET", "POST"])
@@ -59,6 +60,18 @@ def setup(sg_id1,sg_id2):
         return render_template("setup.html", form = form, playertags = playertags,\
                 sg_id1 = sg_id1, sg_id2 = sg_id2)
     if request.method == "POST":
+        old_tag_list = [nation.tag for nation in Savegame.query.get(sg_id1).player_nations]
+        new_tag_list = [nation.tag for nation in Savegame.query.get(sg_id2).player_nations]
+        for tag in old_tag_list:
+            if tag in new_tag_list:
+                formation = NationFormation(old_savegame_id = sg_id1, new_savegame_id = sg_id2, old_nation_tag = tag, new_nation_tag = tag)
+                db.session.add(formation)
+        try:
+            db.session.flush()
+        except IntegrityError:
+            db.session.rollback()
+        else:
+            db.session.commit()
         return redirect(url_for("main", sg_id1 = sg_id1, sg_id2 = sg_id2))
 
 @app.route("/setup/new_nation/<int:sg_id1>/<int:sg_id2>", methods = ["GET", "POST"])
@@ -100,8 +113,20 @@ def remove_all(sg_id1,sg_id2):
 @app.route("/main/<int:sg_id1>/<int:sg_id2>", methods = ["GET", "POST"])
 def main(sg_id1,sg_id2):
     form = NationFormationForm()
-    for field,id in ((form.old_nation,sg_id1), (form.new_nation,sg_id2)):
-        tag_list = [nation.tag for nation in Savegame.query.get(id).player_nations]
+    if request.method == "POST":
+        formation = NationFormation(old_savegame_id = sg_id1, new_savegame_id = sg_id2, old_nation_tag = form.old_nation.data, new_nation_tag = form.new_nation.data)
+        db.session.add(formation)
+        try:
+            db.session.flush()
+        except IntegrityError:
+            db.session.rollback()
+        else:
+            db.session.commit()
+    old_matching_tags = [x.old_nation_tag for x in NationFormation.query.filter_by(old_savegame_id = sg_id1, new_savegame_id = sg_id2).all()]
+    new_matching_tags = [x.new_nation_tag for x in NationFormation.query.filter_by(old_savegame_id = sg_id1, new_savegame_id = sg_id2).all()]
+    old_tag_list = [nation.tag for nation in Savegame.query.get(sg_id1).player_nations if nation.tag not in old_matching_tags]
+    new_tag_list = [nation.tag for nation in Savegame.query.get(sg_id2).player_nations if nation.tag not in new_matching_tags]
+    for field,tag_list in ((form.old_nation,old_tag_list), (form.new_nation,new_tag_list)):
         field.choices = \
             sorted([(tag,app.config["LOCALISATION_DICT"][tag]) \
             if tag in app.config["LOCALISATION_DICT"].keys() else (tag,tag) \
@@ -110,7 +135,16 @@ def main(sg_id1,sg_id2):
         savegame = Savegame.query.get(id)
         if not savegame.parse_flag:
             parse(savegame)
-    return render_template("main.html", sg_id1 = sg_id1, sg_id2 = sg_id2, form = form)
+
+    nation_formations = [(x.old_nation_tag,x.new_nation_tag) for x in NationFormation.query.filter_by(old_savegame_id = sg_id1, new_savegame_id = sg_id2).all()]
+    return render_template("main.html", sg_id1 = sg_id1, sg_id2 = sg_id2, form = form, nation_formations = nation_formations)
+
+@app.route("/main/<int:sg_id1>/<int:sg_id2>/remove_nation_formation/<string:old>/<string:new>", methods = ["GET", "POST"])
+def remove_nation_formation(sg_id1,sg_id2,old,new):
+    formation = NationFormation.query.get((sg_id1,sg_id2,old,new))
+    db.session.delete(formation)
+    db.session.commit()
+    return redirect(url_for("main", sg_id1 = sg_id1, sg_id2 = sg_id2))
 
 @app.route("/main/<int:sg_id1>/<int:sg_id2>/overview_table", methods = ["GET", "POST"])
 def overview_table(sg_id1,sg_id2):
@@ -138,149 +172,148 @@ def test(sg_id1, sg_id2):
 
 @app.route("/main/<int:sg_id1>/<int:sg_id2>/development", methods = ["GET", "POST"])
 def development(sg_id1, sg_id2):
-    savegame2 = Savegame.query.get(sg_id2)
-    development_figure = plt.figure("Development - {0}".format(savegame2.year))
-
-    ax1 = plt.subplot2grid((2, 1), (0, 0))
-    ax2 = plt.subplot2grid((2, 1), (1, 0), sharey=ax1)
-
-    ax1.tick_params(axis='both', which='major', labelsize=8)
-    ax2.tick_params(axis='both', which='major', labelsize=8)
-
-    plt.subplots_adjust(hspace = 0.3)
-    development_figure.suptitle(savegame2.year, fontsize = 20)
-    #development_figure.set_size_inches(16, 8)
-
-    ax1.grid(True, axis="y")
-    ax1.minorticks_on()
-    ax1.set_title("Development")
-
-    ax2.grid(True, axis="y")
-    ax2.minorticks_on()
-    ax2.set_title("Effective Development")
-
-    tag_list = [nation.tag for nation in savegame2.player_nations]
-    data_list = NationSavegameData.query.filter(NationSavegameData.nation_tag.in_(tag_list),\
+    old_year = Savegame.query.get(sg_id1).year
+    new_year = Savegame.query.get(sg_id2).year
+    tag_list = [nation.tag for nation in Savegame.query.get(sg_id2).player_nations]
+    dev_list = NationSavegameData.query.filter(NationSavegameData.nation_tag.in_(tag_list),\
                 NationSavegameData.savegame_id == sg_id2).order_by(desc(NationSavegameData.development))
-
-    #color_list, delta_dev = delta("development", "delta_dev")
-
-    for data in data_list:
-        ax1.bar(data.nation_tag, data.development, color = str(data.color), edgecolor = "grey", linewidth = 1)
-
-    data_list = NationSavegameData.query.filter(NationSavegameData.nation_tag.in_(tag_list), \
+    eff_dev_list = NationSavegameData.query.filter(NationSavegameData.nation_tag.in_(tag_list),\
                 NationSavegameData.savegame_id == sg_id2).order_by(desc(NationSavegameData.effective_development))
-    for data in data_list:
-        ax2.bar(data.nation_tag, data.effective_development, color = str(data.color), edgecolor = "grey", linewidth = 1)
 
-    # if compare:
-    #     ax1.bar(range(len(delta_dev)), delta_dev, label = "Spieltag-Ende", color = color_list, edgecolor = "black", linewidth = 1)
-    #
-    #     color_list, delta_eff_dev_plot = self.delta("effective_development", "delta_eff_dev")
-    #     delta_eff_dev_table = [x for _,x in sorted(zip([savegame.stats_dict[tag]["development"]\
-    #     for tag in savegame.stats_dict.keys()],[savegame.stats_dict[tag]["delta_eff_dev"]\
-    #     for tag in savegame.stats_dict.keys()]), reverse = True)]
-    #    ax2.bar(range(len(delta_eff_dev_plot)), delta_eff_dev_plot, label = "Spieltag-Ende", color = color_list, edgecolor = "black", linewidth = 1)
+    category_plot(sg_id1,sg_id2,"development", tag_list, dev_list, NationSavegameData, "Development: {0}-{1}".format(old_year, new_year))
+    category_plot(sg_id1,sg_id2,"effective_development", tag_list, eff_dev_list, NationSavegameData, "Effective Development: {0}-{1}".format(old_year, new_year))
 
-    # colors = []
-    # cell_text = []
-    # cell_text.append(["" for x in dev])
-    # cell_text.append([int(value) for value,tag in dev])
-    # cell_text.append([int(x[0]) for x in eff_dev_table])
-    # if compare:
-    #     cell_text.append(["" for x in dev])
-    #     cell_text.append(["+{}".format(int(a)) if a > 0 else str(int(a)) for a in delta_dev])
-    #     cell_text.append(["+{}".format(int(a)) if a > 0 else str(int(a)) for a in delta_eff_dev_table])
-    #     cell_text.append(["" for x in dev])
-    #     cell_text.append([int(a[0] - b) for a,b in zip(dev, delta_dev)])
-    #     cell_text.append([int(a[0] - b) for a,b in zip(eff_dev_table, delta_eff_dev_table)])
-    #     rows = [savegame.year, "Development", "Effective Development", self.savegame_list[2].year, "Development", "Effective Development", self.savegame_list[0].year, "Development", "Effective Development"]
-    #     row_colors = ["white", "gold", "salmon", "white", "gold", "salmon", "white", "gold", "salmon"]
-    # else:
-    #     rows = [savegame.year, "Development", "Effective Development"]
-    #     row_colors = ["white", "gold", "salmon"]
-    # for data in cell_text:
-    #     try:
-    #         clean_data = [float(d) for d in data]
-    #         norm = plt.Normalize(min(clean_data), max(clean_data))
-    #         colors.append(plt.cm.RdYlGn(norm(clean_data)))
-    #     except:
-    #         colors.append(["white" for x in dev])
-    # col_colors = []
-    # for value,tag in dev:
-    #     if tag in savegame.color_dict:
-    #         col_colors.append(savegame.color_dict[tag])
-    #     else:
-    #         col_colors.append("black")
-    # cols = [x[1] for x in dev]
-    #
-    #
-    # tab = ax3.table(cellText=cell_text, cellColours=colors, rowLabels=rows, rowColours=row_colors,
-    #                 colColours=col_colors, colLabels=cols, loc='center')
-    # tab.auto_set_font_size(False)
-    # tab.set_fontsize(10)
-    # table_props = tab.properties()
-    # table_cells = table_props['children']
-    # for cell in table_cells:
-    #     cell.set_height(0.2)
-    # ax3.axis("Off")
-    random = secrets.token_hex(8) + ".png"
-    path = os.path.join(app.root_path, "static/plots", random)
-    plt.savefig(path, dpi=200)
-    image_file = url_for('static', filename='plots/' + random)
-    return render_template("plot.html", sg_id1 = sg_id1, sg_id2 = sg_id2, image_files = [image_file])
+    image_file1 = SavegamePlots.query.filter_by(old_savegame_id = sg_id1, new_savegame_id = sg_id2, type = "development").first().filename
+    image_file2 = SavegamePlots.query.filter_by(old_savegame_id = sg_id1, new_savegame_id = sg_id2, type = "effective_development").first().filename
+    return render_template("plot.html", sg_id1 = sg_id1, sg_id2 = sg_id2, image_files = [image_file1, image_file2])
 
+def category_plot(sg_id1, sg_id2, category, tag_list, data_list, model, title):
+    plot = SavegamePlots.query.filter_by(old_savegame_id = sg_id1, new_savegame_id = sg_id2, type = category).first()
+    if plot:
+        return
+    else:
+        figure = plt.figure(title)
+        figure.suptitle(title, fontsize = 20)
 
-def delta(self, category_str, delta_str):
-    for tag in self.savegame_list[1].stats_dict.keys():
-        if (tag in self.formable_nations_dict.keys()) and \
-        (self.formable_nations_dict[tag] in self.savegame_list[0].stats_dict.keys()):
-            self.savegame_list[1].stats_dict[tag][delta_str] = self.savegame_list[1].stats_dict[tag][category_str]\
-                - self.savegame_list[0].stats_dict[self.formable_nations_dict[tag]][category_str]
-        else:
-            self.savegame_list[1].stats_dict[tag][delta_str] =  self.savegame_list[1].stats_dict[tag][category_str]\
-            - self.savegame_list[0].stats_dict[tag][category_str]
-    values = [x for _,x in sorted(zip([self.savegame_list[1].stats_dict[tag][category_str]\
-    for tag in self.savegame_list[1].stats_dict.keys()],[self.savegame_list[1].stats_dict[tag][delta_str]\
-    for tag in self.savegame_list[1].stats_dict.keys()]), reverse = True)]
-    norm = plt.Normalize(min(values), max(values))
-    color_list = plt.cm.RdYlGn(norm(values))
-    return color_list, values
+        plt.tick_params(axis='both', which='major', labelsize=8)
+        plt.grid(True, axis="y")
+        plt.minorticks_on()
+
+        delta_dev_list = []
+        for data in data_list:
+            data = data.__dict__
+            plt.bar(data["nation_tag"], data[category], color = str(data["color"]), edgecolor = "grey", linewidth = 1)
+            if NationFormation.query.filter_by(old_savegame_id = sg_id1, new_savegame_id = sg_id2, new_nation_tag = data["nation_tag"]).first():
+                old_tag = NationFormation.query.filter_by(old_savegame_id = sg_id1, new_savegame_id = sg_id2, new_nation_tag = data["nation_tag"]).first().old_nation_tag
+                delta_dev_list.append([data["nation_tag"],data[category] - model.query.filter_by(nation_tag = old_tag, savegame_id = sg_id1).first().__dict__[category]])
+            else:
+                delta_dev_list.append([data["nation_tag"],0])
+
+        delta_values = [x[1] for x in delta_dev_list]
+        norm = plt.Normalize(min(delta_values), max(delta_values))
+        color_list = plt.cm.RdYlGn(norm(delta_values))
+
+        for i in range(len(delta_dev_list)):
+            plt.bar(delta_dev_list[i][0], delta_dev_list[i][1], color = color_list[i], edgecolor = "grey", linewidth = 1)
+
+        random = secrets.token_hex(8) + ".png"
+        path = os.path.join(app.root_path, "static/plots", random)
+        plt.savefig(path, dpi=200)
+        filename = url_for('static', filename='plots/' + random)
+        plot = SavegamePlots(filename = filename, type = category, old_savegame_id = sg_id1, new_savegame_id = sg_id2)
+        db.session.add(plot)
+        db.session.commit()
+
+@app.route("/main/<int:sg_id1>/<int:sg_id2>/income", methods = ["GET", "POST"])
+def income(sg_id1, sg_id2):
+    old_year = Savegame.query.get(sg_id1).year
+    new_year = Savegame.query.get(sg_id2).year
+    tag_list = [nation.tag for nation in Savegame.query.get(sg_id2).player_nations]
+    income_list = NationSavegameData.query.filter(NationSavegameData.nation_tag.in_(tag_list),\
+                NationSavegameData.savegame_id == sg_id2).order_by(desc(NationSavegameData.income))
+    category_plot(sg_id1,sg_id2,"income", tag_list, income_list, NationSavegameData, "Income: {0}-{1}".format(old_year, new_year))
+    image_file1 = SavegamePlots.query.filter_by(old_savegame_id = sg_id1, new_savegame_id = sg_id2, type = "income").first().filename
+    return render_template("plot.html", sg_id1 = sg_id1, sg_id2 = sg_id2, image_files = [image_file1])
+
+@app.route("/main/<int:sg_id1>/<int:sg_id2>/max_manpower", methods = ["GET", "POST"])
+def max_manpower(sg_id1, sg_id2):
+    old_year = Savegame.query.get(sg_id1).year
+    new_year = Savegame.query.get(sg_id2).year
+    tag_list = [nation.tag for nation in Savegame.query.get(sg_id2).player_nations]
+    manpower_list = NationSavegameData.query.filter(NationSavegameData.nation_tag.in_(tag_list),\
+                NationSavegameData.savegame_id == sg_id2).order_by(desc(NationSavegameData.max_manpower))
+    category_plot(sg_id1,sg_id2,"max_manpower", tag_list, manpower_list, NationSavegameData, "Maximum Manpower: {0}-{1}".format(old_year, new_year))
+    image_file1 = SavegamePlots.query.filter_by(old_savegame_id = sg_id1, new_savegame_id = sg_id2, type = "max_manpower").first().filename
+    return render_template("plot.html", sg_id1 = sg_id1, sg_id2 = sg_id2, image_files = [image_file1])
+
+@app.route("/main/<int:sg_id1>/<int:sg_id2>/army_losses", methods = ["GET", "POST"])
+def army_losses(sg_id1, sg_id2):
+    old_year = Savegame.query.get(sg_id1).year
+    new_year = Savegame.query.get(sg_id2).year
+    tag_list = [nation.tag for nation in Savegame.query.get(sg_id2).player_nations]
+    image_files = []
+    columns = ( NationSavegameArmyLosses.infantry,NationSavegameArmyLosses.cavalry,NationSavegameArmyLosses.artillery,\
+                NationSavegameArmyLosses.combat,NationSavegameArmyLosses.attrition,NationSavegameArmyLosses.total)
+    for category, column in zip(("Infantry", "Cavalry", "Artillery", "Combat", "Attrition", "Total"),columns):
+        army_losses_list = NationSavegameArmyLosses.query.filter(NationSavegameArmyLosses.nation_tag.in_(tag_list),\
+                    NationSavegameArmyLosses.savegame_id == sg_id2).order_by(desc(column))
+        category_plot(sg_id1, sg_id2, category.lower(), tag_list, army_losses_list, NationSavegameArmyLosses, "Army Losses - {0}: {1}-{2}".format(category, old_year, new_year))
+        image_files.append(SavegamePlots.query.filter_by(old_savegame_id = sg_id1, new_savegame_id = sg_id2, type = category.lower()).first().filename)
+    return render_template("plot.html", sg_id1 = sg_id1, sg_id2 = sg_id2, image_files = image_files)
 
 @app.route("/main/<int:sg_id1>/<int:sg_id2>/income_over_time", methods = ["GET", "POST"])
 def income_over_time(sg_id1, sg_id2):
     old_year = Savegame.query.get(sg_id1).year
     new_year = Savegame.query.get(sg_id2).year
-    image_file1 = income_plot(1445, new_year, sg_id2)
-    image_file2 = income_plot(old_year, new_year, sg_id2)
+    income_plot("income_over_time_total", 1445, new_year, sg_id1, sg_id2)
+    income_plot("income_over_time_latest", old_year, new_year, sg_id1, sg_id2)
+    image_file1 = SavegamePlots.query.filter_by(old_savegame_id = sg_id1, new_savegame_id = sg_id2, type = "income_over_time_total").first().filename
+    image_file2 = SavegamePlots.query.filter_by(old_savegame_id = sg_id1, new_savegame_id = sg_id2, type = "income_over_time_latest").first().filename
     return render_template("plot.html", sg_id1 = sg_id1, sg_id2 = sg_id2, image_files = [image_file1, image_file2])
 
-def income_plot(old_year, new_year, sg_id2):
-    income_plot = plt.figure("Income-Plot:{0}-{1}".format(old_year,new_year))
-    income_plot.suptitle("{0}-{1}".format(old_year,new_year), fontsize = 20)
-    plt.grid(True, which="both")
-    plt.minorticks_on()
-    plt.xlabel("Year")
-    plt.ylabel("Income Per Year")
-    a = 0
-    markers = ["o","v","^","<",">","s","p","*","+","x","d","D","h","H"]
-    nation_tags = [nation.tag for nation in Savegame.query.get(sg_id2).player_nations]
+def income_plot(category, old_year, new_year, sg_id1, sg_id2):
+    plot = SavegamePlots.query.filter_by(old_savegame_id = sg_id1, new_savegame_id = sg_id2, type = category).first()
+    if plot:
+        return
+    else:
+        income_plot = plt.figure("Income-Plot:{0}-{1}".format(old_year,new_year))
+        income_plot.suptitle("{0}-{1}".format(old_year,new_year), fontsize = 20)
+        plt.grid(True, which="both")
+        plt.minorticks_on()
+        plt.xlabel("Year")
+        plt.ylabel("Income Per Year")
+        a = 0
+        markers = ["o","v","^","<",">","s","p","*","+","x","d","D","h","H"]
+        nation_tags = [nation.tag for nation in Savegame.query.get(sg_id2).player_nations]
 
-    m = 0
-    for tag in nation_tags:
-        income_data = [(income.year,income.amount) for income in \
-                NationSavegameIncomePerYear.query.filter_by(nation_tag = tag, savegame_id = sg_id2).all() if income.year >= old_year]
-        color = NationSavegameData.query.get((tag, sg_id2)).color
-        marker = markers[a%len(markers)]
-        plt.plot([x[0] for x in income_data], [x[1] for x in income_data], label=tag, color= str(color), linewidth=1.5, marker = marker, markersize = 3)
-        if (n := max([y for (x,y) in income_data])) > m:
-            m = n
-        a += 1
+        m = 0
+        for tag in nation_tags:
+            income_data = [(income.year,income.amount) for income in \
+                    NationSavegameIncomePerYear.query.filter_by(nation_tag = tag, savegame_id = sg_id2).all() if income.year >= old_year]
+            color = NationSavegameData.query.get((tag, sg_id2)).color
+            marker = markers[a%len(markers)]
+            plt.plot([x[0] for x in income_data], [x[1] for x in income_data], label=tag, color= str(color), linewidth=1.5, marker = marker, markersize = 3)
+            if (n := max([y for (x,y) in income_data])) > m:
+                m = n
+            a += 1
 
-    plt.axis([old_year, new_year, 0, m * 1.05])
-    plt.legend(prop={'size': 8})
+        plt.axis([old_year, new_year, 0, m * 1.05])
+        plt.legend(prop={'size': 8})
 
-    random = secrets.token_hex(8) + ".png"
-    path = os.path.join(app.root_path, "static/plots", random)
-    plt.savefig(path, dpi=200)
-    return url_for('static', filename='plots/' + random)
+        random = secrets.token_hex(8) + ".png"
+        path = os.path.join(app.root_path, "static/plots", random)
+        plt.savefig(path, dpi=200)
+        filename = url_for('static', filename='plots/' + random)
+        plot = SavegamePlots(filename = filename, type = category, old_savegame_id = sg_id1, new_savegame_id = sg_id2)
+        db.session.add(plot)
+        db.session.commit()
+
+@app.route("/main/<int:sg_id1>/<int:sg_id2>/<image_files>/reload_plot", methods = ["GET", "POST"])
+def reload_plot(sg_id1, sg_id2, image_files):
+    old_year = Savegame.query.get(sg_id1).year
+    new_year = Savegame.query.get(sg_id2).year
+    income_plot("income_over_time_total", 1445, new_year, sg_id1, sg_id2)
+    income_plot("income_over_time_latest", old_year, new_year, sg_id1, sg_id2)
+    image_file1 = SavegamePlots.query.filter_by(old_savegame_id = sg_id1, new_savegame_id = sg_id2, type = "income_over_time_total").first().filename
+    image_file2 = SavegamePlots.query.filter_by(old_savegame_id = sg_id1, new_savegame_id = sg_id2, type = "income_over_time_latest").first().filename
+    return render_template("plot.html", sg_id1 = sg_id1, sg_id2 = sg_id2, image_files = [image_file1, image_file2])

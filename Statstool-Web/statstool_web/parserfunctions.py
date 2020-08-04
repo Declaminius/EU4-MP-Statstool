@@ -285,9 +285,10 @@ def compile_army_losses(info, tag, savegame, nation_data):
 	nation_losses["infantry"] = temp[0] + temp[1]
 	nation_losses["cavalry"] = temp[3] + temp[4]
 	nation_losses["artillery"] = temp[6] + temp[7]
-	nation_losses["attrition"] = temp[0] + temp[3] + temp[6]
-	nation_losses["combat"] = temp[1] + temp[4] + temp[7]
+	nation_losses["combat"] = temp[0] + temp[3] + temp[6]
+	nation_losses["attrition"] = temp[1] + temp[4] + temp[7]
 	nation_losses["total"] = sum(temp)
+	nation_losses["color"] = nation_data["color"]
 
 	nl = NationSavegameArmyLosses(**nation_losses)
 	db.session.add(nl)

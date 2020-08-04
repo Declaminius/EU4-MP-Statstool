@@ -9,6 +9,20 @@ class PointCategories(enum.Enum):
     mil = "mil"
     total = "total"
 
+class PlotTypes(enum.Enum):
+    income = "income"
+    max_manpower = "max_manpower"
+    income_over_time_total = "income_over_time_total"
+    income_over_time_latest = "income_over_time_latest"
+    infantry = "infantry"
+    cavalry = "cavalry"
+    artillery = "artillery"
+    combat = "combat"
+    attrition = "attrition"
+    total = "total"
+    development = "development"
+    effective_development = "effective_development"
+
 savegame_nations = db.Table('savegame_nations',
     db.Column('savegame_id', db.Integer, db.ForeignKey('savegame.id')),
     db.Column('nation_tag', db.String(3), db.ForeignKey('nation.tag'))
@@ -40,6 +54,20 @@ class Savegame(db.Model):
     army_battles = db.relationship("ArmyBattle", backref = "savegame")
     navy_battles = db.relationship("NavyBattle", backref = "savegame")
     wars = db.relationship("War", backref = "savegame")
+
+class NationFormation(db.Model):
+    __tablename__ = 'nation_formation'
+    old_savegame_id = db.Column(db.Integer, db.ForeignKey('savegame.id'), primary_key = True)
+    new_savegame_id = db.Column(db.Integer, db.ForeignKey('savegame.id'), primary_key = True)
+    old_nation_tag = db.Column(db.String(3), db.ForeignKey('nation.tag'), primary_key = True)
+    new_nation_tag = db.Column(db.String(3), db.ForeignKey('nation.tag'), primary_key = True)
+
+class SavegamePlots(db.Model):
+    __tablename__ = 'savegame_plots'
+    filename = db.Column(db.String, primary_key = True)
+    type = db.Column(db.Enum(PlotTypes), nullable = False)
+    old_savegame_id = db.Column(db.Integer, db.ForeignKey('savegame.id'))
+    new_savegame_id = db.Column(db.Integer, db.ForeignKey('savegame.id'))
 
 class Nation(db.Model):
     __tablename__ = 'nation'
@@ -111,6 +139,8 @@ class NationSavegameArmyLosses(db.Model):
     attrition = db.Column(db.Integer, default = 0)
     combat = db.Column(db.Integer, default = 0)
     total = db.Column(db.Integer, default = 0)
+
+    color = db.Column(ColorType, default = Color('#ffffff'))
 
     savegame = db.relationship("Savegame", backref="nation_army_losses")
     nation = db.relationship("Nation", backref="savegame_army_losses")
