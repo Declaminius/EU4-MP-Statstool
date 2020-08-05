@@ -1,12 +1,47 @@
 {% extends "main_layout.html" %}
 {% block content2 %}
-<div class = "col text-center">
-  <a class="btn btn-secondary btn mt-1 mb-1"
-  href = "{{url_for('reload_plot', sg_id1 = sg_id1, sg_id2 = sg_id2, image_files = image_files)}}">Reload Plot</a>
-</div>
+  <div class = "col text-center">
+    <a class="btn btn-secondary btn mt-1 mb-1"
+    href = "{{url_for('reload_plot', sg_id1 = sg_id1, sg_id2 = sg_id2, image_files = image_files)}}">Reload Plot</a>
+  </div>
   {% for image_file in image_files %}
     <div class="media">
-      <img class="img-fluid" src="{{ image_file }}">
+      <img class="img-fluid" src="{{ url_for('static', filename='plots/' + image_file) }}">
     </div>
   {% endfor %}
+  <div class = "container mb-3 mt-3">
+      <table class = "table table-striped table-bordered mydatatable" style = "width: 100%">
+          <thead>
+            <tr>
+              {% for label in header_labels%}
+                <th>{{label}}</th>
+              {% endfor %}
+            </tr>
+          </thead>
+          <tbody>
+            {% for row,tag,color in data%}
+              <tr>
+                <td bgcolor = "{{color}}">{{tag}}</td>
+                {% for name in columns %}
+                  <td>{{row[name]}}</td>
+                {% endfor %}
+              </tr>
+            {% endfor %}
+          </tbody>
+      </table>
+  </div>
+
+  <script src="https://code.jquery.com/jquery-3.3.1.slim.min.js" integrity="sha384-q8i/X+965DzO0rT7abK41JStQIAqVgRVzpbzo5smXKp4YfRvH+8abtTE1Pi6jizo" crossorigin="anonymous"></script>
+  <script src="https://cdn.datatables.net/1.10.19/js/jquery.dataTables.min.js"></script>
+  <script src="https://cdn.datatables.net/1.10.19/js/dataTables.bootstrap4.min.js"></script>
+  <script type="text/javascript">
+  $(document).ready(function() {
+    // Table Heat Map
+  $("table tbody td:nth-child(2)").colorize();
+  $("table tbody td:nth-child(3)").colorize();
+  $("table tbody td:nth-child(4)").colorize();
+  $("table tbody td:nth-child(5)").colorize();
+  });
+  $('.mydatatable').DataTable({paging: false, searching: false, "order": [[ 2, "desc" ]]});
+  </script>
 {% endblock content2 %}

@@ -469,5 +469,5 @@ def parse(savegame):
 		except IntegrityError:
 			db.session.rollback()
 		else:
-			db.session.commit()
 			savegame.parse_flag = True
+			db.session.commit()

@@ -1,5 +1,9 @@
 {% extends "main_layout.html" %}
 {% block content2 %}
+<div class = "col text-center">
+  <a class="btn btn-secondary btn mt-1 mb-1"
+  href = "{{url_for('reload_all_plots', sg_id1 = sg_id1, sg_id2 = sg_id2)}}">Reload All Plots</a>
+</div>
 <h1> To ensure that data between is mapped correctly between the savegames,
   enter all nation formations that happened between the savegames below. </h1>
 <div id = "table1">
@@ -39,20 +43,3 @@
   </table>
 </div>
 {% endblock content2 %}
-
-<form method = "POST" action = "" enctype="multipart/form-data">
-  {{ form.hidden_tag() }}
-  <fieldset class = "form-group">
-    <div class = "form-group">
-      {{ form.old_nation.label}}
-      {{ form.old_nation}}
-      {{ form.new_nation.label}}
-      {{ form.new_nation}}
-    </div>
-  </fieldset>
-<div class = "form-group">
-  <div class="col text-center">
-    {{ form.submit(class = "btn btn-outline-info")}}
-  </div>
-</div>
-</form>
