@@ -364,6 +364,17 @@ def income_plot(category, old_year, new_year, sg_id1, sg_id2):
         db.session.add(plot)
         db.session.commit()
 
+@app.route("/main/<int:sg_id1>/<int:sg_id2>/victory_points", methods = ["GET", "POST"])
+def victory_points(sg_id1, sg_id2):
+
+    new_year = Savegame.query.get(sg_id2).year
+    image_files = []
+    for (old_year, category) in zip((1445,Savegame.query.get(sg_id1).year),("income_over_time_total","income_over_time_latest")):
+        income_plot(category, old_year, new_year, sg_id1, sg_id2)
+        image_files.append(SavegamePlots.query.filter_by(old_savegame_id = sg_id1, new_savegame_id = sg_id2, type = category).first().filename)
+    return render_template("plot.html", sg_id1 = sg_id1, sg_id2 = sg_id2, image_files = image_files)
+
+
 @app.route("/main/<int:sg_id1>/<int:sg_id2>/<list:image_files>/reload_plot", methods = ["GET", "POST"])
 def reload_plot(sg_id1, sg_id2, image_files):
     for file in image_files:

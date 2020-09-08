@@ -94,6 +94,15 @@ class NationSavegameData(db.Model):
     innovativeness = db.Column(db.Float, default = 0)
     color = db.Column(ColorType, default = Color('#ffffff'))
 
+    #Siegpunkte
+    highest_ae = db.Column(db.Float, default = 0)
+    num_of_colonies = db.Column(db.Integer, default = 0)
+    num_converted_religion = db.Column(db.Integer, default = 0)
+    total_buildings_value = db.Column(db.Integer, default = 0)
+    standing_army = db.Column(db.Float, default = 0)
+    navy_cost = db.Column(db.Integer, default = 0)
+
+
     savegame = db.relationship("Savegame", backref="nation_data")
     nation = db.relationship("Nation", backref="savegame_data")
 

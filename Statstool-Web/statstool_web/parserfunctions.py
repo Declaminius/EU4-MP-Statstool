@@ -140,6 +140,7 @@ def parse_provinces(provinces, savegame):
 	else:
 		db.session.commit()
 
+
 def parse_wars(content, savegame):
 	""" Second part of the main parser. Reads all relevant information about wars
 	from the savegame. Returns a list of all wars, as well as a dictionary about
@@ -241,7 +242,7 @@ def parse_war_participants(participant, compile_participants, war):
 	db.session.add(war_participant)
 
 
-def compile_main(info, tag, savegame, main, great_power, tech_cost, tech):
+def compile_main(info, tag, savegame, main, side_regex_dict, tech_cost, tech):
 
 	result = main.search(info)
 	if result:
@@ -258,20 +259,19 @@ def compile_main(info, tag, savegame, main, great_power, tech_cost, tech):
 		for float_column in ("effective_development","navy_strength","income"):
 			nation_data[float_column] = float(nation_data[float_column])
 
-		result = great_power.search(info)
-		if result:
-			nation_data["great_power_score"] = result.group(1)
-		else:
-			nation_data["great_power_score"] = 0
+		for category, regex in side_regex_dict.items():
+			result = regex.search(info)
+			if result:
+				nation_data[category] = result.group(1)
+			else:
+				nation_data[category] = 0
 
 		compile_army_losses(info, tag, savegame, nation_data)
 		compile_tech(info, tag, savegame, nation_data, tech_cost, tech)
 
 		nation_data["great_power_score"] = round(int(float(nation_data["great_power_score"])) * (nation_data["institution_penalty"]))
 
-		nd = NationSavegameData(**nation_data)
-		db.session.add(nd)
-
+		return nation_data
 
 def compile_army_losses(info, tag, savegame, nation_data):
 
@@ -352,6 +352,55 @@ def parse_history(info, tag, savegame, monarch_id, previous_monarchs_id):
 		compile_monarchs(info, tag, savegame, result2.group(1))
 
 
+def parse_relations(info, tag, ae, nation_data):
+	relations = split("([A-Z0-9]{3})={",info.split("active_relations={")[1].split("decision_seed")[0])
+	if relations:
+		relation_tag_list, relation_info_list = relations[1:-1:2], relations[2:-1:2]
+		ae_list = []
+		for rel_tag, rel_info in zip(relation_tag_list, relation_info_list):
+			result = ae.search(rel_info)
+			if result:
+				ae_list.append(float(result.group(1)))
+		if ae_list:
+			nation_data["highest_ae"] = -min(ae_list)
+		else:
+			nation_data["highest_ae"] = 0
+
+
+def parse_regiments(info, tag, regiment_strength, nation_data):
+	regiment_data = split("regiment={",info)[1:]
+	standing_army = 0
+	for regiment in regiment_data:
+		result = regiment_strength.search(regiment)
+		if result:
+			standing_army += float(result.group(1))*1000
+		else:
+			standing_army += 1000
+	nation_data["standing_army"] = standing_army
+
+def parse_ships(info, tag, nation_data):
+	with open("Statstool-Web\\files\\unit_type_dict.txt", "r") as file:
+		unit_type_dict = eval(file.read())
+	print(unit_type_dict)
+	ship_type = compile('type="(.+?)"')
+	ship_data = split("ship={",info)[1:]
+	navy_cost = 0
+	for ship in ship_data:
+		result = ship_type.search(ship)
+		if result:
+			type = unit_type_dict[result.group(1)]
+			if type == "heavy_ship":
+				navy_cost += 50
+			if type == "light_ship":
+				navy_cost += 20
+			if type == "galley":
+				navy_cost += 10
+			if type == "transport":
+				navy_cost += 12
+
+	nation_data["navy_cost"] = navy_cost
+
+
 def compile_monarchs(info, tag, savegame, monarch_id):
 	monarch_info = compile(
 		"id={\n.+?id=" + monarch_id + ".+?name=\"(?P<name>.+?)\".+?DIP=(?P<dip>\d).+?ADM=(?P<adm>\d).+?MIL=(?P<mil>\d).+?",
@@ -377,19 +426,31 @@ def parse_countries(content, savegame):
 				 "navy_strength=(?P<navy_strength>\d+.\d+).+?estimated_monthly_income=(?P<income>\d+.\d+).+?" \
 				 "manpower=(?P<manpower>\d+.\d+).+?max_manpower=(?P<max_manpower>\d+.\d+).+?" \
 				 "members=[{]\n\t\t\t\t(?P<losses>[^\n]+)", DOTALL)
+
 	great_power = compile("great_power_score=(\d+.\d+)")
+	num_converted_religion = compile("num_converted_religion=(\d+)")
+	num_of_colonies = compile("num_of_colonies=(\d+)")
+	side_regex_dict = {"great_power_score": great_power, "num_converted_religion": num_converted_religion, "num_of_colonies": num_of_colonies}
+
 	tech_cost = compile("technology_cost=(\d+.\d+)")
 	tech = compile("technology={.+?(?P<adm_tech>\d+).+?(?P<dip_tech>\d+).+?(?P<mil_tech>\d+).+?"\
 			"active_idea_groups={(?P<idea_groups>[^}]+).+?innovativeness=(?P<innovativeness>\d+.\d+)", DOTALL)
 	trade_goods = compile("produced_goods_value={\n(.+)")
 	monarch_id = compile("\tmonarch={\n\t\t\tid=(\d+)")
 	previous_monarchs_id = compile("\tprevious_monarch={\n\t\t\tid=(\d+)")
+	ae = compile("modifier=\"aggressive_expansion\"[^}]+?current_opinion=(-\d+.\d+)", DOTALL)
+	regiment_strength = compile("strength=(\d.\d+)")
 
 	for info, tag in zip(info_list, tag_list):
-		compile_main(info, tag, savegame, main, great_power, tech_cost, tech)
-		compile_goods_produced(info, tag, savegame, trade_goods)
-		compile_points_spent(info, tag, savegame)
-		parse_history(info, tag, savegame, monarch_id, previous_monarchs_id)
+		nation_data = compile_main(info, tag, savegame, main, side_regex_dict, tech_cost, tech)
+		if nation_data:
+			compile_goods_produced(info, tag, savegame, trade_goods)
+			compile_points_spent(info, tag, savegame)
+			parse_history(info, tag, savegame, monarch_id, previous_monarchs_id)
+			parse_relations(info, tag, ae, nation_data)
+			parse_regiments(info, tag, regiment_strength, nation_data)
+			nd = NationSavegameData(**nation_data)
+			db.session.add(nd)
 
 
 
