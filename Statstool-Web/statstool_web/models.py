@@ -100,7 +100,7 @@ class NationSavegameData(db.Model):
     num_converted_religion = db.Column(db.Integer, default = 0)
     total_buildings_value = db.Column(db.Integer, default = 0)
     standing_army = db.Column(db.Float, default = 0)
-    navy_cost = db.Column(db.Integer, default = 0)
+    navy_cannons = db.Column(db.Integer, default = 0)
 
 
     savegame = db.relationship("Savegame", backref="nation_data")
@@ -170,13 +170,13 @@ class NationSavegameNavyLosses(db.Model):
     savegame = db.relationship("Savegame", backref="nation_navy_losses")
     nation = db.relationship("Nation", backref="savegame_navy_losses")
 
-class NationSavegameProvinces(db.Model):
-    __tablename__ = 'nation_savegame_provinces'
+class SavegameProvinces(db.Model):
+    __tablename__ = 'savegame_provinces'
     savegame_id = db.Column(db.Integer, db.ForeignKey('savegame.id'), primary_key = True)
     province_id = db.Column(db.Integer, db.ForeignKey('province.id'), primary_key = True)
 
     nation_tag = db.Column(db.String(3), db.ForeignKey('nation.tag'), nullable = True)
-    trade_good_id = db.Column(db.Integer, db.ForeignKey("trade_good.id"))
+    trade_good_id = db.Column(db.Integer, db.ForeignKey('trade_good.id'))
 
     base_tax = db.Column(db.Integer)
     base_production = db.Column(db.Integer)
@@ -200,7 +200,6 @@ class TradeGood(db.Model):
     __tablename__ = 'trade_good'
     id = db.Column(db.Integer, primary_key = True)
     name = db.Column(db.String)
-    data = db.relationship("NationSavegameProvinces", backref = "trade_good")
 
 class TotalGoodsProduced(db.Model):
     __tablename__ = "total_goods_produced"

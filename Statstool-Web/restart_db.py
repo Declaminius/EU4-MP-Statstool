@@ -1,15 +1,18 @@
 from statstool_web import db
 from statstool_web.models import Nation, TradeGood, Province, Area, Region, SuperRegion
+import re
 
-trade_goods_list = ['', 'Getreide', 'Wein', 'Wolle', 'Tuch', 'Fisch', 'Pelze', 'Salz',
-					'Schiffsbedarf', 'Kupfer', 'Gold', 'Eisen', 'Sklaven', 'Elfenbein',
-					'Tee', 'Porzellan', 'Gewürze', 'Kaffee', 'Baumwolle', 'Zucker', 'Tabak',
-					'Kakao', 'Seide', 'Farbstoffe', 'Tropenholz', 'Vieh', 'Weihrauch', 'Glas',
-					'Papier', 'Edelsteine', '', 'Unbekannt']
+with open("../paradox_files/1.30/00_tradegoods.txt", "r") as file:
+	content = file.read()
+	trade_goods = re.findall("\n(\w+) = {", content)
+
 
 db.drop_all()
 db.create_all()
-for name in trade_goods_list:
+
+empty_trade_good = TradeGood(name = "")
+db.session.add(empty_trade_good)
+for name in trade_goods:
     trade_good = TradeGood(name = name)
     db.session.add(trade_good)
 

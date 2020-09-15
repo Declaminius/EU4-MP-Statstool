@@ -83,7 +83,9 @@ def parse_provinces(provinces, savegame):
 		[Province_ID, Name, Owner, Tax, Production, Manpower, Development, Trade Node, Culture,
 		Religion, Trade Good, Area, Region, Superregion]
 		"""
-	province_list = split("-\d+=[{]", provinces)[1:]
+	provinces = split("-(\d+)=[{]", provinces)[1:]
+	province_id_list = provinces[::2]
+	province_list = provinces[1::2]
 	for province, x in zip(province_list, range(len(province_list))):
 		province_list[x] = province.split("history")[0]
 		province_list[x] += province.split("discovered_by=")[-1]
@@ -103,15 +105,18 @@ def parse_provinces(provinces, savegame):
 	province_x5 = compile(province_regex5, DOTALL)
 
 	try:
-		for province in province_list:
+		i = -1
+		for province, id in zip(province_list,province_id_list):
 			try:
 				result = province_x.search(province).groupdict()
 				for cat in ("base_tax", "base_production", "base_manpower"):
 					result[cat] = int(result[cat])
 				result["development"] = result["base_tax"] + result["base_production"] + result["base_manpower"]
-				result["province_id"] = Province.query.filter_by(name = result["name"]).first().id
+				result["province_id"] = id
 				result["savegame_id"] = savegame.id
-				result["trade_good_id"] = TradeGood.query.filter_by(name = result["trade_goods"]).first().id
+				trade_good = TradeGood.query.filter_by(name = result["trade_goods"]).first()
+				if trade_good:
+					result["trade_good_id"] = trade_good.id
 				del result["name"], result["trade_goods"]
 
 				owner = province_x2.search(province)
@@ -130,12 +135,14 @@ def parse_provinces(provinces, savegame):
 				if trade_power:
 					result["trade_power"] = float(trade_power.group(1))
 
-				prov = NationSavegameProvinces(**result)
+				prov = SavegameProvinces(**result)
 				db.session.add(prov)
 			except AttributeError as e:
 				pass
 			db.session.flush()
-	except IntegrityError:
+			i -= 1
+	except IntegrityError as e:
+		print(e)
 		db.session.rollback()
 	else:
 		db.session.commit()
@@ -352,19 +359,19 @@ def parse_history(info, tag, savegame, monarch_id, previous_monarchs_id):
 		compile_monarchs(info, tag, savegame, result2.group(1))
 
 
-def parse_relations(info, tag, ae, nation_data):
+def parse_relations(info, tag, ae, ae_dict):
 	relations = split("([A-Z0-9]{3})={",info.split("active_relations={")[1].split("decision_seed")[0])
 	if relations:
 		relation_tag_list, relation_info_list = relations[1:-1:2], relations[2:-1:2]
-		ae_list = []
 		for rel_tag, rel_info in zip(relation_tag_list, relation_info_list):
 			result = ae.search(rel_info)
 			if result:
-				ae_list.append(float(result.group(1)))
-		if ae_list:
-			nation_data["highest_ae"] = -min(ae_list)
-		else:
-			nation_data["highest_ae"] = 0
+				n = -float(result.group(1))
+				if rel_tag in ae_dict.keys():
+					if n > ae_dict[rel_tag]:
+						ae_dict[rel_tag] = n
+				else:
+					ae_dict[rel_tag] =  n
 
 
 def parse_regiments(info, tag, regiment_strength, nation_data):
@@ -379,26 +386,22 @@ def parse_regiments(info, tag, regiment_strength, nation_data):
 	nation_data["standing_army"] = standing_army
 
 def parse_ships(info, tag, nation_data):
-	with open("Statstool-Web\\files\\unit_type_dict.txt", "r") as file:
-		unit_type_dict = eval(file.read())
-	print(unit_type_dict)
+	with open("../Statstool-Web/files/ship_cannons.txt", "r") as file:
+		ship_cannons_dict = eval(file.read())
 	ship_type = compile('type="(.+?)"')
 	ship_data = split("ship={",info)[1:]
-	navy_cost = 0
+	navy_cannons = 0
+	print(ship_cannons_dict.keys())
 	for ship in ship_data:
 		result = ship_type.search(ship)
 		if result:
-			type = unit_type_dict[result.group(1)]
-			if type == "heavy_ship":
-				navy_cost += 50
-			if type == "light_ship":
-				navy_cost += 20
-			if type == "galley":
-				navy_cost += 10
-			if type == "transport":
-				navy_cost += 12
+			unit_type = result.group(1)
+			if unit_type in ship_cannons_dict.keys():
+				navy_cannons += ship_cannons_dict[unit_type]
+			else:
+				print("HILFE:{0}!".format(unit_type))
 
-	nation_data["navy_cost"] = navy_cost
+	nation_data["navy_cannons"] = navy_cannons
 
 
 def compile_monarchs(info, tag, savegame, monarch_id):
@@ -441,18 +444,23 @@ def parse_countries(content, savegame):
 	ae = compile("modifier=\"aggressive_expansion\"[^}]+?current_opinion=(-\d+.\d+)", DOTALL)
 	regiment_strength = compile("strength=(\d.\d+)")
 
+	ae_dict = {}
 	for info, tag in zip(info_list, tag_list):
 		nation_data = compile_main(info, tag, savegame, main, side_regex_dict, tech_cost, tech)
 		if nation_data:
 			compile_goods_produced(info, tag, savegame, trade_goods)
 			compile_points_spent(info, tag, savegame)
 			parse_history(info, tag, savegame, monarch_id, previous_monarchs_id)
-			parse_relations(info, tag, ae, nation_data)
+			parse_relations(info, tag, ae, ae_dict)
 			parse_regiments(info, tag, regiment_strength, nation_data)
+			parse_ships(info, tag, nation_data)
 			nd = NationSavegameData(**nation_data)
 			db.session.add(nd)
 
-
+	for tag in tag_list:
+		nation = NationSavegameData.query.filter_by(nation_tag = tag, savegame_id = savegame.id).first()
+		if tag in ae_dict.keys():
+			nation.highest_ae = ae_dict[tag]
 
 def parse_incomestat(content, savegame):
 

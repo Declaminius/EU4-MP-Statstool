@@ -162,8 +162,6 @@ def remove_nation_formation(sg_id1,sg_id2,old,new):
 
 @app.route("/main/<int:sg_id1>/<int:sg_id2>/overview_table", methods = ["GET", "POST"])
 def overview_table(sg_id1,sg_id2):
-    random = secrets.token_hex(8) + ".json"
-    path = os.path.join(app.root_path, 'json', random)
     columns = ["great_power_score", "development", "effective_development", "navy_strength", "max_manpower", "income"]
     header_labels = ["Nation", "Great Power Score", "Development", "Effective Development", "Navy Strength", "Maximum Manpower", "Monthly Income"]
     nation_data = []
@@ -176,7 +174,8 @@ def overview_table(sg_id1,sg_id2):
         nation_colors.append( str(NationSavegameData.query.filter_by(nation_tag = nation.tag, \
                 savegame_id = sg_id2).first().color))
         nation_tags.append(nation.tag)
-    return render_template("overview_table.html", sg_id1 = sg_id1, sg_id2 = sg_id2, data = zip(nation_data,nation_tags,nation_colors), columns = columns, header_labels = header_labels)
+    return render_template("table.html", sg_id1 = sg_id1, sg_id2 = sg_id2, \
+        data = zip(nation_data,nation_tags,nation_colors), columns = columns, header_labels = header_labels, num_of_columns = 7)
 
 @app.route("/main/<int:sg_id1>/<int:sg_id2>/test", methods = ["GET", "POST"])
 def test(sg_id1, sg_id2):
@@ -366,13 +365,70 @@ def income_plot(category, old_year, new_year, sg_id1, sg_id2):
 
 @app.route("/main/<int:sg_id1>/<int:sg_id2>/victory_points", methods = ["GET", "POST"])
 def victory_points(sg_id1, sg_id2):
+    columns = ["highest_ae", "standing_army", "navy_cannons"]
+    header_labels = ["Nation", "Renaissance: höchste AE", "Stehendes Heer", "Flotte: Gesamtanzahl Kanonen", "Armeeverluste im Kampf", "höchstentwickelte Provinz", "Siegpunkte"]
+    nation_data = []
+    nation_colors = []
+    nation_tags = []
+    for nation in Savegame.query.get(sg_id2).player_nations:
+        data = NationSavegameData.query.filter_by(nation_tag = nation.tag, \
+                savegame_id = sg_id2).with_entities(*columns).first()._asdict()
+        nation_colors.append( str(NationSavegameData.query.filter_by(nation_tag = nation.tag, \
+                savegame_id = sg_id2).first().color))
+        nation_tags.append(nation.tag)
 
-    new_year = Savegame.query.get(sg_id2).year
-    image_files = []
-    for (old_year, category) in zip((1445,Savegame.query.get(sg_id1).year),("income_over_time_total","income_over_time_latest")):
-        income_plot(category, old_year, new_year, sg_id1, sg_id2)
-        image_files.append(SavegamePlots.query.filter_by(old_savegame_id = sg_id1, new_savegame_id = sg_id2, type = category).first().filename)
-    return render_template("plot.html", sg_id1 = sg_id1, sg_id2 = sg_id2, image_files = image_files)
+        losses = NationSavegameArmyLosses.query.filter_by(nation_tag = nation.tag, savegame_id = sg_id2).first().combat
+        data["losses"] = losses
+
+        highest_dev = SavegameProvinces.query.filter_by(\
+            nation_tag = nation.tag, savegame_id = sg_id2).order_by(SavegameProvinces.development.desc()).first().development
+        data["highest_dev"] = highest_dev
+        data["victory_points"] = 0
+        nation_data.append(data)
+
+    columns = ["highest_ae", "standing_army", "navy_cannons", "losses", "highest_dev", "victory_points"]
+    nation_tags.append("Minimalwert")
+    nation_colors.append("ffffff")
+    nation_data.append({"highest_ae": 50, "standing_army": 100000, "navy_cannons": 2000, "losses": 500000, "highest_dev": 50})
+
+
+    for category in ("highest_ae", "standing_army", "navy_cannons", "losses", "highest_dev"):
+        max_category = max([x[category] for x in nation_data])
+        for data in nation_data[:-1]:
+            if data[category] == max_category:
+                if category == "highest_ae":
+                    data["victory_points"] += 2
+                else:
+                    data["victory_points"] += 1
+
+
+    return render_template("table.html", sg_id1 = sg_id1, sg_id2 = sg_id2, \
+        data = zip(nation_data,nation_tags,nation_colors), columns = columns, header_labels = header_labels, num_of_columns = 7)
+
+@app.route("/main/<int:sg_id1>/<int:sg_id2>/provinces", methods = ["GET", "POST"])
+def provinces(sg_id1, sg_id2):
+    columns = ["province_id", "nation_tag", "base_tax", "base_production", "base_manpower", "development", "religion", "culture", "trade_power"]
+    header_labels = ["Id", "Nation", "Steuer", "Produktion", "Mannstärke", "Entwicklung", "Religion", "Kultur", "Handelsmacht", "Handelsgut"]
+    province_data = []
+    nation_colors = []
+    nation_tags = []
+    for province in SavegameProvinces.query.all():
+        province = province.__dict__
+        data = {x: province[x] for x in columns}
+        owner = NationSavegameData.query.filter_by(nation_tag = province["nation_tag"], \
+                savegame_id = sg_id2).first()
+        if owner:
+            nation_colors.append(str(owner.color))
+        else:
+            nation_colors.append("#ffffff")
+        nation_tags.append(province["nation_tag"])
+        trade_good_name = TradeGood.query.filter_by(id = province["trade_good_id"]).first().name
+        data["trade_good_name"] = trade_good_name
+        province_data.append(data)
+
+    return render_template("table.html", sg_id1 = sg_id1, sg_id2 = sg_id2, \
+        data = zip(province_data,nation_tags,nation_colors), columns = columns, header_labels = header_labels, num_of_columns = 7)
+
 
 
 @app.route("/main/<int:sg_id1>/<int:sg_id2>/<list:image_files>/reload_plot", methods = ["GET", "POST"])
