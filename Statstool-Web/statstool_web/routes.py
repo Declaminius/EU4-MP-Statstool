@@ -407,12 +407,12 @@ def victory_points(sg_id1, sg_id2):
 
 @app.route("/main/<int:sg_id1>/<int:sg_id2>/provinces", methods = ["GET", "POST"])
 def provinces(sg_id1, sg_id2):
-    columns = ["province_id", "nation_tag", "base_tax", "base_production", "base_manpower", "development", "religion", "culture", "trade_power"]
-    header_labels = ["Id", "Nation", "Steuer", "Produktion", "Mannstärke", "Entwicklung", "Religion", "Kultur", "Handelsmacht", "Handelsgut"]
+    columns = ["province_id", "base_tax", "base_production", "base_manpower", "development", "religion", "culture", "trade_power"]
+    header_labels = ["Nation", "ID", "Name", "Steuer", "Produktion", "Mannstärke", "Entwicklung", "Religion", "Kultur", "Handelsmacht", "Handelsgut"]
     province_data = []
     nation_colors = []
     nation_tags = []
-    for province in SavegameProvinces.query.all():
+    for province in SavegameProvinces.query.filter_by(savegame_id = sg_id2).all():
         province = province.__dict__
         data = {x: province[x] for x in columns}
         owner = NationSavegameData.query.filter_by(nation_tag = province["nation_tag"], \
@@ -424,12 +424,49 @@ def provinces(sg_id1, sg_id2):
         nation_tags.append(province["nation_tag"])
         trade_good_name = TradeGood.query.filter_by(id = province["trade_good_id"]).first().name
         data["trade_good_name"] = trade_good_name
+        province = Province.query.filter_by(id = province["province_id"]).first()
+        data["name"] = province.name
         province_data.append(data)
 
-    return render_template("table.html", sg_id1 = sg_id1, sg_id2 = sg_id2, \
-        data = zip(province_data,nation_tags,nation_colors), columns = columns, header_labels = header_labels, num_of_columns = 7)
+    columns.append("trade_good_name")
+    columns.insert(1, "name")
+    return render_template("province_table.html", sg_id1 = sg_id1, sg_id2 = sg_id2, \
+        data = zip(province_data,nation_tags,nation_colors), columns = columns, header_labels = header_labels)
 
+@app.route("/main/<int:sg_id1>/<int:sg_id2>/army_battles", methods = ["GET", "POST"])
+def army_battles(sg_id1, sg_id2):
+    columns = ["date", "attacker_country", "attacker_infantry", "attacker_cavalry", \
+        "attacker_artillery", "attacker_total", "attacker_losses", "attacker_commander", \
+        "defender_country", "defender_infantry", "defender_cavalry", \
+        "defender_artillery", "defender_total", "defender_losses", "defender_commander", \
+        "total_combatants", "total_losses"]
+    header_labels = ["Datum", "Gewinner", "Angreifer", "Infanterie", "Kavallerie", "Artillerie", "Angreifer - Gesamt", "Verluste", "General", \
+        "Verteidiger", "Infanterie", "Kavallerie", "Artillerie", "Verteider - Gesamt", "Verluste", "General", "Soldaten - Gesamt", "Verluste - Gesamt"]
+    battle_data = []
+    nation_colors = []
+    nation_tags = []
+    for battle in ArmyBattle.query.filter_by(savegame_id = sg_id2).all():
+        battle = battle.__dict__
+        data = {x: [battle[x],"#ffffff"] for x in columns}
+        for column in ("attacker_country","defender_country"):
+            nation = NationSavegameData.query.filter_by(nation_tag = data[column][0], savegame_id = sg_id2).first()
+            if nation:
+                data[column][1] = str(nation.color)
+        result = battle["result"]
+        if result == "yes":
+            data["result"] = ["Angreifer","#ffffff"]
+            data["attacker_commander"][1] = "00ff00"
+            data["defender_commander"][1] = "ff0000"
+        if result == "no":
+            data["result"] = ["Verteidiger","#ffffff"]
+            data["attacker_commander"][1] = "ff0000"
+            data["defender_commander"][1] = "00ff00"
+        battle_data.append(data)
 
+    columns.insert(1, "result")
+
+    return render_template("army_battles_table.html", sg_id1 = sg_id1, sg_id2 = sg_id2, \
+        data = battle_data, columns = columns, header_labels = header_labels)
 
 @app.route("/main/<int:sg_id1>/<int:sg_id2>/<list:image_files>/reload_plot", methods = ["GET", "POST"])
 def reload_plot(sg_id1, sg_id2, image_files):

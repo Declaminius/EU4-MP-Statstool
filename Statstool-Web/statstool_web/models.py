@@ -218,18 +218,23 @@ class ArmyBattle(db.Model):
     result = db.Column(db.String)
 
     attacker_country = db.Column(db.String, db.ForeignKey('nation.tag'))
-    attacker_infantry = db.Column(db.Integer)
-    attacker_cavalry = db.Column(db.Integer)
-    attacker_artillery = db.Column(db.Integer)
-    attacker_losses = db.Column(db.Integer)
+    attacker_infantry = db.Column(db.Integer, default = 0)
+    attacker_cavalry = db.Column(db.Integer, default = 0)
+    attacker_artillery = db.Column(db.Integer, default = 0)
+    attacker_total = db.Column(db.Integer, default = 0)
+    attacker_losses = db.Column(db.Integer, default = 0)
     attacker_commander = db.Column(db.String, default = "")
 
     defender_country = db.Column(db.String, db.ForeignKey('nation.tag'))
-    defender_infantry = db.Column(db.Integer)
-    defender_cavalry = db.Column(db.Integer)
-    defender_artillery = db.Column(db.Integer)
-    defender_losses = db.Column(db.Integer)
+    defender_infantry = db.Column(db.Integer, default = 0)
+    defender_cavalry = db.Column(db.Integer, default = 0)
+    defender_artillery = db.Column(db.Integer, default = 0)
+    defender_total = db.Column(db.Integer, default = 0)
+    defender_losses = db.Column(db.Integer, default = 0)
     defender_commander = db.Column(db.String, default = "")
+
+    total_combatants = db.Column(db.Integer, default = 0)
+    total_losses = db.Column(db.Integer, default = 0)
 
     province = db.Column(db.String)
 

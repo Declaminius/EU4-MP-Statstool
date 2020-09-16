@@ -205,6 +205,11 @@ def parse_battle(battle, war, date_list, battle_regex, savegame):
 			pass
 
 	if sum([x in battle_dict.keys() for x in ("attacker_infantry", "attacker_cavalry", "attacker_artillery")]) > 0:
+		for role in ("attacker", "defender"):
+			battle_dict["{0}_total".format(role)] = sum([battle_dict[x] for x in ("{0}_infantry".format(role), "{0}_cavalry".format(role), "{0}_artillery".format(role)) if x in battle_dict.keys()])
+		battle_dict["total_combatants"] = battle_dict["attacker_total"] + battle_dict["defender_total"]
+		battle_dict["total_losses"] = battle_dict["attacker_losses"] + battle_dict["defender_losses"]
+
 		b = ArmyBattle(**battle_dict)
 		war.army_battles.append(b)
 		savegame.army_battles.append(b)
@@ -391,7 +396,6 @@ def parse_ships(info, tag, nation_data):
 	ship_type = compile('type="(.+?)"')
 	ship_data = split("ship={",info)[1:]
 	navy_cannons = 0
-	print(ship_cannons_dict.keys())
 	for ship in ship_data:
 		result = ship_type.search(ship)
 		if result:
