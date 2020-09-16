@@ -379,7 +379,10 @@ def parse_incomestat(content, savegame_list, formable_nations_dict, pbar, plabel
 		else:
 			stats_dict[tag]["total_income"] = 0
 
-		step += 1000 / len(income_info_list)
+		if income_info_list:
+			step += 1000 / len(income_info_list)
+		else:
+			step = 1000
 		pbar.setValue(step)
 	return income_dict
 
@@ -530,23 +533,29 @@ def compile_points_spent(info, tag, stats_dict):
 	for i in range(48):
 		for d in [adm_points_dict, dip_points_dict, mil_points_dict]:
 			d[i] = 0;
-	try:
-		points_spent = info.split("adm_spent_indexed={")[1].split("innovativeness")[0]
-		adm, dip, mil = points_spent.split("indexed")
-		for cat, dic, string in zip([adm, dip, mil], [adm_points_dict, dip_points_dict, mil_points_dict],
-									["adm", "dip", "mil"]):
-			cat = findall("\d+=\d+", cat)
-			for c in cat:
-				key, number = c.split("=")
+	info = info.split("innovativeness")[0]
+	adm = info.split("adm_spent_indexed={")
+	dip = adm[-1].split("dip_spent_indexed={")
+	mil = dip[-1].split("mil_spent_indexed={")
+	if tag == "POL":
+		print(len(adm))
+		print(len(dip))
+		print(len(mil))
+	for cat, dic, string in zip([adm, dip, mil], [adm_points_dict, dip_points_dict, mil_points_dict],
+								["adm", "dip", "mil"]):
+		if len(cat) > 1:
+			results = findall("\d+=\d+", cat[1])
+			for result in results:
+				key, number = result.split("=")
 				dic[int(key)] = int(number)
 			total_points_dict[string] = sum(dic.values())
-		total_points_dict["total"] = sum(total_points_dict.values())
-		total_points_dict["ideas"] = adm_points_dict[0] + dip_points_dict[0] + mil_points_dict[0]
-		total_points_dict["tech"] = adm_points_dict[1] + dip_points_dict[1] + mil_points_dict[1]
-		total_points_dict["dev"] = adm_points_dict[7] + dip_points_dict[7] + mil_points_dict[7]
-		stats_dict[tag]["points_spent"] = [adm_points_dict, dip_points_dict, mil_points_dict, total_points_dict]
-	except:
-		stats_dict[tag]["points_spent"] = [adm_points_dict, dip_points_dict, mil_points_dict, total_points_dict]
+		else:
+			total_points_dict[string] = 0
+	total_points_dict["total"] = sum(total_points_dict.values())
+	total_points_dict["ideas"] = adm_points_dict[0] + dip_points_dict[0] + mil_points_dict[0]
+	total_points_dict["tech"] = adm_points_dict[1] + dip_points_dict[1] + mil_points_dict[1]
+	total_points_dict["dev"] = adm_points_dict[7] + dip_points_dict[7] + mil_points_dict[7]
+	stats_dict[tag]["points_spent"] = [adm_points_dict, dip_points_dict, mil_points_dict, total_points_dict]
 
 
 def parse_countries(content, playertags, all_nations_bool, pbar, plabel):
