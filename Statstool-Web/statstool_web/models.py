@@ -43,11 +43,19 @@ war_defender = db.Table('war_defender',
     db.Column('defender_tag', db.String(3), db.ForeignKey('nation.tag'))
 )
 
+class MP(db.Model):
+    __tablename__ = 'mp'
+    id = db.Column(db.Integer, primary_key = True)
+    name = db.Column(db.String, nullable = False)
+    savegames = db.relationship("Savegame", backref = "mp", lazy = True)
+
 class Savegame(db.Model):
     __tablename__ = 'savegame'
     id = db.Column(db.Integer, primary_key = True)
+    mp_id = db.Column(db.Integer, db.ForeignKey('mp.id'))
     year = db.Column(db.Integer, default = None)
     file = db.Column(db.String(120), nullable = False)
+    map_file = db.Column(db.String(120), nullable = True)
     parse_flag = db.Column(db.Boolean, default = False, nullable = False)
     nations = db.relationship("Nation", secondary = savegame_nations)
     player_nations = db.relationship("Nation", secondary = savegame_player_nations)

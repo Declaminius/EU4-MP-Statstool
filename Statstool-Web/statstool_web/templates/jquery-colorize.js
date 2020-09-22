@@ -17,6 +17,11 @@
                     color_mid: "#FFFFFF",
                     color_max: "#10A54A"
                 },
+                "reverse": {
+                    color_min: "#10A54A",
+                    color_mid: "#FFFFFF",
+                    color_max: "#C80000"
+                },
                 "blue-white-red": {
                   color_min: "#312F9D",
                   color_mid: "#FFFFFF",
@@ -40,11 +45,13 @@
         });
 
         if (settings.center === undefined) settings.center = mean(this);
-        var adj = settings.center - min;
+        var adj1 = Math.max(0.1,settings.center - min);
+        var adj2 = Math.max(0.1,max - settings.center);
 
         this.each(function() {
             var value = $(this).data('colorize');
-            var ratio = (settings.center - value) / adj;
+            if ((settings.center - value) < 0) var ratio = (settings.center - value)/adj2;
+            else var ratio = (settings.center - value)/adj1;
             var color1, color2;
 
             if (!settings.percent && value <= settings.min) {
@@ -72,7 +79,7 @@
             }
             var color = getColor(color1, color2, ratio);
             $(this).css('background-color', color);
-            if (settings.readable) 
+            if (settings.readable)
                 $(this).css('color', getContrastYIQ(color));
         });
 

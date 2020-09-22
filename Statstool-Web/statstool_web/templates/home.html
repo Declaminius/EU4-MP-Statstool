@@ -1,39 +1,114 @@
 {% extends "home_layout.html" %}
 {% block content %}
-<div class = "content-section">
-  <form method = "POST" action = "" enctype="multipart/form-data">
-    {{ form.hidden_tag() }}
-    <fieldset class = "form-group">
-      <legend class = "border-bottom mb-4 text-center">Select the savegames you want to compare</legend>
-      <div class = "form-group">
-        {{ form.savegame1.label(class = "form-control_label")}}
+<main role="main">
 
-        {% if form.savegame1.errors %}
-          {{ form.savegame1(class = "form-control form-control-lg is-invalid")}}
-          <div class = "invalid-feedback">
-            {% for error in form.savegame1.errors %}
-              <span>{{error}}</span>
-            {% endfor %}
-        {% else %}
-          {{ form.savegame1(class = "form-control form-control-lg")}}
-        {% endif %}
-      </div>
-      <div class = "form-group">
-        {{ form.savegame2.label(class = "form-control_label")}}
-        {% if form.savegame2.errors %}
-          {{ form.savegame2(class = "form-control form-control-lg is-invalid")}}
-          <div class = "invalid-feedback">
-            {% for error in form.savegame2.errors %}
-              <span>{{error}}</span>
-            {% endfor %}
-        {% else %}
-          {{ form.savegame2(class = "form-control form-control-lg")}}
-        {% endif %}
-      </div>
-    </fieldset>
-  <div class = "form-group text-center">
-    {{ form.submit(class = "btn btn-outline-info")}}
-  </div>
-  </form>
-</div>
+  <section class="jumbotron text-center">
+    <div class="container">
+      <h1>Sonntags-MP: S2E2 - Per Aspera Ad Astra</h1>
+      <p class="lead text-muted">Statistiken und Siegpunkts-Übersicht für das 17.Sonntags-MP der Strategie-Zone.</p>
+      <p>
+        <a href="{{url_for('latest_stats', mp_id = 1)}}" class="btn btn-primary my-2">Aktuellste Statistik</a>
+        <a href="{{url_for('total_victory_points', mp_id = 1)}}" class="btn btn-secondary my-2">Siegpunkte</a>
+      </p>
+    </div>
+  </section>
+  <div class="album py-5 bg-light">
+    <div class="container">
+
+      <div class="row">
+        <div class="col-md-4">
+          <div class="card mb-4 shadow-sm">
+            <div class="card-body">
+              <h4 class="card-text">Renaissance: 1444-1450</h4>
+            </div>
+            <div class="media">
+              <img src="/static/maps/1450.png">
+            </div>
+            <div class="text-center">
+              <a class="btn btn-outline-primary btn-center mt-2 mb-2" href = "{{url_for('main', sg_id1 = 11, sg_id2 = 12, map = '1450.png')}}">View</a>
+            </div>
+          </div>
+        </div>
+          <div class="col-md-4">
+            <div class="card mb-4 shadow-sm">
+              <div class="card-body">
+                <h4 class="card-text">Kolonialismus: 1450-1508</h4>
+              </div>
+              <div class="media">
+                <img src="/static/maps/1508.png">
+              </div>
+              <div class="text-center">
+                <button type="button" class="btn btn-outline-primary btn-center mt-2 mb-2">View</button>
+              </div>
+            </div>
+          </div>
+          <div class="col-md-4">
+            <div class="card mb-4 shadow-sm">
+              <div class="card-body">
+                <h4 class="card-text">Druckerpresse: 1508-???</h4>
+              </div>
+              <div class="text-center">
+                <button type="button" class="btn btn-outline-primary btn-center mt-2 mb-2">View</button>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="row">
+          <div class="col-md-4">
+            <div class="card mb-4 shadow-sm">
+              <div class="card-body">
+                <h4 class="card-text">Globaler Handel: ???-???</h4>
+              </div>
+              <div class="text-center">
+                <a class="btn btn-outline-primary btn-center mt-2 mb-2" href = "{{url_for('main', sg_id1 = 11, sg_id2 = 12, map = '1450.png')}}">View</a>
+              </div>
+            </div>
+          </div>
+            <div class="col-md-4">
+              <div class="card mb-4 shadow-sm">
+                <div class="card-body">
+                  <h4 class="card-text">Manufakturen: ???-???</h4>
+                </div>
+                <div class="text-center">
+                  <button type="button" class="btn btn-outline-primary btn-center mt-2 mb-2">View</button>
+                </div>
+              </div>
+            </div>
+            <div class="col-md-4">
+              <div class="card mb-4 shadow-sm">
+                <div class="card-body">
+                  <h4 class="card-text">Aufklärung: ???-???</h4>
+                </div>
+                <div class="text-center">
+                  <button type="button" class="btn btn-outline-primary btn-center mt-2 mb-2">View</button>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="row">
+            <div class="col-md-4">
+              <div class="card mb-4 shadow-sm">
+                <div class="card-body">
+                  <h4 class="card-text">Industrialisierung: ???-???</h4>
+                </div>
+                <div class="text-center">
+                  <a class="btn btn-outline-primary btn-center mt-2 mb-2" href = "{{url_for('main', sg_id1 = 11, sg_id2 = 12, map = '1450.png')}}">View</a>
+                </div>
+              </div>
+            </div>
+              <div class="col-md-4">
+                <div class="card mb-4 shadow-sm">
+                  <div class="card-body">
+                    <h4 class="card-text">MP-Ende: ???-???</h4>
+                  </div>
+                  <div class="text-center">
+                    <button type="button" class="btn btn-outline-primary btn-center mt-2 mb-2">View</button>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+</main>
 {% endblock content %}

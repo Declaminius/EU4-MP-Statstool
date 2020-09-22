@@ -1,0 +1,43 @@
+{% extends "main_layout.html" %}
+{% block content %}
+<div id = "table1">
+  <table class="table">
+      <thead>
+        <form class="form-inline" method = "POST" action = "" enctype="multipart/form-data">
+          {{ form.hidden_tag() }}
+          <th style="text-align:center" bgcolor = "white">
+            {{ form.old_nation.label}}
+            {{ form.old_nation}}
+          </th>
+          <th style="text-align:center" bgcolor = "white">
+            {{ form.new_nation.label}}
+            {{ form.new_nation}}
+          </th>
+          <th style="text-align:center" bgcolor = "white">
+            <div class="col text-center">
+              {{ form.submit(class = "btn btn-outline-info")}}
+            </div>
+          </th>
+        </form>
+      </thead>
+      <tbody>
+          {% for old, new in nation_formations %}
+              <tr>
+                <td style="text-align:center" bgcolor = "white">{{ old }}</td>
+                <td style="text-align:center" bgcolor = "white">{{ new }}</td>
+                <td style="text-align:center" bgcolor = "white">
+                  <div>
+                    <a class="tn btn-danger btn-sm m-1"
+                    href = "{{url_for('remove_nation_formation', sg_id1 = sg_id1, sg_id2 = sg_id2, old = old, new = new)}}">Remove</a>
+                  </div>
+                </td>
+              </tr>
+          {% endfor %}
+      </tbody>
+  </table>
+
+<div class = "col text-center">
+  <a class="btn btn-secondary btn mt-1 mb-1"
+  href = "{{url_for('reload_all_plots', sg_id1 = sg_id1, sg_id2 = sg_id2)}}">Reload All Plots</a>
+</div>
+{% endblock content %}

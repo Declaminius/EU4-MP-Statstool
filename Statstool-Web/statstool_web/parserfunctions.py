@@ -1,11 +1,12 @@
 from re import DOTALL, split, compile, findall, search
 import numpy as np
 import matplotlib.pyplot as plt
-from statstool_web import db
+from statstool_web import app, db
 from statstool_web.models import *
 from sqlalchemy.exc import IntegrityError
 import datetime
 from colour import Color
+import os
 
 
 def colormap(values, mode=0, output_range=1):
@@ -54,7 +55,7 @@ def edit_parse(filename):
 		in order to enable dynamic nation selection.
 		Returns list of Player-Nations-Tag and list of all real nations tag in alphabetical order. """
 
-	with open(filename, 'r', encoding = 'cp1252') as sg:
+	with open(filename, 'r', encoding = 'cp1252', errors = 'ignore') as sg:
 		content = sg.read()
 		compile_player = compile("was_player=yes")
 		compile_real_nations = compile("\n\t\tdevelopment")  # Dead nations don't have development
@@ -515,7 +516,8 @@ def parse_trade(content):
 
 
 def parse(savegame):
-	with open(savegame.file, 'r', encoding = 'cp1252') as sg:
+	path = os.path.join(app.root_path, "static/savegames", savegame.file)
+	with open(path, 'r', encoding = 'cp1252') as sg:
 		content = sg.read()
 		provinces = content.split("\nprovinces={")[1].split("countries={")[0]
 		savegame.year = int(search("date=(?P<year>\d{4})", content).group(1))

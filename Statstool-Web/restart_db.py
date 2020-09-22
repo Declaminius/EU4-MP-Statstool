@@ -1,5 +1,5 @@
 from statstool_web import db
-from statstool_web.models import Nation, TradeGood, Province, Area, Region, SuperRegion
+from statstool_web.models import Nation, TradeGood, Province, Area, Region, SuperRegion, MP
 import re
 
 with open("../paradox_files/1.30/00_tradegoods.txt", "r") as file:
@@ -49,6 +49,7 @@ with open("files/area.txt", "r", encoding = 'cp1252') as sg:
 				province = Province(id = id, name = province_dict[id], area = area)
 				db.session.add(province)
 
-
+so_mp = MP(id = 1, name = "Sonntags-MP: S2E2 - Per Aspera Ad Astra")
+db.session.add(so_mp)
 db.session.commit()
 #Todo: create tags, trade_goods, ... (all static values)

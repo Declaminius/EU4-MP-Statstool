@@ -4,8 +4,11 @@ from wtforms import FileField, SubmitField, StringField, TextAreaField, SelectFi
 from wtforms.validators import DataRequired, Length
 
 class SavegameSelectForm(FlaskForm):
+    mp = SelectField("MP-Game", coerce = int)
     savegame1 = FileField("Select first savegame", validators = [DataRequired(), FileAllowed(['eu4'], "Only EU4-Saves")])
+    savegame1_map = FileField("Upload first map (optional)", validators = [FileAllowed(['png', 'jpg'])])
     savegame2 = FileField("Select second savegame", validators = [DataRequired(), FileAllowed(['eu4'], "Only EU4-Saves")])
+    savegame2_map = FileField("Upload second map (optional)", validators = [FileAllowed(['png', 'jpg'])])
     submit = SubmitField("Parse")
 
 class TagSetupForm(FlaskForm):

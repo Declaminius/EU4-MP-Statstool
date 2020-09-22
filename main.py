@@ -1,7 +1,7 @@
 # coding=utf-8
 # Author: Florian Schager
 # Version: 2.1.
-# Last edited: 01.07.2020
+# Last edited: 21.09.2020
 
 """
 Changelog 2.0.:

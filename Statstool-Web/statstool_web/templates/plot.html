@@ -1,12 +1,12 @@
 {% extends "main_layout.html" %}
-{% block content2 %}
+{% block content %}
   <div class = "col text-center">
     <a class="btn btn-secondary btn mt-1 mb-1"
     href = "{{url_for('reload_plot', sg_id1 = sg_id1, sg_id2 = sg_id2, image_files = image_files)}}">Reload Plot</a>
   </div>
   {% for image_file in image_files %}
     <div class="media">
-      <img class="img-fluid" src="{{ url_for('static', filename='plots/' + image_file) }}">
+      <img class="img-fluid mt-3 mb-3" src="{{ url_for('static', filename='plots/' + image_file) }}">
     </div>
   {% endfor %}
   <div class = "container mb-3 mt-3">
@@ -14,7 +14,7 @@
           <thead>
             <tr>
               {% for label in header_labels%}
-                <th>{{label}}</th>
+                <th bgcolor = "white">{{label}}</th>
               {% endfor %}
             </tr>
           </thead>
@@ -44,4 +44,4 @@
   });
   $('.mydatatable').DataTable({paging: false, searching: false, "order": [[ 2, "desc" ]]});
   </script>
-{% endblock content2 %}
+{% endblock content %}
