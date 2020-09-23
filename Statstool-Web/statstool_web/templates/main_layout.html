@@ -27,8 +27,10 @@
           </button>
           <div class="collapse navbar-collapse" id="navbarToggle">
             <div class="navbar-nav mr-auto">
-              <a class="nav-item nav-link"
-              href = "{{url_for('main', sg_id1 = sg_id1, sg_id2 = sg_id2)}}">Map</a>
+              {% if map %}
+                <a class="nav-item nav-link"
+                href = "{{url_for('main', sg_id1 = sg_id1, sg_id2 = sg_id2)}}">Map</a>
+              {% endif %}
               <a class="nav-item nav-link"
               href = "{{url_for('configure', sg_id1 = sg_id1, sg_id2 = sg_id2)}}">Configure</a>
               <a class="nav-item nav-link"

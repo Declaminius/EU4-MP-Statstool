@@ -1,5 +1,5 @@
 from flask import render_template, url_for, send_from_directory, request, redirect, flash
-from statstool_web.forms import SavegameSelectForm, TagSetupForm, NewNationForm, NationFormationForm
+from statstool_web.forms import SavegameSelectForm, OneSavegameSelectForm, MapSelectForm, TagSetupForm, NewNationForm, NationFormationForm
 from statstool_web import app, db
 from statstool_web.parserfunctions import edit_parse, parse
 from statstool_web.models import *
@@ -17,17 +17,19 @@ from sqlalchemy.exc import IntegrityError
 @app.route("/", methods = ["GET", "POST"])
 @app.route("/home", methods = ["GET", "POST"])
 def home():
-    return render_template("home.html")
+    institutions = ["basesave", "renaissance", "colonialism", "printing_press", "global_trade", "manufactories", "enlightenment", "industrialization", "endsave"]
+    savegame_dict = {}
+    for inst in institutions:
+        savegame_dict[inst] = Savegame.query.filter_by(mp_id=1, institution=inst).first()
+    return render_template("home.html", savegame_dict = savegame_dict)
 
 @app.route("/mp_overview/<name>", methods = ["GET", "POST"])
 def mp_overview(name):
     return render_template("mp_overview.html")
 
-@app.route("/upload_savegame", methods = ["GET", "POST"])
-def upload_savegame():
+@app.route("/upload_savegames", methods = ["GET", "POST"])
+def upload_savegames():
     form = SavegameSelectForm()
-    form.mp.choices = [(mp.id,mp.name) for mp in MP.query.all()]
-    form.mp.choices.insert(0,(0,"Kein MP"))
     if form.validate_on_submit():
         sg_ids = []
         Path(os.path.join(app.root_path, app.config['UPLOAD_FOLDER'])).mkdir(parents=True, exist_ok=True)
@@ -46,9 +48,9 @@ def upload_savegame():
             try:
                 playertags, tag_list = edit_parse(path)
                 if map_path:
-                    savegame = Savegame(file = random, mp_id = form.mp.data, map_file = map_random)
+                    savegame = Savegame(file = random, map_file = map_random)
                 else:
-                    savegame = Savegame(file = random, mp_id = form.mp.data)
+                    savegame = Savegame(file = random)
                 for tag in tag_list:
                     if not Nation.query.get(tag):
                         if tag in app.config["LOCALISATION_DICT"].keys():
@@ -70,55 +72,144 @@ def upload_savegame():
             except (IndexError, UnicodeDecodeError) as e:
                 print(e)
 
-        flash(f'Configure the nation tags you want to analyze.', 'success')
         return redirect(url_for("setup", sg_id1 = sg_ids[0], sg_id2 = sg_ids[1]))
-    return render_template("upload_savegame.html", form = form)
+    return render_template("upload_savegames.html", form = form)
 
+@app.route("/upload_one_savegame/<string:institution>", methods = ["GET", "POST"])
+def upload_one_savegame(institution):
+    form = OneSavegameSelectForm()
+    if form.validate_on_submit():
+        Path(os.path.join(app.root_path, app.config['UPLOAD_FOLDER'])).mkdir(parents=True, exist_ok=True)
+        save_file = request.files[form.savegame.name]
+        map_file = request.files[form.map.name]
+
+        random = secrets.token_hex(8) + ".eu4"
+        path = os.path.join(app.root_path, app.config['UPLOAD_FOLDER'], random)
+        save_file.save(path)
+
+        if map_file:
+            map_random = secrets.token_hex(8) + ".png"
+            map_path = os.path.join(app.root_path, "static/maps", map_random)
+            map_file.save(map_path)
+        else:
+            map_path = None
+        try:
+            playertags, tag_list = edit_parse(path)
+            if map_path:
+                savegame = Savegame(file = random, mp_id = 1, map_file = map_random, institution = institution)
+            else:
+                savegame = Savegame(file = random, mp_id = 1, institution = institution)
+            for tag in tag_list:
+                if not Nation.query.get(tag):
+                    if tag in app.config["LOCALISATION_DICT"].keys():
+                        t = Nation(tag = tag, name = app.config["LOCALISATION_DICT"][tag])
+                    else:
+                        t = Nation(tag = tag, name = tag)
+                    db.session.add(t)
+                    db.session.commit()
+
+                savegame.nations.append(Nation.query.get(tag))
+                if tag in playertags:
+                    savegame.player_nations.append(Nation.query.get(tag))
+
+            db.session.add(savegame)
+            db.session.commit()
+        except AttributeError as e:
+            print(e)
+        except (IndexError, UnicodeDecodeError) as e:
+            print(e)
+        return redirect(url_for("setup", sg_id1 = savegame.id))
+    return render_template("upload_one_savegame.html", form = form)
+
+@app.route("/upload_map/<int:sg_id>", methods = ["GET", "POST"])
+def upload_map(sg_id):
+    form = MapSelectForm()
+    if form.validate_on_submit():
+        Path(os.path.join(app.root_path, app.config['UPLOAD_FOLDER'])).mkdir(parents=True, exist_ok=True)
+        map_file = request.files[form.map.name]
+        map_random = secrets.token_hex(8) + ".png"
+        map_path = os.path.join(app.root_path, "static/maps", map_random)
+        map_file.save(map_path)
+        savegame = Savegame.query.get(sg_id)
+        savegame.map_file = map_random
+        db.session.commit()
+        return redirect(url_for("setup", sg_id1 = savegame.id))
+    return render_template("upload_map.html", form = form)
+
+@app.route("/setup/<int:sg_id1>", methods = ["GET", "POST"], defaults={'sg_id2': None})
 @app.route("/setup/<int:sg_id1>/<int:sg_id2>", methods = ["GET", "POST"])
-def setup(sg_id1,sg_id2):
+def setup(sg_id1,sg_id2 = None):
     form = TagSetupForm()
-    playertags = sorted([(nation.tag,app.config["LOCALISATION_DICT"][nation.tag]) \
-    if nation.tag in app.config["LOCALISATION_DICT"].keys() else (nation.tag,nation.tag) \
-    for nation in set(Savegame.query.get(sg_id1).player_nations + Savegame.query.get(sg_id2).player_nations)], key = lambda x: x[1])
+    old_savegame = Savegame.query.get(sg_id1)
+    if sg_id2:
+        new_savegame = Savegame.query.get(sg_id2)
+        nations = set(old_savegame.player_nations + new_savegame.player_nations)
+    else:
+        nations = old_savegame.player_nations
+
+    playertags =  sorted([(nation.tag,app.config["LOCALISATION_DICT"][nation.tag]) \
+        if nation.tag in app.config["LOCALISATION_DICT"].keys() else (nation.tag,nation.tag) \
+        for nation in nations], key = lambda x: x[1])
     if request.method == "GET":
         return render_template("setup.html", form = form, playertags = playertags,\
                 sg_id1 = sg_id1, sg_id2 = sg_id2)
     if request.method == "POST":
-        old_tag_list = [nation.tag for nation in Savegame.query.get(sg_id1).player_nations]
-        new_tag_list = [nation.tag for nation in Savegame.query.get(sg_id2).player_nations]
-        for tag in old_tag_list:
-            if tag in new_tag_list:
-                formation = NationFormation(old_savegame_id = sg_id1, new_savegame_id = sg_id2, old_nation_tag = tag, new_nation_tag = tag)
-                db.session.add(formation)
-        try:
-            db.session.flush()
-        except IntegrityError:
-            db.session.rollback()
+        if sg_id2:
+            old_tag_list = [nation.tag for nation in old_savegame.player_nations]
+            new_tag_list = [nation.tag for nation in new_savegame.player_nations]
+            for tag in new_tag_list:
+                if tag in old_tag_list:
+                    formation = NationFormation(old_savegame_id = sg_id1, new_savegame_id = sg_id2, old_nation_tag = tag, new_nation_tag = tag)
+                    db.session.add(formation)
+                elif tag in [nation.tag for nation in old_savegame.nations]:
+                    old_savegame.player_nations.append(Nation.query.get(tag))
+                    formation = NationFormation(old_savegame_id = sg_id1, new_savegame_id = sg_id2, old_nation_tag = tag, new_nation_tag = tag)
+                    db.session.add(formation)
+            try:
+                db.session.flush()
+            except IntegrityError:
+                db.session.rollback()
+            else:
+                db.session.commit()
+            return redirect(url_for("main", sg_id1 = sg_id1, sg_id2 = sg_id2))
         else:
-            db.session.commit()
-        return redirect(url_for("main", sg_id1 = sg_id1, sg_id2 = sg_id2))
+            return redirect(url_for("home"))
 
+@app.route("/setup/new_nation/<int:sg_id1>", methods = ["GET", "POST"], defaults={'sg_id2': None})
 @app.route("/setup/new_nation/<int:sg_id1>/<int:sg_id2>", methods = ["GET", "POST"])
-def new_nation(sg_id1,sg_id2):
+def new_nation(sg_id1,sg_id2 = None):
     form = NewNationForm()
-    playertags = [nation.tag for nation in Savegame.query.get(sg_id2).player_nations]
-    new_tag_list = [nation.tag for nation in Savegame.query.get(sg_id2).nations \
-            if nation.tag not in playertags]
+    if sg_id2:
+        playertags = [nation.tag for nation in Savegame.query.get(sg_id2).player_nations]
+        new_tag_list = [nation.tag for nation in Savegame.query.get(sg_id2).nations \
+                if nation.tag not in playertags]
+    else:
+        playertags = [nation.tag for nation in Savegame.query.get(sg_id1).player_nations]
+        new_tag_list = [nation.tag for nation in Savegame.query.get(sg_id1).nations \
+                if nation.tag not in playertags]
     form.select.choices = \
         sorted([(tag,app.config["LOCALISATION_DICT"][tag]) \
         if tag in app.config["LOCALISATION_DICT"].keys() else (tag,tag) \
         for tag in new_tag_list], key = lambda x: x[1])
     if request.method == "POST":
-        sg = Savegame.query.get(sg_id2)
+        if sg_id2:
+            sg = Savegame.query.get(sg_id2)
+        else:
+            sg = Savegame.query.get(sg_id1)
         if form.select.data not in sg.player_nations:
             sg.player_nations.append(Nation.query.get(form.select.data))
         db.session.commit()
         return redirect(url_for("setup", sg_id1 = sg_id1, sg_id2 = sg_id2))
     return render_template("new_nation.html", form = form)
 
+@app.route("/setup/remove_nation/<int:sg_id1>/<string:tag>", methods = ["GET", "POST"], defaults={'sg_id2': None})
 @app.route("/setup/remove_nation/<int:sg_id1>/<int:sg_id2>/<string:tag>", methods = ["GET", "POST"])
-def remove_nation(sg_id1,sg_id2,tag):
-    for id in (sg_id1,sg_id2):
+def remove_nation(sg_id1, tag, sg_id2 = None):
+    if sg_id2:
+        ids = [sg_id1,sg_id2]
+    else:
+        ids = [sg_id1]
+    for id in ids:
         sg = Savegame.query.get(id)
         playertags = [nation.tag for nation in sg.player_nations]
         if tag in playertags:
@@ -126,9 +217,14 @@ def remove_nation(sg_id1,sg_id2,tag):
             db.session.commit()
     return redirect(url_for("setup", sg_id1 = sg_id1, sg_id2 = sg_id2))
 
+@app.route("/setup/remove_all/<int:sg_id1>", methods = ["GET", "POST"], defaults={'sg_id2': None})
 @app.route("/setup/remove_all/<int:sg_id1>/<int:sg_id2>", methods = ["GET", "POST"])
-def remove_all(sg_id1,sg_id2):
-    for id in (sg_id1,sg_id2):
+def remove_all(sg_id1,sg_id2 = None):
+    if sg_id2:
+        ids = [sg_id1,sg_id2]
+    else:
+        ids = [sg_id1]
+    for id in ids:
         sg = Savegame.query.get(id)
         sg.player_nations = []
         db.session.commit()
@@ -164,10 +260,14 @@ def configure(sg_id1,sg_id2):
         else:
             db.session.commit()
 
-    for nation in Savegame.query.get(sg_id2).player_nations:
-        old_savegame =  Savegame.query.filter_by(id = sg_id1).first()
-        if nation in old_savegame.nations:
-            old_savegame.player_nations.append(Nation.query.get(nation.tag))
+    old_savegame = Savegame.query.get(sg_id1)
+    new_savegame = Savegame.query.get(sg_id2)
+    old_tag_list = [nation.tag for nation in old_savegame.player_nations]
+    new_tag_list = [nation.tag for nation in new_savegame.player_nations]
+    for tag in new_tag_list:
+        if tag in [nation.tag for nation in old_savegame.nations] and tag not in old_tag_list:
+            old_savegame.player_nations.append(Nation.query.get(tag))
+
     old_matching_tags = [x.old_nation_tag for x in NationFormation.query.filter_by(old_savegame_id = sg_id1, new_savegame_id = sg_id2).all()]
     new_matching_tags = [x.new_nation_tag for x in NationFormation.query.filter_by(old_savegame_id = sg_id1, new_savegame_id = sg_id2).all()]
     old_tag_list = [nation.tag for nation in Savegame.query.get(sg_id1).player_nations if nation.tag not in old_matching_tags]
@@ -547,34 +647,44 @@ def victory_points(sg_id1, sg_id2):
 def total_victory_points(mp_id):
     savegame = Savegame.query.filter_by(mp_id = mp_id).order_by(desc(Savegame.year)).first()
 
-    header_labels = ["Nation", "Basis", "Kriege", "Renaissance", "Kolonialismus", "Druckerpresse", "Globaler Handel", "Manufakturen", "Aufklärung", "Industrialiserung", "Gesamt"]
-    nation_tags = [x.tag for x in savegame.player_nations]
-    nation_colors = [str(NationSavegameData.query.filter_by(nation_tag = tag, \
-            savegame_id = savegame.id).first().color) for tag in nation_tags]
-    data = {tag:[2,0,0,0,0,0,0,0,0] for tag in nation_tags}
+    if savegame:
+        header_labels = ["Nation", "Basis", "Kriege", "Renaissance", "Kolonialismus", "Druckerpresse", "Globaler Handel", "Manufakturen", "Aufklärung", "Industrialiserung", "Gesamt"]
+        nation_tags = [x.tag for x in savegame.player_nations]
+        nation_colors = [str(NationSavegameData.query.filter_by(nation_tag = tag, \
+                savegame_id = savegame.id).first().color) for tag in nation_tags]
+        data = {tag:[2,0,0,0,0,0,0,0,0] for tag in nation_tags}
 
-    data["TUR"][0] = 1
-    data["TUR"][2] = 2
-    data["TUR"][3] = 1
+        data["TUR"][0] = 1
+        data["TUR"][2] = 2
+        data["TUR"][3] = 1
 
-    data["MOS"][0] = 1
-    data["MOS"][1] = 3
+        data["MOS"][0] = 1
+        data["MOS"][1] = 3
 
-    data["SWE"][1] = -2
+        data["SWE"][1] = -2
 
-    data["POL"][1] = -1
+        data["POL"][1] = -1
 
-    for tag in data.keys():
-        data[tag].append(sum(data[tag]))
+        for tag in data.keys():
+            data[tag].append(sum(data[tag]))
 
-    return render_template("victory_points.html", header_labels = header_labels, nation_info = zip(nation_tags,nation_colors), data = data)
+        return render_template("victory_points.html", header_labels = header_labels, nation_info = zip(nation_tags,nation_colors), data = data)
+
+    else:
+        flash(f'Noch keine Siegpunkte vergeben.', 'danger')
+        return redirect(url_for("home"))
 
 @app.route("/main/latest_stats/<int:mp_id>", methods = ["GET", "POST"])
 def latest_stats(mp_id):
     savegames = Savegame.query.filter_by(mp_id = mp_id).order_by(desc(Savegame.year)).all()
-    sg_id1 = savegames[1].id
-    sg_id2 = savegames[0].id
-    return redirect(url_for("main", sg_id1 = sg_id1, sg_id2 = sg_id2))
+    if len(savegames) > 1:
+        sg_id1 = savegames[1].id
+        sg_id2 = savegames[0].id
+        return redirect(url_for("main", sg_id1 = sg_id1, sg_id2 = sg_id2))
+    else:
+        flash(f'Noch keine Statistik verfügbar.', 'danger')
+        return redirect(url_for("home"))
+
 
 @app.route('/colorize.js')
 def colorize():

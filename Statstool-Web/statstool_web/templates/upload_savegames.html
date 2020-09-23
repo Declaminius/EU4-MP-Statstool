@@ -1,0 +1,61 @@
+{% extends "home_layout.html" %}
+{% block content %}
+<div class = "content-section">
+  <form method = "POST" action = "" enctype="multipart/form-data">
+    {{ form.hidden_tag() }}
+    <fieldset class = "form-group">
+      <legend class = "border-bottom mb-4 text-center">Select the savegames you want to compare</legend>
+      <div class = "form-group">
+        {{ form.savegame1.label(class = "form-control_label")}}
+
+        {% if form.savegame1.errors %}
+          {{ form.savegame1(class = "form-control form-control-lg is-invalid")}}
+          <div class = "invalid-feedback">
+            {% for error in form.savegame1.errors %}
+              <span>{{error}}</span>
+            {% endfor %}
+        {% else %}
+          {{ form.savegame1(class = "form-control form-control-lg")}}
+        {% endif %}
+        {{ form.savegame1_map.label(class = "form-control_label")}}
+
+        {% if form.savegame1_map.errors %}
+          {{ form.savegame1_map(class = "form-control form-control-lg is-invalid")}}
+          <div class = "invalid-feedback">
+            {% for error in form.savegame1_map.errors %}
+              <span>{{error}}</span>
+            {% endfor %}
+        {% else %}
+          {{ form.savegame1_map(class = "form-control form-control-lg")}}
+        {% endif %}
+      </div>
+      <div class = "form-group">
+        {{ form.savegame2.label(class = "form-control_label")}}
+        {% if form.savegame2.errors %}
+          {{ form.savegame2(class = "form-control form-control-lg is-invalid")}}
+          <div class = "invalid-feedback">
+            {% for error in form.savegame2.errors %}
+              <span>{{error}}</span>
+            {% endfor %}
+        {% else %}
+          {{ form.savegame2(class = "form-control form-control-lg")}}
+        {% endif %}
+        {{ form.savegame2_map.label(class = "form-control_label")}}
+
+        {% if form.savegame2_map.errors %}
+          {{ form.savegame2_map(class = "form-control form-control-lg is-invalid")}}
+          <div class = "invalid-feedback">
+            {% for error in form.savegame2_map.errors %}
+              <span>{{error}}</span>
+            {% endfor %}
+        {% else %}
+          {{ form.savegame2_map(class = "form-control form-control-lg")}}
+        {% endif %}
+      </div>
+    </fieldset>
+  <div class = "form-group text-center">
+    {{ form.submit(class = "btn btn-outline-info")}}
+  </div>
+  </form>
+</div>
+{% endblock content %}

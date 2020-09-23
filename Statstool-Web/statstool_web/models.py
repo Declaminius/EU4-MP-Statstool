@@ -23,6 +23,17 @@ class PlotTypes(enum.Enum):
     development = "development"
     effective_development = "effective_development"
 
+class Institutions(enum.Enum):
+    basesave = "basesave"
+    renaissance = "renaissance"
+    colonialism = "colonialism"
+    printing_press = "printing_press"
+    global_trade = "global_trade"
+    manufactories = "manufactories"
+    enlightenment = "enlightenment"
+    industrialization = "industrialization"
+    endsave = "endsave"
+
 savegame_nations = db.Table('savegame_nations',
     db.Column('savegame_id', db.Integer, db.ForeignKey('savegame.id')),
     db.Column('nation_tag', db.String(3), db.ForeignKey('nation.tag'))
@@ -53,6 +64,7 @@ class Savegame(db.Model):
     __tablename__ = 'savegame'
     id = db.Column(db.Integer, primary_key = True)
     mp_id = db.Column(db.Integer, db.ForeignKey('mp.id'))
+    institution = db.Column(db.Enum(Institutions), nullable = True)
     year = db.Column(db.Integer, default = None)
     file = db.Column(db.String(120), nullable = False)
     map_file = db.Column(db.String(120), nullable = True)

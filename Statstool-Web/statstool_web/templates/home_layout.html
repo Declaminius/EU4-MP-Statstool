@@ -30,21 +30,31 @@
               <a class="nav-item nav-link"
               href = "{{url_for('home')}}">Home</a>
               <a class="nav-item nav-link"
-              href = "{{url_for('upload_savegame')}}">Upload Savegame</a>
+              href = "{{url_for('upload_savegames')}}">Upload Savegames</a>
             </div>
           </div>
           <div class="collapse navbar-collapse order-3" id="navbarToggle">
             <div class="navbar-nav mr-auto">
               <a class="nav-item nav-link"
-              href = "{{url_for('upload_savegame')}}">Login</a>
+              href = "{{url_for('upload_savegames')}}">Login</a>
               <a class="nav-item nav-link"
-              href = "{{url_for('upload_savegame')}}">Register</a>
+              href = "{{url_for('upload_savegames')}}">Register</a>
             </div>
           </div>
         </div>
       </nav>
     </header>
+
     <div class = "container">
+      {% with messages = get_flashed_messages(with_categories = true) %}
+        {% if messages %}
+          {% for category, message in messages %}
+            <center><div class="alert alert-{{ category}}">
+              {{message}}
+            </div></center>
+          {% endfor %}
+        {% endif %}
+      {% endwith %}
       {% block content %}{% endblock %}
     </div>
 

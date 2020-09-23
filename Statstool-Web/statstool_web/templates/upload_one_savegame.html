@@ -1,0 +1,38 @@
+{% extends "home_layout.html" %}
+{% block content %}
+<div class = "content-section">
+  <form method = "POST" action = "" enctype="multipart/form-data">
+    {{ form.hidden_tag() }}
+    <fieldset class = "form-group">
+      <legend class = "border-bottom mb-4 text-center">Select savegame (and map)</legend>
+      <div class = "form-group">
+        {{ form.savegame.label(class = "form-control_label")}}
+
+        {% if form.savegame.errors %}
+          {{ form.savegame(class = "form-control form-control-lg is-invalid")}}
+          <div class = "invalid-feedback">
+            {% for error in form.savegame.errors %}
+              <span>{{error}}</span>
+            {% endfor %}
+        {% else %}
+          {{ form.savegame(class = "form-control form-control-lg")}}
+        {% endif %}
+        {{ form.map.label(class = "form-control_label")}}
+
+        {% if form.map.errors %}
+          {{ form.map(class = "form-control form-control-lg is-invalid")}}
+          <div class = "invalid-feedback">
+            {% for error in form.map.errors %}
+              <span>{{error}}</span>
+            {% endfor %}
+        {% else %}
+          {{ form.map(class = "form-control form-control-lg")}}
+        {% endif %}
+      </div>
+    </fieldset>
+  <div class = "form-group text-center">
+    {{ form.submit(class = "btn btn-outline-info")}}
+  </div>
+  </form>
+</div>
+{% endblock content %}
