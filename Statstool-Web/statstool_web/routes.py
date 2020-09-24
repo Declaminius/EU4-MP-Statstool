@@ -177,8 +177,9 @@ def account():
 @app.route("/delete_savegame/<int:sg_id>", methods = ["GET", "POST"])
 def delete_savegame(sg_id):
     savegame = Savegame.query.get(sg_id)
-    db.session.delete(savegame)
-    db.session.commit()
+    if savegame:
+        db.session.delete(savegame)
+        db.session.commit()
     return redirect(url_for("home"))
 
 @app.route("/setup/<int:sg_id1>", methods = ["GET", "POST"], defaults={'sg_id2': None})
@@ -281,7 +282,10 @@ def main(sg_id1,sg_id2):
         savegame = Savegame.query.get(id)
         if not savegame.parse_flag:
             parse(savegame)
-            os.remove(os.path.join(app.root_path, app.config["UPLOAD_FOLDER"], savegame.file))
+            try:
+                os.remove(os.path.join(app.root_path, app.config["UPLOAD_FOLDER"], savegame.file))
+            except FileNotFoundError:
+                pass
 
     old_savegame = Savegame.query.get(sg_id1)
     new_savegame = Savegame.query.get(sg_id2)
@@ -401,7 +405,10 @@ def category_plot(sg_id1, sg_id2, category, tag_list, data_list, model, title):
             if NationFormation.query.filter_by(old_savegame_id = sg_id1, new_savegame_id = sg_id2, new_nation_tag = data["nation_tag"]).first():
                 plt.bar(data["nation_tag"], data[category], color = str(data["color"]), edgecolor = "grey", linewidth = 1)
                 old_tag = NationFormation.query.filter_by(old_savegame_id = sg_id1, new_savegame_id = sg_id2, new_nation_tag = data["nation_tag"]).first().old_nation_tag
-                delta_list.append([data["nation_tag"],data[category] - model.query.filter_by(nation_tag = old_tag, savegame_id = sg_id1).first().__dict__[category]])
+                try:
+                    delta_list.append([data["nation_tag"],data[category] - model.query.filter_by(nation_tag = old_tag, savegame_id = sg_id1).first().__dict__[category]])
+                except:
+                    print(model,sg_id1,old_tag)
 
         delta_values = [x[1] for x in delta_list]
         norm = plt.Normalize(min(delta_values), max(delta_values))

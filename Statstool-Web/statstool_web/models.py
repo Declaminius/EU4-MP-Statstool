@@ -1,9 +1,18 @@
-from statstool_web import db
+from statstool_web import db, app
 import enum
 from colour import Color
+from flask_sqlalchemy import models_committed
 from sqlalchemy_utils import ColorType
 from statstool_web import login_manager
 from flask_login import UserMixin
+import os
+
+@models_committed.connect_via(app)
+def on_models_committed(sender, changes):
+    for obj, change in changes:
+        if change == 'delete' and hasattr(obj, '__commit_delete__'):
+            obj.__commit_delete__()
+
 
 class PointCategories(enum.Enum):
     adm = "adm"
@@ -102,8 +111,8 @@ class Savegame(db.Model):
     file = db.Column(db.String(120), nullable = False)
     map_file = db.Column(db.String(120), nullable = True)
     parse_flag = db.Column(db.Boolean, default = False, nullable = False)
-    nations = db.relationship("Nation", secondary = savegame_nations, cascade = "all, delete")
-    player_nations = db.relationship("Nation", secondary = savegame_player_nations, cascade = "all, delete")
+    nations = db.relationship("Nation", secondary = savegame_nations)
+    player_nations = db.relationship("Nation", secondary = savegame_player_nations)
     army_battles = db.relationship("ArmyBattle", backref = "savegame", cascade = "all, delete")
     navy_battles = db.relationship("NavyBattle", backref = "savegame", cascade = "all, delete")
     wars = db.relationship("War", backref = "savegame", cascade = "all, delete")
@@ -115,6 +124,21 @@ class Savegame(db.Model):
     nation_army_losses = db.relationship("NationSavegameArmyLosses", backref = "savegame", cascade = "all, delete")
     nation_navy_losses = db.relationship("NationSavegameNavyLosses", backref = "savegame", cascade = "all, delete")
     provinces = db.relationship("NationSavegameProvinces", backref = "savegame", cascade = "all, delete")
+    new_plots = db.relationship("SavegamePlots", backref = "new_savegame", foreign_keys = 'SavegamePlots.new_savegame_id', cascade = "all, delete")
+    old_plots = db.relationship("SavegamePlots", backref = "old_savegame", foreign_keys = 'SavegamePlots.old_savegame_id', cascade = "all, delete")
+
+    def __commit_delete__(self):
+        try:
+            os.remove(os.path.join(app.root_path, 'static/savegames', self.file))
+        except FileNotFoundError:
+            pass
+        if self.map_file:
+            try:
+                os.remove(os.path.join(app.root_path, 'static/maps', self.map_file))
+            except FileNotFoundError:
+                print(os.path.join(app.root_path, 'static/maps', self.map_file))
+                pass
+
 
 class NationFormation(db.Model):
     __tablename__ = 'nation_formation'
@@ -129,6 +153,13 @@ class SavegamePlots(db.Model):
     type = db.Column(db.Enum(PlotTypes), nullable = False)
     old_savegame_id = db.Column(db.Integer, db.ForeignKey('savegame.id'))
     new_savegame_id = db.Column(db.Integer, db.ForeignKey('savegame.id'))
+
+    def __commit_delete__(self):
+        try:
+            os.remove(os.path.join(app.root_path, 'static/plots', self.filename))
+        except FileNotFoundError:
+            print(os.path.join(app.root_path, 'static/plots', self.filename))
+            pass
 
 class Nation(db.Model):
     __tablename__ = 'nation'
@@ -350,9 +381,9 @@ class War(db.Model):
     combat = db.Column(db.Integer, default = 0)
     total = db.Column(db.Integer, default = 0)
 
-    participants = db.relationship("WarParticipant")
-    army_battles = db.relationship("ArmyBattle")
-    navy_battles = db.relationship("NavyBattle")
+    participants = db.relationship("WarParticipant", cascade = "all, delete")
+    army_battles = db.relationship("ArmyBattle", cascade = "all, delete")
+    navy_battles = db.relationship("NavyBattle", cascade = "all, delete")
 
 class WarParticipant(db.Model):
     __tablename__ = "war_participant"
