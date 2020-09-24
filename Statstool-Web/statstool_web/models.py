@@ -62,11 +62,12 @@ def load_user(user_id):
     return User.query.get(int(user_id))
 
 class User(db.Model, UserMixin):
+    __tablename__ = 'user'
     id = db.Column(db.Integer, primary_key = True)
     username = db.Column(db.String(20), unique = True, nullable = False)
     email = db.Column(db.String(120), unique = True, nullable = False)
-    image_file = db.Column(db.String(20), nullable = False, default = "default.jpg")
     password = db.Column(db.String(60), nullable = False)
+    savegames = db.relationship("Savegame", backref = "owner", lazy = True)
 
     def get_reset_token(self, expires_sec = 1800):
         s = Serializer(current_app.config["SECRET_KEY"], expires_sec)
@@ -95,16 +96,25 @@ class Savegame(db.Model):
     __tablename__ = 'savegame'
     id = db.Column(db.Integer, primary_key = True)
     mp_id = db.Column(db.Integer, db.ForeignKey('mp.id'))
+    user_id = db.Column(db.Integer, db.ForeignKey('user.id'))
     institution = db.Column(db.Enum(Institutions), nullable = True)
     year = db.Column(db.Integer, default = None)
     file = db.Column(db.String(120), nullable = False)
     map_file = db.Column(db.String(120), nullable = True)
     parse_flag = db.Column(db.Boolean, default = False, nullable = False)
-    nations = db.relationship("Nation", secondary = savegame_nations)
-    player_nations = db.relationship("Nation", secondary = savegame_player_nations)
-    army_battles = db.relationship("ArmyBattle", backref = "savegame")
-    navy_battles = db.relationship("NavyBattle", backref = "savegame")
-    wars = db.relationship("War", backref = "savegame")
+    nations = db.relationship("Nation", secondary = savegame_nations, cascade = "all, delete")
+    player_nations = db.relationship("Nation", secondary = savegame_player_nations, cascade = "all, delete")
+    army_battles = db.relationship("ArmyBattle", backref = "savegame", cascade = "all, delete")
+    navy_battles = db.relationship("NavyBattle", backref = "savegame", cascade = "all, delete")
+    wars = db.relationship("War", backref = "savegame", cascade = "all, delete")
+    nation_data = db.relationship("NationSavegameData", backref = "savegame", cascade = "all, delete")
+    nation_goods_produced = db.relationship("NationSavegameGoodsProduced", backref = "savegame", cascade = "all, delete")
+    total_trade_goods = db.relationship("TotalGoodsProduced", backref = "savegame", cascade = "all, delete")
+    nation_points_spent = db.relationship("NationSavegamePointsSpent", backref = "savegame", cascade = "all, delete")
+    nation_income_per_year = db.relationship("NationSavegameIncomePerYear", backref = "savegame", cascade = "all, delete")
+    nation_army_losses = db.relationship("NationSavegameArmyLosses", backref = "savegame", cascade = "all, delete")
+    nation_navy_losses = db.relationship("NationSavegameNavyLosses", backref = "savegame", cascade = "all, delete")
+    provinces = db.relationship("NationSavegameProvinces", backref = "savegame", cascade = "all, delete")
 
 class NationFormation(db.Model):
     __tablename__ = 'nation_formation'
@@ -124,6 +134,13 @@ class Nation(db.Model):
     __tablename__ = 'nation'
     tag = db.Column(db.String(3), primary_key = True)
     name = db.Column(db.String)
+    savegame_data = db.relationship("NationSavegameData", backref = "nation", cascade = "all, delete")
+    savegame_goods_produced = db.relationship("NationSavegameGoodsProduced", backref = "nation", cascade = "all, delete")
+    savegame_points_spent = db.relationship("NationSavegamePointsSpent", backref = "nation", cascade = "all, delete")
+    savegame_income_per_year = db.relationship("NationSavegameIncomePerYear", backref = "nation", cascade = "all, delete")
+    savegame_army_losses = db.relationship("NationSavegameArmyLosses", backref = "nation", cascade = "all, delete")
+    savegame_navy_losses = db.relationship("NationSavegameNavyLosses", backref = "nation", cascade = "all, delete")
+    provinces = db.relationship("NationSavegameProvinces", backref = "nation", cascade = "all, delete")
 
 class NationSavegameData(db.Model):
     __tablename__ = "nation_savegame_data"
@@ -153,19 +170,12 @@ class NationSavegameData(db.Model):
     standing_army = db.Column(db.Float, default = 0)
     navy_cannons = db.Column(db.Integer, default = 0)
 
-
-    savegame = db.relationship("Savegame", backref="nation_data")
-    nation = db.relationship("Nation", backref="savegame_data")
-
 class NationSavegameGoodsProduced(db.Model):
     __tablename__ = "nation_savegame_goods_produced"
     nation_tag = db.Column(db.String(3), db.ForeignKey('nation.tag'), primary_key = True)
     savegame_id = db.Column(db.Integer, db.ForeignKey('savegame.id'), primary_key = True)
     trade_good_id = db.Column(db.Integer, db.ForeignKey('trade_good.id'), primary_key = True)
     amount = db.Column(db.Float, default = 0)
-
-    savegame = db.relationship("Savegame", backref="nation_goods_produced")
-    nation = db.relationship("Nation", backref="savegame_goods_produced")
 
 class NationSavegamePointsSpent(db.Model):
     __tablename__ = 'nation_savegame_points_spent'
@@ -175,18 +185,12 @@ class NationSavegamePointsSpent(db.Model):
     points_spent_category = db.Column(db.Enum(PointCategories), db.ForeignKey('points_spent.category'), primary_key = True)
     amount = db.Column(db.Integer, default = 0)
 
-    savegame = db.relationship("Savegame", backref="nation_points_spent")
-    nation = db.relationship("Nation", backref="savegame_points_spent")
-
 class NationSavegameIncomePerYear(db.Model):
     __tablename__ = 'nation_savegame_income_per_year'
     nation_tag = db.Column(db.String(3), db.ForeignKey('nation.tag'), primary_key = True)
     savegame_id = db.Column(db.Integer, db.ForeignKey('savegame.id'), primary_key = True)
     year = db.Column(db.Integer, primary_key = True)
     amount = db.Column(db.Integer, default = 0)
-
-    savegame = db.relationship("Savegame", backref="nation_income_year")
-    nation = db.relationship("Nation", backref="savegame_income_year")
 
 class NationSavegameArmyLosses(db.Model):
     __tablename__ = 'nation_savegame_army_losses'
@@ -202,9 +206,6 @@ class NationSavegameArmyLosses(db.Model):
 
     color = db.Column(ColorType, default = Color('#ffffff'))
 
-    savegame = db.relationship("Savegame", backref="nation_army_losses")
-    nation = db.relationship("Nation", backref="savegame_army_losses")
-
 class NationSavegameNavyLosses(db.Model):
     __tablename__ = 'nation_savegame_navy_losses'
     nation_tag = db.Column(db.String(3), db.ForeignKey('nation.tag'), primary_key = True)
@@ -218,11 +219,8 @@ class NationSavegameNavyLosses(db.Model):
     combat = db.Column(db.Integer, default = 0)
     total = db.Column(db.Integer, default = 0)
 
-    savegame = db.relationship("Savegame", backref="nation_navy_losses")
-    nation = db.relationship("Nation", backref="savegame_navy_losses")
-
-class SavegameProvinces(db.Model):
-    __tablename__ = 'savegame_provinces'
+class NationSavegameProvinces(db.Model):
+    __tablename__ = 'nation_savegame_provinces'
     savegame_id = db.Column(db.Integer, db.ForeignKey('savegame.id'), primary_key = True)
     province_id = db.Column(db.Integer, db.ForeignKey('province.id'), primary_key = True)
 
@@ -239,8 +237,6 @@ class SavegameProvinces(db.Model):
 
     trade_power = db.Column(db.Float, default = 0.0)
 
-    savegame = db.relationship("Savegame", backref="nation_provinces")
-
 class PointsSpent(db.Model):
     __tablename__ = 'points_spent'
     id = db.Column(db.Integer, primary_key = True)
@@ -251,14 +247,13 @@ class TradeGood(db.Model):
     __tablename__ = 'trade_good'
     id = db.Column(db.Integer, primary_key = True)
     name = db.Column(db.String)
+    savegame_total_goods_produced = db.relationship("TotalGoodsProduced", backref = "trade_good", cascade = "all, delete")
 
 class TotalGoodsProduced(db.Model):
     __tablename__ = "total_goods_produced"
     savegame_id = db.Column(db.Integer, db.ForeignKey('savegame.id'), primary_key = True)
     trade_good_id = db.Column(db.Integer, db.ForeignKey('trade_good.id'), primary_key = True)
     amount = db.Column(db.Float, default = 0)
-    savegame = db.relationship("Savegame", backref="total_trade_goods")
-    trade_good = db.relationship("TradeGood", backref="total_trade_goods")
 
 class ArmyBattle(db.Model):
     __tablename__ = 'army_battle'

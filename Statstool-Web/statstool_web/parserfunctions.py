@@ -64,6 +64,8 @@ def edit_parse(filename):
 		playertag_list = []
 		real_nations_list = []
 
+		year = int(search("date=(?P<year>\d{4})", content).group(1))
+
 		for info, tag in zip(info_list, tag_list):
 			result = compile_real_nations.search(info)
 			if result:
@@ -72,7 +74,7 @@ def edit_parse(filename):
 				if result:
 					playertag_list.append(tag)
 
-	return playertag_list, sorted(real_nations_list)
+	return playertag_list, sorted(real_nations_list), year
 
 
 def parse_provinces(provinces, savegame):
@@ -136,7 +138,7 @@ def parse_provinces(provinces, savegame):
 				if trade_power:
 					result["trade_power"] = float(trade_power.group(1))
 
-				prov = SavegameProvinces(**result)
+				prov = NationSavegameProvinces(**result)
 				db.session.add(prov)
 			except AttributeError as e:
 				pass
@@ -520,7 +522,6 @@ def parse(savegame):
 	with open(path, 'r', encoding = 'cp1252') as sg:
 		content = sg.read()
 		provinces = content.split("\nprovinces={")[1].split("countries={")[0]
-		savegame.year = int(search("date=(?P<year>\d{4})", content).group(1))
 		total_trade_goods = list(findall("tradegoods_total_produced={\n(.+)", content)[0].split())
 		i = 0
 

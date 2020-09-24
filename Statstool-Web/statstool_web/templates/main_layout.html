@@ -30,9 +30,14 @@
               {% if map %}
                 <a class="nav-item nav-link"
                 href = "{{url_for('main', sg_id1 = sg_id1, sg_id2 = sg_id2)}}">Map</a>
-              {% endif %}
+              {% else %}
               <a class="nav-item nav-link"
-              href = "{{url_for('configure', sg_id1 = sg_id1, sg_id2 = sg_id2)}}">Configure</a>
+              href = "{{url_for('main', sg_id1 = sg_id1, sg_id2 = sg_id2)}}">Home</a>
+              {% endif %}
+              {% if current_user.is_authenticated %}
+                <a class="nav-item nav-link"
+                href = "{{url_for('configure', sg_id1 = sg_id1, sg_id2 = sg_id2)}}">Configure</a>
+              {% endif %}
               <a class="nav-item nav-link"
               href = "{{url_for('overview_table', sg_id1 = sg_id1, sg_id2 = sg_id2)}}">Overview</a>
               <a class="nav-item nav-link"

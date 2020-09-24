@@ -1,5 +1,5 @@
-from statstool_web import db
-from statstool_web.models import Nation, TradeGood, Province, Area, Region, SuperRegion, MP
+from statstool_web import db, bcrypt
+from statstool_web.models import Nation, TradeGood, Province, Area, Region, SuperRegion, MP, User
 import re
 
 with open("../paradox_files/1.30/00_tradegoods.txt", "r") as file:
@@ -51,5 +51,8 @@ with open("files/area.txt", "r", encoding = 'cp1252') as sg:
 
 so_mp = MP(id = 1, name = "Sonntags-MP: S2E2 - Per Aspera Ad Astra")
 db.session.add(so_mp)
+hashed_password = bcrypt.generate_password_hash("12345").decode('utf-8')
+admin = User(id = 1, username = "Declaminius", email = "schagerflorian@gmail.com", password = hashed_password)
+db.session.add(admin)
 db.session.commit()
 #Todo: create tags, trade_goods, ... (all static values)

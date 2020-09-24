@@ -80,11 +80,11 @@ def upload_savegames():
             else:
                 map_path = None
             try:
-                playertags, tag_list = edit_parse(path)
+                playertags, tag_list, year = edit_parse(path)
                 if map_path:
-                    savegame = Savegame(file = random, map_file = map_random)
+                    savegame = Savegame(file = random, map_file = map_random, owner = current_user, year = year)
                 else:
-                    savegame = Savegame(file = random)
+                    savegame = Savegame(file = random, owner = current_user, year = year)
                 for tag in tag_list:
                     if not Nation.query.get(tag):
                         if tag in app.config["LOCALISATION_DICT"].keys():
@@ -128,11 +128,11 @@ def upload_one_savegame(institution):
         else:
             map_path = None
         try:
-            playertags, tag_list = edit_parse(path)
+            playertags, tag_list, year = edit_parse(path)
             if map_path:
-                savegame = Savegame(file = random, mp_id = 1, map_file = map_random, institution = institution)
+                savegame = Savegame(file = random, mp_id = 1, map_file = map_random, institution = institution, owner = current_user, year = year)
             else:
-                savegame = Savegame(file = random, mp_id = 1, institution = institution)
+                savegame = Savegame(file = random, mp_id = 1, institution = institution, owner = current_user, year = year)
             for tag in tag_list:
                 if not Nation.query.get(tag):
                     if tag in app.config["LOCALISATION_DICT"].keys():
@@ -167,8 +167,19 @@ def upload_map(sg_id):
         savegame = Savegame.query.get(sg_id)
         savegame.map_file = map_random
         db.session.commit()
-        return redirect(url_for("setup", sg_id1 = savegame.id))
+        return redirect(url_for("home"))
     return render_template("upload_map.html", form = form)
+
+@app.route("/account", methods = ["GET", "POST"])
+def account():
+    return render_template("account.html")
+
+@app.route("/delete_savegame/<int:sg_id>", methods = ["GET", "POST"])
+def delete_savegame(sg_id):
+    savegame = Savegame.query.get(sg_id)
+    db.session.delete(savegame)
+    db.session.commit()
+    return redirect(url_for("home"))
 
 @app.route("/setup/<int:sg_id1>", methods = ["GET", "POST"], defaults={'sg_id2': None})
 @app.route("/setup/<int:sg_id1>/<int:sg_id2>", methods = ["GET", "POST"])
@@ -271,6 +282,19 @@ def main(sg_id1,sg_id2):
         if not savegame.parse_flag:
             parse(savegame)
             os.remove(os.path.join(app.root_path, app.config["UPLOAD_FOLDER"], savegame.file))
+
+    old_savegame = Savegame.query.get(sg_id1)
+    new_savegame = Savegame.query.get(sg_id2)
+    for nation in new_savegame.player_nations:
+        if nation not in old_savegame.player_nations:
+            if nation in old_savegame.nations:
+                old_savegame.player_nations.append(nation)
+            else:
+                continue
+        if NationFormation.query.get((sg_id1,sg_id2,nation.tag,nation.tag)) is None:
+            formation = NationFormation(old_savegame_id = sg_id1, new_savegame_id = sg_id2, old_nation_tag = nation.tag, new_nation_tag = nation.tag)
+            db.session.add(formation)
+    db.session.commit()
     map = Savegame.query.get(sg_id2).map_file
     return render_template("main_layout.html", sg_id1 = sg_id1, sg_id2 = sg_id2, map = map)
 
@@ -296,16 +320,11 @@ def configure(sg_id1,sg_id2):
 
     old_savegame = Savegame.query.get(sg_id1)
     new_savegame = Savegame.query.get(sg_id2)
-    old_tag_list = [nation.tag for nation in old_savegame.player_nations]
-    new_tag_list = [nation.tag for nation in new_savegame.player_nations]
-    for tag in new_tag_list:
-        if tag in [nation.tag for nation in old_savegame.nations] and tag not in old_tag_list:
-            old_savegame.player_nations.append(Nation.query.get(tag))
 
     old_matching_tags = [x.old_nation_tag for x in NationFormation.query.filter_by(old_savegame_id = sg_id1, new_savegame_id = sg_id2).all()]
     new_matching_tags = [x.new_nation_tag for x in NationFormation.query.filter_by(old_savegame_id = sg_id1, new_savegame_id = sg_id2).all()]
-    old_tag_list = [nation.tag for nation in Savegame.query.get(sg_id1).player_nations if nation.tag not in old_matching_tags]
-    new_tag_list = [nation.tag for nation in Savegame.query.get(sg_id2).player_nations if nation.tag not in new_matching_tags]
+    old_tag_list = [nation.tag for nation in old_savegame.player_nations if nation.tag not in old_matching_tags]
+    new_tag_list = [nation.tag for nation in new_savegame.player_nations if nation.tag not in new_matching_tags]
 
 
     for field,tag_list in ((form.old_nation,old_tag_list), (form.new_nation,new_tag_list)):
@@ -376,20 +395,20 @@ def category_plot(sg_id1, sg_id2, category, tag_list, data_list, model, title):
         plt.minorticks_on()
         plt.gca().get_yaxis().set_major_formatter(plt.FuncFormatter(lambda x, loc: "{:,}".format(int(x))))
 
-        delta_dev_list = []
+        delta_list = []
         for data in data_list:
             data = data.__dict__
             if NationFormation.query.filter_by(old_savegame_id = sg_id1, new_savegame_id = sg_id2, new_nation_tag = data["nation_tag"]).first():
                 plt.bar(data["nation_tag"], data[category], color = str(data["color"]), edgecolor = "grey", linewidth = 1)
                 old_tag = NationFormation.query.filter_by(old_savegame_id = sg_id1, new_savegame_id = sg_id2, new_nation_tag = data["nation_tag"]).first().old_nation_tag
-                delta_dev_list.append([data["nation_tag"],data[category] - model.query.filter_by(nation_tag = old_tag, savegame_id = sg_id1).first().__dict__[category]])
+                delta_list.append([data["nation_tag"],data[category] - model.query.filter_by(nation_tag = old_tag, savegame_id = sg_id1).first().__dict__[category]])
 
-        delta_values = [x[1] for x in delta_dev_list]
+        delta_values = [x[1] for x in delta_list]
         norm = plt.Normalize(min(delta_values), max(delta_values))
         color_list = plt.cm.RdYlGn(norm(delta_values))
 
-        for i in range(len(delta_dev_list)):
-            plt.bar(delta_dev_list[i][0], delta_dev_list[i][1], color = color_list[i], edgecolor = "grey", linewidth = 1)
+        for i in range(len(delta_list)):
+            plt.bar(delta_list[i][0], delta_list[i][1], color = color_list[i], edgecolor = "grey", linewidth = 1)
 
         random = secrets.token_hex(8) + ".png"
         path = os.path.join(app.root_path, "static/plots", random)
@@ -529,7 +548,7 @@ def provinces(sg_id1, sg_id2):
     province_data = []
     nation_colors = []
     nation_tags = []
-    for province in SavegameProvinces.query.filter_by(savegame_id = sg_id2).all():
+    for province in NationSavegameProvinces.query.filter_by(savegame_id = sg_id2).all():
         province = province.__dict__
         data = {x: province[x] for x in columns}
         owner = NationSavegameData.query.filter_by(nation_tag = province["nation_tag"], \
@@ -652,8 +671,8 @@ def victory_points(sg_id1, sg_id2):
         losses = NationSavegameArmyLosses.query.filter_by(nation_tag = nation.tag, savegame_id = sg_id2).first().combat
         data["losses"] = losses
 
-        highest_dev = SavegameProvinces.query.filter_by(\
-            nation_tag = nation.tag, savegame_id = sg_id2).order_by(SavegameProvinces.development.desc()).first().development
+        highest_dev = NationSavegameProvinces.query.filter_by(\
+            nation_tag = nation.tag, savegame_id = sg_id2).order_by(NationSavegameProvinces.development.desc()).first().development
         data["highest_dev"] = highest_dev
         data["victory_points"] = 0
         nation_data.append(data)
