@@ -1,6 +1,6 @@
 from flask import render_template, url_for, send_from_directory, request, redirect, flash
-from statstool_web.forms import SavegameSelectForm, OneSavegameSelectForm, MapSelectForm, TagSetupForm, NewNationForm, NationFormationForm
-from statstool_web import app, db
+from statstool_web.forms import SavegameSelectForm, OneSavegameSelectForm, MapSelectForm, TagSetupForm, NewNationForm, NationFormationForm, LoginForm, RegistrationForm
+from statstool_web import app, db, bcrypt
 from statstool_web.parserfunctions import edit_parse, parse
 from statstool_web.models import *
 from werkzeug.utils import secure_filename
@@ -10,9 +10,11 @@ from pathlib import Path
 from sqlalchemy.orm import load_only
 from sqlalchemy import asc, desc
 import matplotlib
-matplotlib.use('Agg')
 import matplotlib.pyplot as plt
 from sqlalchemy.exc import IntegrityError
+from flask_login import login_user, logout_user, current_user, login_required
+
+matplotlib.use('Agg')
 
 @app.route("/", methods = ["GET", "POST"])
 @app.route("/home", methods = ["GET", "POST"])
@@ -23,9 +25,41 @@ def home():
         savegame_dict[inst] = Savegame.query.filter_by(mp_id=1, institution=inst).first()
     return render_template("home.html", savegame_dict = savegame_dict)
 
-@app.route("/mp_overview/<name>", methods = ["GET", "POST"])
-def mp_overview(name):
-    return render_template("mp_overview.html")
+@app.route("/login", methods = ["GET", "POST"])
+def login():
+    if current_user.is_authenticated:
+        return redirect(url_for("home"))
+    form = LoginForm()
+    if form.validate_on_submit():
+        user = User.query.filter_by(email = form.email.data).first()
+        if user and bcrypt.check_password_hash(user.password, form.password.data):
+            login_user(user, remember = form.remember.data)
+            next_page = request.args.get("next")
+            return redirect(next_page) if next_page else redirect(url_for(".home"))
+            flash("You have been logged in!", "success")
+            return redirect(url_for("home"))
+        else:
+            flash("Login Unsuccessful. Please check email and password.", "danger")
+    return render_template("login.html", title = "Log In", form = form)
+
+@app.route("/logout", methods = ["GET", "POST"])
+def logout():
+    logout_user()
+    return redirect(url_for("home"))
+
+@app.route("/register", methods = ["GET", "POST"])
+def register():
+    if current_user.is_authenticated:
+        return redirect(url_for("home"))
+    form = RegistrationForm()
+    if form.validate_on_submit():
+        hashed_password = bcrypt.generate_password_hash(form.password.data).decode('utf-8')
+        user = User(username = form.username.data, email = form.email.data, password = hashed_password)
+        db.session.add(user)
+        db.session.commit()
+        flash(f'Your account has been created! You can now log in.', 'success')
+        return redirect(url_for("login"))
+    return render_template("register.html", title = "Register", form = form)
 
 @app.route("/upload_savegames", methods = ["GET", "POST"])
 def upload_savegames():
