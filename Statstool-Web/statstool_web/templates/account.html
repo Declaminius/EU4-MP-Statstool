@@ -1,3 +1,37 @@
 {% extends "home_layout.html" %}
 {% block content %}
-{% endblock %}
+<center><h1>My Savegames</h1></center>
+  <div class = "container mb-3 mt-3">
+      <table class = "table table-striped table-bordered mydatatable" style = "width: 100%">
+          <thead>
+            <tr>
+              {% for label in header_labels%}
+                <th bgcolor = "white">{{label}}</th>
+              {% endfor %}
+            </tr>
+          </thead>
+          <tbody>
+            {% for id, row, map in data%}
+              <tr>
+                <td><a class="btn btn-outline-secondary btn-center mt-2 mb-2" href = "{{url_for('show_stats_single', sg_id = id)}}">{{id}}</a></td>
+                {% for value in row %}
+                  <td>{{value}}</td>
+                {% endfor %}
+                {% if map %}
+                  <td><a class="btn btn-outline-secondary btn-center mt-2 mb-2" href = "/static/maps/{{map}}">Map</a></td>
+                {% else %}
+                  <td>None</td>
+                {% endif %}
+              </tr>
+            {% endfor %}
+          </tbody>
+      </table>
+  </div>
+
+  <script src="https://code.jquery.com/jquery-3.3.1.slim.min.js" integrity="sha384-q8i/X+965DzO0rT7abK41JStQIAqVgRVzpbzo5smXKp4YfRvH+8abtTE1Pi6jizo" crossorigin="anonymous"></script>
+  <script src="https://cdn.datatables.net/1.10.19/js/jquery.dataTables.min.js"></script>
+  <script src="https://cdn.datatables.net/1.10.19/js/dataTables.bootstrap4.min.js"></script>
+  <script type="text/javascript">
+  $('.mydatatable').DataTable({paging: false, searching: false, "order": [[ 0, "desc" ]]});
+	</script>
+{% endblock content %}

@@ -107,6 +107,7 @@ class Savegame(db.Model):
     mp_id = db.Column(db.Integer, db.ForeignKey('mp.id'))
     user_id = db.Column(db.Integer, db.ForeignKey('user.id'))
     institution = db.Column(db.Enum(Institutions), nullable = True)
+    name = db.Column(db.String, nullable = True)
     year = db.Column(db.Integer, default = None)
     file = db.Column(db.String(120), nullable = False)
     map_file = db.Column(db.String(120), nullable = True)

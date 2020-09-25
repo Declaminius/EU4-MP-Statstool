@@ -1,7 +1,7 @@
-{% extends "main_layout.html" %}
+{% extends "show_stats_layout.html" %}
 {% block content %}
   {% for image_file in image_files %}
-    <div class="media">
+    <div class="flex">
       <img class="img-fluid mt-3 mb-3" src="{{ url_for('static', filename='plots/' + image_file) }}">
     </div>
   {% endfor %}

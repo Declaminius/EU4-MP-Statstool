@@ -17,6 +17,10 @@
         {% else %}
           {{ form.savegame1(class = "form-control form-control-lg")}}
         {% endif %}
+
+        {{ form.savegame1_name.label(class = "form-control_label")}}
+        {{ form.savegame1_name(class = "form-control form-control-lg")}}
+
         {{ form.savegame1_map.label(class = "form-control_label")}}
 
         {% if form.savegame1_map.errors %}
@@ -40,6 +44,10 @@
         {% else %}
           {{ form.savegame2(class = "form-control form-control-lg")}}
         {% endif %}
+
+        {{ form.savegame2_name.label(class = "form-control_label")}}
+        {{ form.savegame2_name(class = "form-control form-control-lg")}}
+
         {{ form.savegame2_map.label(class = "form-control_label")}}
 
         {% if form.savegame2_map.errors %}

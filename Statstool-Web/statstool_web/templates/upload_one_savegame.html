@@ -17,6 +17,10 @@
         {% else %}
           {{ form.savegame(class = "form-control form-control-lg")}}
         {% endif %}
+
+        {{ form.savegame_name.label(class = "form-control_label")}}
+        {{ form.savegame_name(class = "form-control form-control-lg")}}
+
         {{ form.map.label(class = "form-control_label")}}
 
         {% if form.map.errors %}

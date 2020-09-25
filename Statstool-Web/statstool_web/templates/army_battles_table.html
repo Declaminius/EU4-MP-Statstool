@@ -1,42 +1,76 @@
-{% extends "main_layout.html" %}
+{% extends "show_stats_layout.html" %}
 {% block content %}
-  <script src="{{url_for('colorize')}}"></script>
-  <div class = "container mb-3 mt-3">
-      <table class = "table table-striped table-bordered mydatatable" style = "width: 100%">
-          <thead>
-            <tr>
-              {% for label in header_labels%}
-                <th>{{label}}</th>
-              {% endfor %}
-            </tr>
-          </thead>
-          <tbody>
-            {% for row in data%}
-              <tr>
-                {% for name in columns %}
-                  <td bgcolor = "{{row[name][1]}}">{{row[name][0]}}</td>
-                {% endfor %}
-              </tr>
-            {% endfor %}
-          </tbody>
-      </table>
-  </div>
+<script src="{{url_for('colorize')}}"></script>
+<table class = "table table-striped table-bordered mydatatable" style = "width: 90%">
+  <thead>
+    <tr>
+      {% for label in header_labels%}
+      <th>{{label}}</th>
+      {% endfor %}
+    </tr>
+  </thead>
+  <tbody>
+    {% for row in data%}
+    <tr>
+      {% for name in columns %}
+      <td bgcolor = "{{row[name][1]}}">{{row[name][0]}}</td>
+      {% endfor %}
+    </tr>
+    {% endfor %}
+  </tbody>
+</table>
+<table style="width: 33%; margin: 0 auto 2em auto;" cellspacing="0" cellpadding="3" border="0">
+  <thead>
+    <tr>
+      <th>Column</th>
+      <th>Search</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr id="filter_col2" data-column="1">
+      <td>Angreifer</td>
+      <td align="left"><input type="text" class="column_filter" id="col1_filter"></td>
+    </tr>
+    <tr id="filter_col8" data-column="7">
+      <td>General - Angreifer</td>
+      <td align="left"><input type="text" class="column_filter" id="col7_filter"></td>
+    </tr>
+    <tr id="filter_col9" data-column="8">
+      <td>Verteidiger</td>
+      <td align="left"><input type="text" class="column_filter" id="col8_filter"></td>
+    </tr>
+    <tr id="filter_col15" data-column="14">
+      <td>General - Verteidiger</td>
+      <td align="left"><input type="text" class="column_filter" id="col14_filter"></td>
+    </tr>
+  </tbody>
+</table>
 
-  <script src="https://code.jquery.com/jquery-3.3.1.slim.min.js" integrity="sha384-q8i/X+965DzO0rT7abK41JStQIAqVgRVzpbzo5smXKp4YfRvH+8abtTE1Pi6jizo" crossorigin="anonymous"></script>
-  <script src="https://cdn.datatables.net/1.10.19/js/jquery.dataTables.min.js"></script>
-  <script src="https://cdn.datatables.net/1.10.19/js/dataTables.bootstrap4.min.js"></script>
-  <script type="text/javascript">
-    $(document).ready(function() {
-      // Table Heat Map
-    let arr = [2,5,6,7,8,12,13,14,15]
-    let reverse_arr = [3,9,16]
+<script src="https://code.jquery.com/jquery-3.3.1.slim.min.js" integrity="sha384-q8i/X+965DzO0rT7abK41JStQIAqVgRVzpbzo5smXKp4YfRvH+8abtTE1Pi6jizo" crossorigin="anonymous"></script>
+<script src="https://cdn.datatables.net/1.10.19/js/jquery.dataTables.min.js"></script>
+<script src="https://cdn.datatables.net/1.10.19/js/dataTables.bootstrap4.min.js"></script>
+<script type="text/javascript">
+  function filterColumn ( i ) {
+    $('.mydatatable').DataTable().column( i ).search(
+    $('#col'+i+'_filter').val(),
+    ).draw();
+  }
+  $(document).ready(function() {
+    $('.mydatatable').DataTable({"lengthMenu":  [10, 25, 50, -1], "pageLength": -1, "order": [[ 16, "desc" ]], "dom": 'lf<"toolbar">rtip'});
+    $("div.toolbar").html('<center><h3>Army Battles</h3></center>');
+    // Table Heat Map
+    console.log($('#player_filter').prop('checked'))
+    let arr = [3,4,5,6,10,11,12,13,16]
+    let reverse_arr = [7,14,17]
     for (let i of arr) {
       $('table tbody td:nth-child(' + i + ')').colorize();
     }
     for (let i of reverse_arr) {
       $('table tbody td:nth-child(' + i + ')').colorize({theme: "reverse"});
     }
-    });
-    $('.mydatatable').DataTable({"lengthMenu":  [10, 25, 50, -1], "pageLength": -1, "order": [[ 1, "desc" ]]});
-	</script>
+    $('input.column_filter').on( 'keyup click', function () {
+      filterColumn( $(this).parents('tr').attr('data-column') );
+    } );
+  });
+</script>
 {% endblock content %}
