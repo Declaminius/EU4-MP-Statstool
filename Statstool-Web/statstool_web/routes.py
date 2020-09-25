@@ -36,7 +36,7 @@ def login():
         return redirect(url_for("home"))
     form = LoginForm()
     if form.validate_on_submit():
-        user = User.query.filter_by(email = form.email.data).first()
+        user = User.query.filter_by(username = form.username.data).first()
         if user and bcrypt.check_password_hash(user.password, form.password.data):
             login_user(user, remember = form.remember.data)
             next_page = request.args.get("next")
@@ -50,6 +50,7 @@ def login():
 @app.route("/logout", methods = ["GET", "POST"])
 def logout():
     logout_user()
+    flash(f'Logout successful!', 'success')
     return redirect(url_for("home"))
 
 @app.route("/register", methods = ["GET", "POST"])
