@@ -97,9 +97,9 @@ def parse_provinces(provinces, savegame):
 					 "base_tax=(?P<base_tax>\d+).+?" \
 					 "base_production=(?P<base_production>\d+).+?base_manpower=(?P<base_manpower>\d+).+?" \
 					 "trade_goods=(?P<trade_goods>[^\n]+)"
-	province_regex2 = "owner=\"(?P<owner>[^\n]+)\""  # Seperated from main regex, because uncolonized provinces don't have a owner.
-	province_regex3 = "religion=(?P<religion>[^\n]+)"  # Because some provinces have no fucking religion!
-	province_regex4 = "culture=(?P<culture>[^\n]+)"  # Because some provinces have no fucking culture!
+	province_regex2 = "owner=\"(?P<owner>[^\n]+)\""
+	province_regex3 = "religion=(?P<religion>[^\n]+)"
+	province_regex4 = "culture=(?P<culture>[^\n]+)"
 	province_regex5 = "trade_power=(?P<trade_power>[^\n]+)"
 	province_x = compile(province_regex, DOTALL)
 	province_x2 = compile(province_regex2, DOTALL)
@@ -288,6 +288,7 @@ def compile_main(info, tag, savegame, main, side_regex_dict, tech_cost, tech):
 
 		return nation_data
 
+
 def compile_army_losses(info, tag, savegame, nation_data):
 
 	# 0: Infantry - Combat, 1: Infantry - Attrition, 3: Cavalry - Combat
@@ -393,6 +394,7 @@ def parse_regiments(info, tag, regiment_strength, nation_data):
 			standing_army += 1000
 	nation_data["standing_army"] = standing_army
 
+
 def parse_ships(info, tag, nation_data):
 	with open("../Statstool-Web/files/ship_cannons.txt", "r") as file:
 		ship_cannons_dict = eval(file.read())
@@ -468,6 +470,7 @@ def parse_countries(content, savegame):
 		nation = NationSavegameData.query.filter_by(nation_tag = tag, savegame_id = savegame.id).first()
 		if tag in ae_dict.keys():
 			nation.highest_ae = ae_dict[tag]
+
 
 def parse_incomestat(content, savegame):
 

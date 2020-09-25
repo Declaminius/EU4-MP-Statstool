@@ -385,7 +385,7 @@ def overview_table(sg_id1,sg_id2):
         nation_tags.append(nation.tag)
     map = Savegame.query.get(sg_id2).map_file
     return render_template("table.html", sg_id1 = sg_id1, sg_id2 = sg_id2, \
-        data = zip(nation_data,nation_tags,nation_colors), columns = columns, header_labels = header_labels, num_of_columns = 7, map = map)
+        data = zip(nation_data,nation_tags,nation_colors), columns = columns, header_labels = header_labels, colorize_columns = [1,2,3,4,5,6], sort_by = 1, map = map)
 
 @app.route("/development/<int:sg_id1>/<int:sg_id2>", methods = ["GET", "POST"])
 def development(sg_id1, sg_id2):
@@ -625,33 +625,32 @@ def army_battles(sg_id1, sg_id2):
 
 @app.route("/mana_spent/<int:sg_id1>/<int:sg_id2>", methods = ["GET", "POST"])
 def mana_spent(sg_id1, sg_id2):
-    columns = ["date", "total_combatants", "total_losses", "attacker_country", "attacker_infantry", "attacker_cavalry", \
-        "attacker_artillery", "attacker_total", "attacker_losses", "attacker_commander", \
-        "defender_country", "defender_infantry", "defender_cavalry", \
-        "defender_artillery", "defender_total", "defender_losses", "defender_commander"]
-    header_labels = ["Datum", "Truppen", "Verluste", "Angreifer", "Inf", "Kav", "Art", "Gesamt", "Verluste", "General", \
-        "Verteidiger", "Inf", "Kav", "Art", "Gesamt", "Verluste", "General"]
-    battle_data = []
+    columns = ["adm", "dip", "mil", "total"]
+    header_labels = ["Nation", "ADM", "DIP", "MIL", "Total"]
+    mana_data = []
     nation_colors = []
     nation_tags = []
-    for battle in ArmyBattle.query.filter_by(savegame_id = sg_id2).all():
-        battle = battle.__dict__
-        data = {x: [battle[x],"#ffffff"] for x in columns}
-        for column in ("attacker_country","defender_country"):
-            nation = NationSavegameData.query.filter_by(nation_tag = data[column][0], savegame_id = sg_id2).first()
-            if nation:
-                data[column][1] = str(nation.color)
-        result = battle["result"]
-        if result == "yes":
-            data["attacker_commander"][1] = "00ff00"
-            data["defender_commander"][1] = "ff0000"
-        if result == "no":
-            data["attacker_commander"][1] = "ff0000"
-            data["defender_commander"][1] = "00ff00"
-        battle_data.append(data)
-
-    return render_template("army_battles_table.html", sg_id1 = sg_id1, sg_id2 = sg_id2, \
-        data = battle_data, columns = columns, header_labels = header_labels)
+    for nation in Savegame.query.get(sg_id2).player_nations:
+        data = {}
+        mana = NationSavegamePointsSpent.query.filter_by(savegame_id = sg_id2, nation_tag = nation.tag).all()
+        if mana:
+            data["total"] = sum([x.amount for x in mana])
+            for category in ("adm", "dip", "mil"):
+                mana = NationSavegamePointsSpent.query.filter_by(savegame_id = sg_id2, nation_tag = nation.tag, points_spent_category = category).all()
+                if mana:
+                    data[category] = sum([x.amount for x in mana])
+                else:
+                    data[category] = 0
+        else:
+            for category in ("adm", "dip", "mil", "total"):
+                data[category] = 0
+        mana_data.append(data)
+        nation_colors.append( str(NationSavegameData.query.filter_by(nation_tag = nation.tag, \
+                savegame_id = sg_id2).first().color))
+        nation_tags.append(nation.tag)
+    map = Savegame.query.get(sg_id2).map_file
+    return render_template("table.html", sg_id1 = sg_id1, sg_id2 = sg_id2, \
+        data = zip(mana_data,nation_tags,nation_colors), columns = columns, header_labels = header_labels, colorize_columns = [1,2,3,4], sort_by = 4, map = map)
 
 @app.route("/reload_plot/<int:sg_id1>/<int:sg_id2>/<list:image_files>", methods = ["GET", "POST"])
 def reload_plot(sg_id1, sg_id2, image_files):
@@ -718,7 +717,7 @@ def victory_points(sg_id1, sg_id2):
 
 
     return render_template("table.html", sg_id1 = sg_id1, sg_id2 = sg_id2, \
-        data = zip(nation_data,nation_tags,nation_colors), columns = columns, header_labels = header_labels, num_of_columns = 7)
+        data = zip(nation_data,nation_tags,nation_colors), columns = columns, header_labels = header_labels, colorize_columns = [1,2,3,4,5,6], sort_by = 6)
 
 @app.route("/total_victory_points/<int:mp_id>", methods = ["GET", "POST"])
 def total_victory_points(mp_id):

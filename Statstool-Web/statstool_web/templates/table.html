@@ -28,12 +28,12 @@
   <script src="https://cdn.datatables.net/1.10.19/js/dataTables.bootstrap4.min.js"></script>
   <script type="text/javascript">
 	$(document).ready(function() {
-	  // Table Heat Map
-  var n = {{num_of_columns|tojson}};
-  for (i = 2; i <= n; i++) {
-    $('table tbody td:nth-child(' + i + ')').colorize();
+  var sort_by = {{sort_by|tojson}};
+  let arr = {{colorize_columns|tojson}}
+  $('.mydatatable').DataTable({paging: false, searching: false, "order": [[ sort_by, "desc" ]]});
+  for (let i of arr) {
+    $('table tbody td:nth-child(' + (i+1) + ')').colorize();
   }
   });
-  $('.mydatatable').DataTable({paging: false, searching: false, "order": [[ 1, "desc" ]]});
 	</script>
 {% endblock content %}
