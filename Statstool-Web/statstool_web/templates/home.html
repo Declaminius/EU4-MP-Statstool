@@ -1,5 +1,6 @@
 {% extends "home_layout.html" %}
 {% block content %}
+<div class = "container">
 <main role="main">
 
   <section class="jumbotron text-center">
@@ -32,7 +33,7 @@
             {% endif %}
             <div class="text-center">
               {% if savegame_dict["basesave"] and savegame_dict["renaissance"] %}
-                <a class="btn btn-outline-primary btn-center mt-2 mb-2" href = "{{url_for('show_stats_compare', sg_id1 = savegame_dict['basesave'].id, sg_id2 = savegame_dict['renaissance'].id )}}">View</a>
+                <a class="btn btn-outline-primary btn-center mt-2 mb-2" href = "{{url_for('show_stats', sg_id1 = savegame_dict['basesave'].id, sg_id2 = savegame_dict['renaissance'].id )}}">View</a>
               {% endif %}
               {% if current_user.is_authenticated %}
                 {% if savegame_dict["basesave"] %}
@@ -75,7 +76,7 @@
             {% endif %}
             <div class="text-center">
               {% if savegame_dict["renaissance"] and savegame_dict["colonialism"] %}
-              <a class="btn btn-outline-primary btn-center mt-2 mb-2" href = "{{url_for('show_stats_compare', sg_id1 = savegame_dict['renaissance'].id, sg_id2 = savegame_dict['colonialism'].id )}}">View</a>
+              <a class="btn btn-outline-primary btn-center mt-2 mb-2" href = "{{url_for('show_stats', sg_id1 = savegame_dict['renaissance'].id, sg_id2 = savegame_dict['colonialism'].id )}}">View</a>
               {% endif %}
               {% if current_user.is_authenticated %}
                 {% if savegame_dict["renaissance"] and savegame_dict["colonialism"] %}
@@ -112,7 +113,7 @@
         {% endif %}
         <div class="text-center">
           {% if savegame_dict["colonialism"] and savegame_dict["printing_press"] %}
-            <a class="btn btn-outline-primary btn-center mt-2 mb-2" href = "{{url_for('show_stats_compare', sg_id1 = savegame_dict['colonialism'].id, sg_id2 = savegame_dict['printing_press'].id )}}">View</a>
+            <a class="btn btn-outline-primary btn-center mt-2 mb-2" href = "{{url_for('show_stats', sg_id1 = savegame_dict['colonialism'].id, sg_id2 = savegame_dict['printing_press'].id )}}">View</a>
           {% endif %}
           {% if current_user.is_authenticated %}
             {% if savegame_dict["colonialism"] and savegame_dict["printing_press"] %}
@@ -151,7 +152,7 @@
           {% endif %}
           <div class="text-center">
             {% if savegame_dict["printing_press"] and savegame_dict["global_trade"] %}
-              <a class="btn btn-outline-primary btn-center mt-2 mb-2" href = "{{url_for('show_stats_compare', sg_id1 = savegame_dict['printing_press'].id, sg_id2 = savegame_dict['global_trade'].id )}}">View</a>
+              <a class="btn btn-outline-primary btn-center mt-2 mb-2" href = "{{url_for('show_stats', sg_id1 = savegame_dict['printing_press'].id, sg_id2 = savegame_dict['global_trade'].id )}}">View</a>
             {% endif %}
             {% if current_user.is_authenticated %}
               {% if savegame_dict["printing_press"] and savegame_dict["global_trade"] %}
@@ -188,7 +189,7 @@
           {% endif %}
           <div class="text-center">
             {% if savegame_dict["global_trade"] and savegame_dict["manufactories"] %}
-              <a class="btn btn-outline-primary btn-center mt-2 mb-2" href = "{{url_for('show_stats_compare', sg_id1 = savegame_dict['global_trade'].id, sg_id2 = savegame_dict['manufactories'].id )}}">View</a>
+              <a class="btn btn-outline-primary btn-center mt-2 mb-2" href = "{{url_for('show_stats', sg_id1 = savegame_dict['global_trade'].id, sg_id2 = savegame_dict['manufactories'].id )}}">View</a>
             {% endif %}
             {% if current_user.is_authenticated %}
               {% if savegame_dict["global_trade"] and savegame_dict["manufactories"] %}
@@ -225,7 +226,7 @@
           {% endif %}
           <div class="text-center">
             {% if savegame_dict["manufactories"] and savegame_dict["enlightenment"] %}
-              <a class="btn btn-outline-primary btn-center mt-2 mb-2" href = "{{url_for('show_stats_compare', sg_id1 = savegame_dict['manufactories'].id, sg_id2 = savegame_dict['enlightenment'].id )}}">View</a>
+              <a class="btn btn-outline-primary btn-center mt-2 mb-2" href = "{{url_for('show_stats', sg_id1 = savegame_dict['manufactories'].id, sg_id2 = savegame_dict['enlightenment'].id )}}">View</a>
             {% endif %}
             {% if current_user.is_authenticated %}
               {% if savegame_dict["manufactories"] and savegame_dict["enlightenment"] %}
@@ -264,7 +265,7 @@
             {% endif %}
             <div class="text-center">
               {% if savegame_dict["enlightenment"] and savegame_dict["industrialization"] %}
-                <a class="btn btn-outline-primary btn-center mt-2 mb-2" href = "{{url_for('show_stats_compare', sg_id1 = savegame_dict['enlightenment'].id, sg_id2 = savegame_dict['industrialization'].id )}}">View</a>
+                <a class="btn btn-outline-primary btn-center mt-2 mb-2" href = "{{url_for('show_stats', sg_id1 = savegame_dict['enlightenment'].id, sg_id2 = savegame_dict['industrialization'].id )}}">View</a>
               {% endif %}
               {% if current_user.is_authenticated %}
                 {% if savegame_dict["enlightenment"] and savegame_dict["industrialization"] %}
@@ -301,7 +302,7 @@
             {% endif %}
             <div class="text-center">
               {% if savegame_dict["industrialization"] and savegame_dict["endsave"] %}
-                <a class="btn btn-outline-primary btn-center mt-2 mb-2" href = "{{url_for('show_stats_compare', sg_id1 = savegame_dict['industrialization'].id, sg_id2 = savegame_dict['endsave'].id )}}">View</a>
+                <a class="btn btn-outline-primary btn-center mt-2 mb-2" href = "{{url_for('show_stats', sg_id1 = savegame_dict['industrialization'].id, sg_id2 = savegame_dict['endsave'].id )}}">View</a>
               {% endif %}
               {% if current_user.is_authenticated %}
                 {% if savegame_dict["industrialization"] and savegame_dict["endsave"] %}
@@ -325,4 +326,5 @@
         </div>
 
 </main>
+</div>
 {% endblock content %}

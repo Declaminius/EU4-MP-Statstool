@@ -5,7 +5,7 @@
   <thead>
     <tr>
       {% for label in header_labels%}
-      <th>{{label}}</th>
+      <th bgcolor = "white">{{label}}</th>
       {% endfor %}
     </tr>
   </thead>
@@ -14,7 +14,7 @@
     <tr>
       <td bgcolor = "{{color}}">{{tag}}</td>
       {% for name in columns %}
-      <td>{{row[name]}}</td>
+      <td bgcolor = "white">{{row[name]}}</td>
       {% endfor %}
     </tr>
     {% endfor %}
@@ -67,7 +67,7 @@
 
   $(document).ready(function() {
     $('.mydatatable').DataTable({"lengthMenu":  [10, 25, 50, -1], "pageLength": -1, "order": [[ 6, "desc" ]], "dom": 'lf<"toolbar">rtip'});
-    $("div.toolbar").html('<center><h3>Provinces</h3></center>');
+    $("div.toolbar").html('<center><h3 style="color:white">Provinces</h3></center>');
     // Table Heat Map
     for (i = 4; i <= 8; i++) {
       $('table tbody td:nth-child(' + i + ')').colorize();

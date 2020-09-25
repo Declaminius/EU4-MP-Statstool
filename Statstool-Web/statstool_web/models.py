@@ -132,13 +132,12 @@ class Savegame(db.Model):
         try:
             os.remove(os.path.join(app.root_path, 'static/savegames', self.file))
         except FileNotFoundError:
-            pass
+            print(os.path.join(app.root_path, 'static/savegames', self.file))
         if self.map_file:
             try:
                 os.remove(os.path.join(app.root_path, 'static/maps', self.map_file))
             except FileNotFoundError:
                 print(os.path.join(app.root_path, 'static/maps', self.map_file))
-                pass
 
 
 class NationFormation(db.Model):

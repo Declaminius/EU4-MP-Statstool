@@ -27,46 +27,48 @@
           </button>
           <div class="collapse navbar-collapse" id="navbarToggle">
             <div class="navbar-nav mr-auto">
-              {% if map %}
+              {% if new_savegame.map_file %}
                 <a class="nav-item nav-link"
-                href = "{{url_for('show_stats_compare', sg_id1 = sg_id1, sg_id2 = sg_id2)}}">Map</a>
+                href = "{{url_for('show_stats', sg_id1 = old_savegame.id, sg_id2 = new_savegame.id)}}">Map</a>
               {% else %}
               <a class="nav-item nav-link"
-              href = "{{url_for('show_stats_compare', sg_id1 = sg_id1, sg_id2 = sg_id2)}}">Home</a>
+              href = "{{url_for('show_stats', sg_id1 = old_savegame.id, sg_id2 = new_savegame.id)}}">Home</a>
               {% endif %}
-              {% if current_user.is_authenticated %}
+              {% if current_user.is_authenticated and old_savegame.id != new_savegame.id %}
                 <a class="nav-item nav-link"
-                href = "{{url_for('configure', sg_id1 = sg_id1, sg_id2 = sg_id2)}}">Configure</a>
+                href = "{{url_for('configure', sg_id1 = old_savegame.id, sg_id2 = new_savegame.id)}}">Configure</a>
               {% endif %}
               <a class="nav-item nav-link"
-              href = "{{url_for('overview_table', sg_id1 = sg_id1, sg_id2 = sg_id2)}}">Overview</a>
+              href = "{{url_for('overview_table', sg_id1 = old_savegame.id, sg_id2 = new_savegame.id)}}">Overview</a>
               <a class="nav-item nav-link"
-              href = "{{url_for('development', sg_id1 = sg_id1, sg_id2 = sg_id2)}}">Development</a>
+              href = "{{url_for('development', sg_id1 = old_savegame.id, sg_id2 = new_savegame.id)}}">Development</a>
               <a class="nav-item nav-link"
-              href = "{{url_for('income', sg_id1 = sg_id1, sg_id2 = sg_id2)}}">Income</a>
+              href = "{{url_for('income', sg_id1 = old_savegame.id, sg_id2 = new_savegame.id)}}">Income</a>
               <a class="nav-item nav-link"
-              href = "{{url_for('max_manpower', sg_id1 = sg_id1, sg_id2 = sg_id2)}}">Max. Manpower</a>
+              href = "{{url_for('max_manpower', sg_id1 = old_savegame.id, sg_id2 = new_savegame.id)}}">Max. Manpower</a>
               <a class="nav-item nav-link"
-              href = "{{url_for('army_losses', sg_id1 = sg_id1, sg_id2 = sg_id2)}}">Army Losses</a>
+              href = "{{url_for('army_losses', sg_id1 = old_savegame.id, sg_id2 = new_savegame.id)}}">Army Losses</a>
               <a class="nav-item nav-link"
-              href = "{{url_for('income_over_time', sg_id1 = sg_id1, sg_id2 = sg_id2)}}">Income Over Time</a>
+              href = "{{url_for('income_over_time', sg_id1 = old_savegame.id, sg_id2 = new_savegame.id)}}">Income Over Time</a>
               <a class="nav-item nav-link"
-              href = "{{url_for('provinces', sg_id1 = sg_id1, sg_id2 = sg_id2)}}">Provinces</a>
+              href = "{{url_for('provinces', sg_id1 = old_savegame.id, sg_id2 = new_savegame.id)}}">Provinces</a>
               <a class="nav-item nav-link"
-              href = "{{url_for('army_battles', sg_id1 = sg_id1, sg_id2 = sg_id2)}}">Army Battles</a>
+              href = "{{url_for('army_battles', sg_id1 = old_savegame.id, sg_id2 = new_savegame.id)}}">Army Battles</a>
               <a class="nav-item nav-link"
-              href = "{{url_for('mana_spent', sg_id1 = sg_id1, sg_id2 = sg_id2)}}">Mana Spent</a>
-              <a class="nav-item nav-link"
-              href = "{{url_for('victory_points', sg_id1 = sg_id1, sg_id2 = sg_id2)}}">Victory Points</a>
+              href = "{{url_for('mana_spent', sg_id1 = old_savegame.id, sg_id2 = new_savegame.id)}}">Mana Spent</a>
+              {% if new_savegame.institution %}
+                <a class="nav-item nav-link"
+                href = "{{url_for('victory_points', sg_id1 = old_savegame.id, sg_id2 = new_savegame.id)}}">Victory Points</a>
+              {% endif %}
             </div>
           </div>
         </div>
       </nav>
     </header>
-    {% if map %}
+    {% if new_savegame.map_file %}
     <style>
         body {
-        background-image:url('/static/maps/{{map}}');
+        background-image:url('/static/maps/{{new_savegame.map_file}}');
         background-repeat: repeat-y;
         background-size:100% auto;
         opacity: 0.9;

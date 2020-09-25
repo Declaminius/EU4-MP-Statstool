@@ -1,11 +1,11 @@
 {% extends "show_stats_layout.html" %}
 {% block content %}
 <script src="{{url_for('colorize')}}"></script>
-<table class = "table table-striped table-bordered mydatatable" style = "width: 90%">
+<table class = "table table-bordered mydatatable" style = "width: 90%">
   <thead>
     <tr>
       {% for label in header_labels%}
-      <th>{{label}}</th>
+      <th bgcolor = "white">{{label}}</th>
       {% endfor %}
     </tr>
   </thead>
@@ -57,7 +57,7 @@
   }
   $(document).ready(function() {
     $('.mydatatable').DataTable({"lengthMenu":  [10, 25, 50, -1], "pageLength": -1, "order": [[ 16, "desc" ]], "dom": 'lf<"toolbar">rtip'});
-    $("div.toolbar").html('<center><h3>Army Battles</h3></center>');
+    $("div.toolbar").html('<center><h3 style="color:white">Army Battles</h3></center>');
     // Table Heat Map
     console.log($('#player_filter').prop('checked'))
     let arr = [3,4,5,6,10,11,12,13,16]
