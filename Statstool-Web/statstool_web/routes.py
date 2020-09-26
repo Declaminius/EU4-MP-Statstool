@@ -160,7 +160,7 @@ def upload_one_savegame(institution = None):
             print(e)
         except (IndexError, UnicodeDecodeError) as e:
             print(e)
-        return redirect(url_for("setup", sg_id1 = savegame.id))
+        return redirect(url_for("setup", sg_id1 = savegame.id, sg_id2 = savegame.id))
     return render_template("upload_one_savegame.html", form = form)
 
 @app.route("/upload_map/<int:sg_id>", methods = ["GET", "POST"])
@@ -202,16 +202,12 @@ def delete_savegame(sg_id):
         db.session.commit()
     return redirect(redirect_url())
 
-@app.route("/setup/<int:sg_id1>", methods = ["GET", "POST"], defaults={'sg_id2': None})
 @app.route("/setup/<int:sg_id1>/<int:sg_id2>", methods = ["GET", "POST"])
-def setup(sg_id1,sg_id2 = None):
+def setup(sg_id1,sg_id2):
     form = TagSetupForm()
     old_savegame = Savegame.query.get(sg_id1)
-    if sg_id2:
-        new_savegame = Savegame.query.get(sg_id2)
-        nations = set(old_savegame.player_nations + new_savegame.player_nations)
-    else:
-        nations = old_savegame.player_nations
+    new_savegame = Savegame.query.get(sg_id2)
+    nations = set(old_savegame.player_nations + new_savegame.player_nations)
 
     playertags =  sorted([(nation.tag,app.config["LOCALISATION_DICT"][nation.tag]) \
         if nation.tag in app.config["LOCALISATION_DICT"].keys() else (nation.tag,nation.tag) \
@@ -220,7 +216,7 @@ def setup(sg_id1,sg_id2 = None):
         return render_template("setup.html", form = form, playertags = playertags,\
                 sg_id1 = sg_id1, sg_id2 = sg_id2)
     if request.method == "POST":
-        if sg_id2:
+        if sg_id1 != sg_id2:
             old_tag_list = [nation.tag for nation in old_savegame.player_nations]
             new_tag_list = [nation.tag for nation in new_savegame.player_nations]
             for tag in new_tag_list:
@@ -237,53 +233,38 @@ def setup(sg_id1,sg_id2 = None):
                 db.session.rollback()
             else:
                 db.session.commit()
-            return redirect(url_for("show_stats", sg_id1 = sg_id1, sg_id2 = sg_id2))
-        else:
-            return redirect(url_for("home"))
+        return redirect(url_for("show_stats", sg_id1 = sg_id1, sg_id2 = sg_id2))
 
-@app.route("/setup/new_nation/<int:sg_id1>", methods = ["GET", "POST"], defaults={'sg_id2': None})
 @app.route("/setup/new_nation/<int:sg_id1>/<int:sg_id2>", methods = ["GET", "POST"])
-def new_nation(sg_id1,sg_id2 = None):
+def new_nation(sg_id1,sg_id2):
     form = NewNationForm()
-    if sg_id2:
-        playertags = [nation.tag for nation in Savegame.query.get(sg_id2).player_nations]
-        new_tag_list = [nation.tag for nation in Savegame.query.get(sg_id2).nations \
-                if nation.tag not in playertags]
-    else:
-        playertags = [nation.tag for nation in Savegame.query.get(sg_id1).player_nations]
-        new_tag_list = [nation.tag for nation in Savegame.query.get(sg_id1).nations \
+    playertags = [nation.tag for nation in Savegame.query.get(sg_id2).player_nations]
+    tag_list = [nation.tag for nation in Savegame.query.get(sg_id2).nations \
                 if nation.tag not in playertags]
     form.select.choices = \
         sorted([(tag,app.config["LOCALISATION_DICT"][tag]) \
         if tag in app.config["LOCALISATION_DICT"].keys() else (tag,tag) \
-        for tag in new_tag_list], key = lambda x: x[1])
+        for tag in tag_list], key = lambda x: x[1])
     if request.method == "POST":
-        if sg_id2:
-            sg = Savegame.query.get(sg_id2)
-        else:
-            sg = Savegame.query.get(sg_id1)
+        sg = Savegame.query.get(sg_id2)
         if form.select.data not in sg.player_nations:
             sg.player_nations.append(Nation.query.get(form.select.data))
         db.session.commit()
         return redirect(url_for("setup", sg_id1 = sg_id1, sg_id2 = sg_id2))
     return render_template("new_nation.html", form = form)
 
-@app.route("/setup/all_nations/<int:sg_id1>", methods = ["GET", "POST"], defaults={'sg_id2': None})
-@app.route("/setup/all_nations/<int:sg_id1>/<int:sg_id2>", methods = ["GET", "POST"])
-def all_nations(sg_id1,sg_id2 = None):
-    if sg_id2:
-        sg = Savegame.query.get(sg_id2)
-    else:
-        sg = Savegame.query.get(sg_id1)
+@app.route("/setup/all_nations/<int:sg_id1>/<int:sg_id2>", methods = ["GET"])
+def all_nations(sg_id1,sg_id2):
+
+    sg = Savegame.query.get(sg_id2)
     for nation in sg.nations:
         if nation not in sg.player_nations:
             sg.player_nations.append(nation)
     db.session.commit()
     return redirect(url_for("setup", sg_id1 = sg_id1, sg_id2 = sg_id2))
 
-@app.route("/setup/remove_nation/<int:sg_id1>/<string:tag>", methods = ["GET", "POST"], defaults={'sg_id2': None})
 @app.route("/setup/remove_nation/<int:sg_id1>/<int:sg_id2>/<string:tag>", methods = ["GET", "POST"])
-def remove_nation(sg_id1, tag, sg_id2 = None):
+def remove_nation(sg_id1, tag, sg_id2):
     if sg_id2:
         ids = [sg_id1,sg_id2]
     else:
@@ -296,14 +277,10 @@ def remove_nation(sg_id1, tag, sg_id2 = None):
             db.session.commit()
     return redirect(url_for("setup", sg_id1 = sg_id1, sg_id2 = sg_id2))
 
-@app.route("/setup/remove_all/<int:sg_id1>", methods = ["GET", "POST"], defaults={'sg_id2': None})
 @app.route("/setup/remove_all/<int:sg_id1>/<int:sg_id2>", methods = ["GET", "POST"])
-def remove_all(sg_id1,sg_id2 = None):
-    if sg_id2:
-        ids = [sg_id1,sg_id2]
-    else:
-        ids = [sg_id1]
-    for id in ids:
+def remove_all(sg_id1,sg_id2):
+
+    for id in (sg_id1,sg_id2):
         sg = Savegame.query.get(id)
         sg.player_nations = []
         db.session.commit()
