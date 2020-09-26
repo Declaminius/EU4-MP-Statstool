@@ -8,48 +8,6 @@ import datetime
 from colour import Color
 import os
 
-
-def colormap(values, mode=0, output_range=1):
-	""" Green - Red Colormap with min, max & mean
-		Takes list of values, 0,1,2 to specify mode and the output_range (1, 255 mainly) as input.
-		Mode 0: Colormap with Min - Median - Max
-		Mode 1: Colormap with (Min - ) Median - Max, 0 is always yellow.
-		Mode 2: Colors reversed: Green is min, red is max
-		Returns rgb color-values in range (0,1). """
-
-	values = [float(v) for v in values]
-	mini = min(values)
-	maxi = max(values)
-	if mode == 1 and mini < 0:
-		# if both positive and negative values are present, set median to 0.
-		median = 0
-	else:
-		median = np.median(values)
-	if (mini != median) and (median != maxi):
-		normal1 = plt.Normalize(mini, median, clip=True)
-		normal2 = plt.Normalize(median, maxi, clip=True)
-		normal = (normal1(values) + normal2(values)) / 2
-	else:
-		normal = plt.Normalize(mini, maxi, clip=True)(values)
-	color_values = []
-	for n in normal:
-		b = 0
-		if mode == 0:
-			r = (1 - n) * output_range
-			g = n * output_range
-
-		if mode == 1:
-			r = ((1 - n) / 2) * output_range
-			g = (n / 2 + 0.5) * output_range
-
-		if mode == 2:
-			r = n * output_range
-			g = (1 - n) * output_range
-
-		color_values.append((r, g, b))
-	return color_values
-
-
 def edit_parse(filename):
 	""" Pre-Parser: Parsing player nations and real (alive) nations
 		in order to enable dynamic nation selection.

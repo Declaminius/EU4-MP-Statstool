@@ -21,8 +21,8 @@ def redirect_url(default='home'):
            request.referrer or \
            url_for(default)
 
-@app.route("/", methods = ["GET", "POST"])
-@app.route("/home", methods = ["GET", "POST"])
+@app.route("/", methods = ["GET"])
+@app.route("/home", methods = ["GET"])
 def home():
     institutions = ["basesave", "renaissance", "colonialism", "printing_press", "global_trade", "manufactories", "enlightenment", "industrialization", "endsave"]
     savegame_dict = {}
@@ -44,7 +44,7 @@ def login():
             flash("You have been logged in!", "success")
             return redirect(url_for("home"))
         else:
-            flash("Login Unsuccessful. Please check email and password.", "danger")
+            flash("Login Unsuccessful. Please check username and password.", "danger")
     return render_template("login.html", title = "Log In", form = form)
 
 @app.route("/logout", methods = ["GET", "POST"])
@@ -178,7 +178,7 @@ def upload_map(sg_id):
         return redirect(url_for("home"))
     return render_template("upload_map.html", form = form)
 
-@app.route("/account/<int:user_id>", methods = ["GET", "POST"])
+@app.route("/account/<int:user_id>", methods = ["GET"])
 def account(user_id):
     savegames = Savegame.query.filter_by(user_id=user_id).all()
     header_labels = ["ID", "MP-Name", "Name", "Year", "Filename", "Map", "Delete"]
@@ -296,7 +296,7 @@ def remove_all(sg_id1,sg_id2 = None):
         db.session.commit()
     return redirect(url_for("setup", sg_id1 = sg_id1, sg_id2 = sg_id2))
 
-@app.route("/show_stats/<int:sg_id1>/<int:sg_id2>", methods = ["GET", "POST"])
+@app.route("/show_stats/<int:sg_id1>/<int:sg_id2>", methods = ["GET"])
 def show_stats(sg_id1,sg_id2):
     for id in (sg_id1,sg_id2):
         savegame = Savegame.query.get(id)
@@ -370,7 +370,7 @@ def configure(sg_id1,sg_id2):
         nation_formations.append((old_nation, new_nation))
     return render_template("configure.html", old_savegame = old_savegame, new_savegame = new_savegame, form = form, nation_formations = nation_formations)
 
-@app.route("/overview_table/<int:sg_id1>/<int:sg_id2>", methods = ["GET", "POST"])
+@app.route("/overview_table/<int:sg_id1>/<int:sg_id2>", methods = ["GET"])
 def overview_table(sg_id1,sg_id2):
     columns = ["great_power_score", "development", "effective_development", "navy_strength", "max_manpower", "income"]
     header_labels = ["Nation", "Great Power Score", "Development", "Effective Development", "Navy Strength", "Maximum Manpower", "Monthly Income"]
@@ -387,7 +387,7 @@ def overview_table(sg_id1,sg_id2):
     return render_template("table.html", old_savegame = Savegame.query.get(sg_id1), new_savegame = Savegame.query.get(sg_id2), \
         data = zip(nation_data,nation_tags,nation_colors), columns = columns, header_labels = header_labels, colorize_columns = [1,2,3,4,5,6], sort_by = 1, map = map)
 
-@app.route("/development/<int:sg_id1>/<int:sg_id2>", methods = ["GET", "POST"])
+@app.route("/development/<int:sg_id1>/<int:sg_id2>", methods = ["GET"])
 def development(sg_id1, sg_id2):
     old_year = Savegame.query.get(sg_id1).year
     new_year = Savegame.query.get(sg_id2).year
@@ -472,7 +472,7 @@ def table_data(category, old_year, new_year, tag_list, sg_id1, sg_id2, data_type
             nation_tags.append(new_tag)
     return zip(nation_data,nation_tags,nation_colors), header_labels, columns
 
-@app.route("/income/<int:sg_id1>/<int:sg_id2>", methods = ["GET", "POST"])
+@app.route("/income/<int:sg_id1>/<int:sg_id2>", methods = ["GET"])
 def income(sg_id1, sg_id2):
     old_year = Savegame.query.get(sg_id1).year
     new_year = Savegame.query.get(sg_id2).year
@@ -486,7 +486,7 @@ def income(sg_id1, sg_id2):
     map = Savegame.query.get(sg_id2).map_file
     return render_template("plot.html", old_savegame = Savegame.query.get(sg_id1), new_savegame = Savegame.query.get(sg_id2), image_files = [image_file], data = data, header_labels = header_labels, columns = columns, map = map)
 
-@app.route("/max_manpower/<int:sg_id1>/<int:sg_id2>", methods = ["GET", "POST"])
+@app.route("/max_manpower/<int:sg_id1>/<int:sg_id2>", methods = ["GET"])
 def max_manpower(sg_id1, sg_id2):
     old_year = Savegame.query.get(sg_id1).year
     new_year = Savegame.query.get(sg_id2).year
@@ -499,7 +499,7 @@ def max_manpower(sg_id1, sg_id2):
     map = Savegame.query.get(sg_id2).map_file
     return render_template("plot.html", old_savegame = Savegame.query.get(sg_id1), new_savegame = Savegame.query.get(sg_id2), image_files = [image_file], data = data, header_labels = header_labels, columns = columns, map = map)
 
-@app.route("/army_losses/<int:sg_id1>/<int:sg_id2>", methods = ["GET", "POST"])
+@app.route("/army_losses/<int:sg_id1>/<int:sg_id2>", methods = ["GET"])
 def army_losses(sg_id1, sg_id2):
     old_year = Savegame.query.get(sg_id1).year
     new_year = Savegame.query.get(sg_id2).year
@@ -516,7 +516,7 @@ def army_losses(sg_id1, sg_id2):
     map = Savegame.query.get(sg_id2).map_file
     return render_template("plot.html", old_savegame = Savegame.query.get(sg_id1), new_savegame = Savegame.query.get(sg_id2), image_files = image_files, data = data, header_labels = header_labels, columns = columns, map = map)
 
-@app.route("/income_over_time/<int:sg_id1>/<int:sg_id2>", methods = ["GET", "POST"])
+@app.route("/income_over_time/<int:sg_id1>/<int:sg_id2>", methods = ["GET"])
 def income_over_time(sg_id1, sg_id2):
 
     new_year = Savegame.query.get(sg_id2).year
@@ -564,7 +564,7 @@ def income_plot(category, old_year, new_year, sg_id1, sg_id2):
         db.session.add(plot)
         db.session.commit()
 
-@app.route("/provinces/<int:sg_id1>/<int:sg_id2>", methods = ["GET", "POST"])
+@app.route("/provinces/<int:sg_id1>/<int:sg_id2>", methods = ["GET"])
 def provinces(sg_id1, sg_id2):
     columns = ["province_id", "base_tax", "base_production", "base_manpower", "development", "trade_power", "religion", "culture"]
     header_labels = ["Nation", "ID", "Name", "Steuer", "Produktion", "Mannstärke", "Entwicklung", "Handelsmacht", "Religion", "Kultur", "Handelsgut"]
@@ -592,7 +592,7 @@ def provinces(sg_id1, sg_id2):
     return render_template("province_table.html", old_savegame = Savegame.query.get(sg_id1), new_savegame = Savegame.query.get(sg_id2), \
         data = zip(province_data,nation_tags,nation_colors), columns = columns, header_labels = header_labels)
 
-@app.route("/army_battles/<int:sg_id1>/<int:sg_id2>", methods = ["GET", "POST"])
+@app.route("/army_battles/<int:sg_id1>/<int:sg_id2>", methods = ["GET"])
 def army_battles(sg_id1, sg_id2):
     columns = ["date", "attacker_country", "attacker_infantry", "attacker_cavalry", \
         "attacker_artillery", "attacker_total", "attacker_losses", "attacker_commander", \
@@ -622,7 +622,7 @@ def army_battles(sg_id1, sg_id2):
     return render_template("army_battles_table.html", old_savegame = Savegame.query.get(sg_id1), new_savegame = Savegame.query.get(sg_id2), \
         data = battle_data, columns = columns, header_labels = header_labels)
 
-@app.route("/mana_spent/<int:sg_id1>/<int:sg_id2>", methods = ["GET", "POST"])
+@app.route("/mana_spent/<int:sg_id1>/<int:sg_id2>", methods = ["GET"])
 def mana_spent(sg_id1, sg_id2):
     columns = ["adm", "dip", "mil", "total"]
     header_labels = ["Nation", "ADM", "DIP", "MIL", "Total"]
@@ -661,7 +661,7 @@ def reload_plot(sg_id1, sg_id2, image_files):
         except FileNotFoundError:
             pass
     db.session.commit()
-    return redirect(url_for("show_stats", sg_id1 = sg_id1, sg_id2 = sg_id2))
+    return redirect(redirect_url())
 
 @app.route("/reload_all_plots/<int:sg_id1>/<int:sg_id2>", methods = ["GET", "POST"])
 def reload_all_plots(sg_id1, sg_id2):
@@ -674,9 +674,9 @@ def reload_all_plots(sg_id1, sg_id2):
         except FileNotFoundError:
             pass
     db.session.commit()
-    return redirect(url_for("configure", sg_id1 = sg_id1, sg_id2 = sg_id2))
+    return redirect(redirect_url())
 
-@app.route("/victory_points/<int:sg_id1>/<int:sg_id2>", methods = ["GET", "POST"])
+@app.route("/victory_points/<int:sg_id1>/<int:sg_id2>", methods = ["GET"])
 def victory_points(sg_id1, sg_id2):
     institution = Savegame.query.get(sg_id2).institution
     columns = ["standing_army", "navy_cannons"]
@@ -729,7 +729,7 @@ def victory_points(sg_id1, sg_id2):
     return render_template("table.html", old_savegame = Savegame.query.get(sg_id1), new_savegame = Savegame.query.get(sg_id2), \
         data = zip(nation_data,nation_tags,nation_colors), columns = columns, header_labels = header_labels, colorize_columns = [1,2,3,4,5,6], sort_by = 6)
 
-@app.route("/total_victory_points/<int:mp_id>", methods = ["GET", "POST"])
+@app.route("/total_victory_points/<int:mp_id>", methods = ["GET"])
 def total_victory_points(mp_id):
     savegame = Savegame.query.filter_by(mp_id = mp_id).order_by(desc(Savegame.year)).first()
 
@@ -760,7 +760,7 @@ def total_victory_points(mp_id):
         flash(f'Noch keine Siegpunkte vergeben.', 'danger')
         return redirect(url_for("home"))
 
-@app.route("/latest_stats/<int:mp_id>", methods = ["GET", "POST"])
+@app.route("/latest_stats/<int:mp_id>", methods = ["GET"])
 def latest_stats(mp_id):
     savegames = Savegame.query.filter_by(mp_id = mp_id).order_by(desc(Savegame.year)).all()
     if len(savegames) > 1:

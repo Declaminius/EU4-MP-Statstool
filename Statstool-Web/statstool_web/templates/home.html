@@ -1,3 +1,49 @@
+{% macro institution_block(institution1, institution2, label1, label2) -%}
+<div class="col-md-4">
+  <div class="card mb-4 shadow-sm">
+    <div class="card-body">
+      {% if savegame_dict[institution1] and savegame_dict[institution2] %}
+        <h4 class="card-text">{{label2}}: {{savegame_dict[institution1].year}}-{{savegame_dict[institution2].year}}</h4>
+      {% elif savegame_dict["renaissance"] %}
+        <h4 class="card-text">{{label2}}: {{savegame_dict[institution1].year}}-???</h4>
+      {% else %}
+        <h4 class="card-text">{{label2}}: ???-???</h4>
+      {% endif %}
+    </div>
+    {% if savegame_dict[institution2].map_file %}
+      <div class="media">
+        <img src="/static/maps/{{savegame_dict[institution2].map_file}}">
+      </div>
+    {% endif %}
+    <div class="text-center">
+      {% if savegame_dict[institution1] and savegame_dict[institution2] %}
+      <a class="btn btn-outline-primary btn-center mt-2 mb-2" href = "{{url_for('show_stats', sg_id1 = savegame_dict[institution1].id, sg_id2 = savegame_dict[institution2].id )}}">View</a>
+      {% endif %}
+      {% if current_user.is_authenticated %}
+        {% if savegame_dict[institution1] %}
+          {% if savegame_dict[institution2] %}
+            {% if not savegame_dict[institution2].map_file %}
+              <a class="btn btn-outline-primary btn-center mt-2 mb-2" href = "{{url_for('upload_map', sg_id = savegame_dict[institution2].id)}}">Add Map</a>
+            {% endif %}
+            <a class="btn btn-outline-danger btn-center mt-2 mb-2" href = "{{url_for('delete_savegame', sg_id = savegame_dict[institution1].id)}}">Delete {{label1}}</a>
+            <a class="btn btn-outline-danger btn-center mt-2 mb-2" href = "{{url_for('delete_savegame', sg_id = savegame_dict[institution2].id)}}">Delete {{label2}}</a>
+        {% else %}
+          <a class="btn btn-outline-danger btn-center mt-2 mb-2" href = "{{url_for('delete_savegame', sg_id = savegame_dict[institution1].id)}}">Delete {{label1}}</a>
+          <a class="btn btn-outline-primary btn-center mt-2 mb-2" href = "{{url_for('upload_one_savegame', institution = institution2)}}">Add {{label2}}</a>
+        {% endif %}
+      {% elif savegame_dict[institution2] %}
+        <a class="btn btn-outline-primary btn-center mt-2 mb-2" href = "{{url_for('upload_one_savegame', institution = institution1)}}">Add {{label1}}</a>
+        <a class="btn btn-outline-danger btn-center mt-2 mb-2" href = "{{url_for('delete_savegame', sg_id = savegame_dict[institution2].id)}}">Delete {{label2}}</a>
+      {% else %}
+        <a class="btn btn-outline-primary btn-center mt-2 mb-2" href = "{{url_for('upload_one_savegame', institution = institution1)}}">Add {{label1}}</a>
+        <a class="btn btn-outline-primary btn-center mt-2 mb-2" href = "{{url_for('upload_one_savegame', institution = institution2)}}">Add {{label2}}</a>
+      {% endif %}
+    {% endif %}
+    </div>
+  </div>
+</div>
+{%- endmacro %}
+
 {% extends "home_layout.html" %}
 {% block content %}
 <div class = "container">
@@ -17,314 +63,19 @@
     <div class="container">
 
       <div class="row">
-        <div class="col-md-4">
-          <div class="card mb-4 shadow-sm">
-            <div class="card-body">
-              {% if savegame_dict["renaissance"] %}
-                <h4 class="card-text">Renaissance: 1444-{{savegame_dict["renaissance"].year}}</h4>
-              {% else %}
-                <h4 class="card-text">Renaissance: 1444-???</h4>
-              {% endif %}
-            </div>
-            {% if savegame_dict["renaissance"].map_file %}
-              <div class="media">
-                <img src="/static/maps/{{savegame_dict['renaissance'].map_file}}">
-              </div>
-            {% endif %}
-            <div class="text-center">
-              {% if savegame_dict["basesave"] and savegame_dict["renaissance"] %}
-                <a class="btn btn-outline-primary btn-center mt-2 mb-2" href = "{{url_for('show_stats', sg_id1 = savegame_dict['basesave'].id, sg_id2 = savegame_dict['renaissance'].id )}}">View</a>
-              {% endif %}
-              {% if current_user.is_authenticated %}
-                {% if savegame_dict["basesave"] %}
-                  {% if savegame_dict["renaissance"] %}
-                    {% if not savegame_dict["renaissance"].map_file %}
-                      <a class="btn btn-outline-primary btn-center mt-2 mb-2" href = "{{url_for('upload_map', sg_id = savegame_dict['renaissance'].id)}}">Add Map</a>
-                    {% endif %}
-                    <a class="btn btn-outline-danger btn-center mt-2 mb-2" href = "{{url_for('delete_savegame', sg_id = savegame_dict['basesave'].id)}}">Delete 1444</a>
-                    <a class="btn btn-outline-danger btn-center mt-2 mb-2" href = "{{url_for('delete_savegame', sg_id = savegame_dict['renaissance'].id)}}">Delete Renaissance</a>
-                {% else %}
-                  <a class="btn btn-outline-danger btn-center mt-2 mb-2" href = "{{url_for('delete_savegame', sg_id = savegame_dict['basesave'].id)}}">Delete 1444</a>
-                  <a class="btn btn-outline-primary btn-center mt-2 mb-2" href = "{{url_for('upload_one_savegame', institution = 'renaissance')}}">Add Renaissance</a>
-                {% endif %}
-              {% elif savegame_dict["renaissance"] %}
-                <a class="btn btn-outline-primary btn-center mt-2 mb-2" href = "{{url_for('upload_one_savegame', institution = 'basesave')}}">Add 1444</a>
-                <a class="btn btn-outline-danger btn-center mt-2 mb-2" href = "{{url_for('delete_savegame', sg_id = savegame_dict['renaissance'].id)}}">Delete Renaissance</a>
-              {% else %}
-                <a class="btn btn-outline-primary btn-center mt-2 mb-2" href = "{{url_for('upload_one_savegame', institution = 'basesave')}}">Add 1444</a>
-                <a class="btn btn-outline-primary btn-center mt-2 mb-2" href = "{{url_for('upload_one_savegame', institution = 'renaissance')}}">Add Renaissance</a>
-              {% endif %}
-            {% endif %}
-            </div>
-          </div>
-        </div>
-        <div class="col-md-4">
-          <div class="card mb-4 shadow-sm">
-            <div class="card-body">
-              {% if savegame_dict["renaissance"] and savegame_dict["colonialism"] %}
-                <h4 class="card-text">Kolonialismus: {{savegame_dict["renaissance"].year}}-{{savegame_dict["colonialism"].year}}</h4>
-              {% elif savegame_dict["renaissance"] %}
-                <h4 class="card-text">Kolonialismus: {{savegame_dict["renaissance"].year}}-???</h4>
-              {% else %}
-                <h4 class="card-text">Kolonialismus: ???-???</h4>
-              {% endif %}
-            </div>
-            {% if savegame_dict["colonialism"].map_file %}
-              <div class="media">
-                <img src="/static/maps/{{savegame_dict['colonialism'].map_file}}">
-              </div>
-            {% endif %}
-            <div class="text-center">
-              {% if savegame_dict["renaissance"] and savegame_dict["colonialism"] %}
-              <a class="btn btn-outline-primary btn-center mt-2 mb-2" href = "{{url_for('show_stats', sg_id1 = savegame_dict['renaissance'].id, sg_id2 = savegame_dict['colonialism'].id )}}">View</a>
-              {% endif %}
-              {% if current_user.is_authenticated %}
-                {% if savegame_dict["renaissance"] and savegame_dict["colonialism"] %}
-                  {% if not savegame_dict["colonialism"].map_file %}
-                    <a class="btn btn-outline-primary btn-center mt-2 mb-2" href = "{{url_for('upload_map', sg_id = savegame_dict['colonialism'].id)}}">Add Map</a>
-                  {% endif %}
-                  <a class="btn btn-outline-danger btn-center mt-2 mb-2" href = "{{url_for('delete_savegame', sg_id = savegame_dict['colonialism'].id)}}">Delete</a>
-                {% endif %}
-                {% if not savegame_dict["renaissance"] %}
-                  <a class="btn btn-outline-primary btn-center mt-2 mb-2" href = "{{url_for('upload_one_savegame', institution = 'renaissance')}}">Add Renaissance</a>
-                {% endif %}
-                {% if not savegame_dict["colonialism"] %}
-                  <a class="btn btn-outline-primary btn-center mt-2 mb-2" href = "{{url_for('upload_one_savegame', institution = 'colonialism')}}">Add Kolonialismus</a>
-                {% endif %}
-              {% endif %}
-            </div>
-          </div>
-        </div>
-        <div class="col-md-4">
-        <div class="card mb-4 shadow-sm">
-        <div class="card-body">
-          {% if savegame_dict["colonialism"] and savegame_dict["printing_press"] %}
-            <h4 class="card-text">Druckerpresse: {{savegame_dict["colonialism"].year}}-{{savegame_dict["printing_press"].year}}</h4>
-          {% elif savegame_dict["colonialism"] %}
-            <h4 class="card-text">Druckerpresse: {{savegame_dict["colonialism"].year}}-???</h4>
-          {% else %}
-            <h4 class="card-text">Druckerpresse: ???-???</h4>
-          {% endif %}
-        </div>
-        {% if savegame_dict["printing_press"].map_file %}
-          <div class="media">
-            <img src="/static/maps/{{savegame_dict['printing_press'].map_file}}">
-          </div>
-        {% endif %}
-        <div class="text-center">
-          {% if savegame_dict["colonialism"] and savegame_dict["printing_press"] %}
-            <a class="btn btn-outline-primary btn-center mt-2 mb-2" href = "{{url_for('show_stats', sg_id1 = savegame_dict['colonialism'].id, sg_id2 = savegame_dict['printing_press'].id )}}">View</a>
-          {% endif %}
-          {% if current_user.is_authenticated %}
-            {% if savegame_dict["colonialism"] and savegame_dict["printing_press"] %}
-              {% if not savegame_dict["colonialism"].map_file %}
-                <a class="btn btn-outline-primary btn-center mt-2 mb-2" href = "{{url_for('upload_map', sg_id = savegame_dict['printing_press'].id)}}">Add Map</a>
-              {% endif %}
-              <a class="btn btn-outline-danger btn-center mt-2 mb-2" href = "{{url_for('delete_savegame', sg_id = savegame_dict['printing_press'].id)}}">Delete</a>
-            {% endif %}
-            {% if not savegame_dict["colonialism"] %}
-              <a class="btn btn-outline-primary btn-center mt-2 mb-2" href = "{{url_for('upload_one_savegame', institution = 'colonialism')}}">Add Kolonialismus</a>
-            {% endif %}
-            {% if not savegame_dict["printing_press"] %}
-              <a class="btn btn-outline-primary btn-center mt-2 mb-2" href = "{{url_for('upload_one_savegame', institution = 'printing_press')}}">Add Druckerpresse</a>
-            {% endif %}
-          {% endif %}
-        </div>
-        </div>
-        </div>
-        </div>
-        <div class="row">
-          <div class="col-md-4">
-          <div class="card mb-4 shadow-sm">
-          <div class="card-body">
-            {% if savegame_dict["printing_press"] and savegame_dict["global_trade"] %}
-              <h4 class="card-text">Globaler Handel: {{savegame_dict["printing_press"].year}}-{{savegame_dict["global_trade"].year}}</h4>
-            {% elif savegame_dict["printing_press"] %}
-              <h4 class="card-text">Globaler Handel: {{savegame_dict["printing_press"].year}}-???</h4>
-            {% else %}
-              <h4 class="card-text">Globaler Handel: ???-???</h4>
-            {% endif %}
-          </div>
-          {% if savegame_dict["global_trade"].map_file %}
-            <div class="media">
-              <img src="/static/maps/{{savegame_dict['global_trade'].map_file}}">
-            </div>
-          {% endif %}
-          <div class="text-center">
-            {% if savegame_dict["printing_press"] and savegame_dict["global_trade"] %}
-              <a class="btn btn-outline-primary btn-center mt-2 mb-2" href = "{{url_for('show_stats', sg_id1 = savegame_dict['printing_press'].id, sg_id2 = savegame_dict['global_trade'].id )}}">View</a>
-            {% endif %}
-            {% if current_user.is_authenticated %}
-              {% if savegame_dict["printing_press"] and savegame_dict["global_trade"] %}
-                {% if not savegame_dict["printing_press"].map_file %}
-                  <a class="btn btn-outline-primary btn-center mt-2 mb-2" href = "{{url_for('upload_map', sg_id = savegame_dict['global_trade'].id)}}">Add Map</a>
-                {% endif %}
-                <a class="btn btn-outline-danger btn-center mt-2 mb-2" href = "{{url_for('delete_savegame', sg_id = savegame_dict['global_trade'].id)}}">Delete</a>
-              {% endif %}
-              {% if not savegame_dict["printing_press"] %}
-                <a class="btn btn-outline-primary btn-center mt-2 mb-2" href = "{{url_for('upload_one_savegame', institution = 'printing_press')}}">Add Druckerpresse</a>
-              {% endif %}
-              {% if not savegame_dict["global_trade"] %}
-                <a class="btn btn-outline-primary btn-center mt-2 mb-2" href = "{{url_for('upload_one_savegame', institution = 'global_trade')}}">Add Globaler Handel</a>
-              {% endif %}
-            {% endif %}
-          </div>
-          </div>
-          </div>
-          <div class="col-md-4">
-          <div class="card mb-4 shadow-sm">
-          <div class="card-body">
-            {% if savegame_dict["global_trade"] and savegame_dict["manufactories"] %}
-              <h4 class="card-text">Manufakturen: {{savegame_dict["global_trade"].year}}-{{savegame_dict["manufactories"].year}}</h4>
-            {% elif savegame_dict["global_trade"] %}
-              <h4 class="card-text">Manufakturen: {{savegame_dict["global_trade"].year}}-???</h4>
-            {% else %}
-              <h4 class="card-text">Manufakturen: ???-???</h4>
-            {% endif %}
-          </div>
-          {% if savegame_dict["manufactories"].map_file %}
-            <div class="media">
-              <img src="/static/maps/{{savegame_dict['manufactories'].map_file}}">
-            </div>
-          {% endif %}
-          <div class="text-center">
-            {% if savegame_dict["global_trade"] and savegame_dict["manufactories"] %}
-              <a class="btn btn-outline-primary btn-center mt-2 mb-2" href = "{{url_for('show_stats', sg_id1 = savegame_dict['global_trade'].id, sg_id2 = savegame_dict['manufactories'].id )}}">View</a>
-            {% endif %}
-            {% if current_user.is_authenticated %}
-              {% if savegame_dict["global_trade"] and savegame_dict["manufactories"] %}
-                {% if not savegame_dict["global_trade"].map_file %}
-                  <a class="btn btn-outline-primary btn-center mt-2 mb-2" href = "{{url_for('upload_map', sg_id = savegame_dict['manufactories'].id)}}">Add Map</a>
-                {% endif %}
-                <a class="btn btn-outline-danger btn-center mt-2 mb-2" href = "{{url_for('delete_savegame', sg_id = savegame_dict['manufactories'].id)}}">Delete</a>
-              {% endif %}
-              {% if not savegame_dict["global_trade"] %}
-                <a class="btn btn-outline-primary btn-center mt-2 mb-2" href = "{{url_for('upload_one_savegame', institution = 'global_trade')}}">Add Globaler Handel</a>
-              {% endif %}
-              {% if not savegame_dict["manufactories"] %}
-                <a class="btn btn-outline-primary btn-center mt-2 mb-2" href = "{{url_for('upload_one_savegame', institution = 'manufactories')}}">Add Manufakturen</a>
-              {% endif %}
-            {% endif %}
-          </div>
-          </div>
-          </div>
-          <div class="col-md-4">
-          <div class="card mb-4 shadow-sm">
-          <div class="card-body">
-            {% if savegame_dict["manufactories"] and savegame_dict["enlightenment"] %}
-              <h4 class="card-text">Aufklärung: {{savegame_dict["manufactories"].year}}-{{savegame_dict["enlightenment"].year}}</h4>
-            {% elif savegame_dict["manufactories"] %}
-              <h4 class="card-text">Aufklärung: {{savegame_dict["manufactories"].year}}-???</h4>
-            {% else %}
-              <h4 class="card-text">Aufklärung: ???-???</h4>
-            {% endif %}
-          </div>
-          {% if savegame_dict["enlightenment"].map_file %}
-            <div class="media">
-              <img src="/static/maps/{{savegame_dict['enlightenment'].map_file}}">
-            </div>
-          {% endif %}
-          <div class="text-center">
-            {% if savegame_dict["manufactories"] and savegame_dict["enlightenment"] %}
-              <a class="btn btn-outline-primary btn-center mt-2 mb-2" href = "{{url_for('show_stats', sg_id1 = savegame_dict['manufactories'].id, sg_id2 = savegame_dict['enlightenment'].id )}}">View</a>
-            {% endif %}
-            {% if current_user.is_authenticated %}
-              {% if savegame_dict["manufactories"] and savegame_dict["enlightenment"] %}
-                {% if not savegame_dict["manufactories"].map_file %}
-                  <a class="btn btn-outline-primary btn-center mt-2 mb-2" href = "{{url_for('upload_map', sg_id = savegame_dict['enlightenment'].id)}}">Add Map</a>
-                {% endif %}
-                <a class="btn btn-outline-danger btn-center mt-2 mb-2" href = "{{url_for('delete_savegame', sg_id = savegame_dict['enlightenment'].id)}}">Delete</a>
-              {% endif %}
-              {% if not savegame_dict["manufactories"] %}
-                <a class="btn btn-outline-primary btn-center mt-2 mb-2" href = "{{url_for('upload_one_savegame', institution = 'manufactories')}}">Add Manufakturen</a>
-              {% endif %}
-              {% if not savegame_dict["enlightenment"] %}
-                <a class="btn btn-outline-primary btn-center mt-2 mb-2" href = "{{url_for('upload_one_savegame', institution = 'enlightenment')}}">Add Aufklärung</a>
-              {% endif %}
-            {% endif %}
-          </div>
-          </div>
-          </div>
-          </div>
-          <div class="row">
-            <div class="col-md-6">
-            <div class="card mb-4 shadow-sm">
-            <div class="card-body">
-              {% if savegame_dict["enlightenment"] and savegame_dict["industrialization"] %}
-                <h4 class="card-text">Industrialiserung: {{savegame_dict["enlightenment"].year}}-{{savegame_dict["industrialization"].year}}</h4>
-              {% elif savegame_dict["enlightenment"] %}
-                <h4 class="card-text">Industrialiserung: {{savegame_dict["enlightenment"].year}}-???</h4>
-              {% else %}
-                <h4 class="card-text">Industrialiserung: ???-???</h4>
-              {% endif %}
-            </div>
-            {% if savegame_dict["industrialization"].map_file %}
-              <div class="media">
-                <img src="/static/maps/{{savegame_dict['industrialization'].map_file}}">
-              </div>
-            {% endif %}
-            <div class="text-center">
-              {% if savegame_dict["enlightenment"] and savegame_dict["industrialization"] %}
-                <a class="btn btn-outline-primary btn-center mt-2 mb-2" href = "{{url_for('show_stats', sg_id1 = savegame_dict['enlightenment'].id, sg_id2 = savegame_dict['industrialization'].id )}}">View</a>
-              {% endif %}
-              {% if current_user.is_authenticated %}
-                {% if savegame_dict["enlightenment"] and savegame_dict["industrialization"] %}
-                  {% if not savegame_dict["enlightenment"].map_file %}
-                    <a class="btn btn-outline-primary btn-center mt-2 mb-2" href = "{{url_for('upload_map', sg_id = savegame_dict['industrialization'].id)}}">Add Map</a>
-                  {% endif %}
-                  <a class="btn btn-outline-danger btn-center mt-2 mb-2" href = "{{url_for('delete_savegame', sg_id = savegame_dict['industrialization'].id)}}">Delete</a>
-                {% endif %}
-                {% if not savegame_dict["enlightenment"] %}
-                  <a class="btn btn-outline-primary btn-center mt-2 mb-2" href = "{{url_for('upload_one_savegame', institution = 'enlightenment')}}">Add Aufklärung</a>
-                {% endif %}
-                {% if not savegame_dict["industrialization"] %}
-                  <a class="btn btn-outline-primary btn-center mt-2 mb-2" href = "{{url_for('upload_one_savegame', institution = 'industrialization')}}">Add Industrialiserung</a>
-                {% endif %}
-              {% endif %}
-            </div>
-            </div>
-            </div>
-            <div class="col-md-6">
-            <div class="card mb-4 shadow-sm">
-            <div class="card-body">
-              {% if savegame_dict["industrialization"] and savegame_dict["endsave"] %}
-                <h4 class="card-text">MP-Ende: {{savegame_dict["industrialization"].year}}-{{savegame_dict["endsave"].year}}</h4>
-              {% elif savegame_dict["industrialization"] %}
-                <h4 class="card-text">MP-Ende: {{savegame_dict["industrialization"].year}}-???</h4>
-              {% else %}
-                <h4 class="card-text">MP-Ende: ???-???</h4>
-              {% endif %}
-            </div>
-            {% if savegame_dict["endsave"].map_file %}
-              <div class="media">
-                <img src="/static/maps/{{savegame_dict['endsave'].map_file}}">
-              </div>
-            {% endif %}
-            <div class="text-center">
-              {% if savegame_dict["industrialization"] and savegame_dict["endsave"] %}
-                <a class="btn btn-outline-primary btn-center mt-2 mb-2" href = "{{url_for('show_stats', sg_id1 = savegame_dict['industrialization'].id, sg_id2 = savegame_dict['endsave'].id )}}">View</a>
-              {% endif %}
-              {% if current_user.is_authenticated %}
-                {% if savegame_dict["industrialization"] and savegame_dict["endsave"] %}
-                  {% if not savegame_dict["industrialization"].map_file %}
-                    <a class="btn btn-outline-primary btn-center mt-2 mb-2" href = "{{url_for('upload_map', sg_id = savegame_dict['endsave'].id)}}">Add Map</a>
-                  {% endif %}
-                  <a class="btn btn-outline-danger btn-center mt-2 mb-2" href = "{{url_for('delete_savegame', sg_id = savegame_dict['endsave'].id)}}">Delete</a>
-                {% endif %}
-                {% if not savegame_dict["industrialization"] %}
-                  <a class="btn btn-outline-primary btn-center mt-2 mb-2" href = "{{url_for('upload_one_savegame', institution = 'industrialization')}}">Add Industrialiserung</a>
-                {% endif %}
-                {% if not savegame_dict["endsave"] %}
-                  <a class="btn btn-outline-primary btn-center mt-2 mb-2" href = "{{url_for('upload_one_savegame', institution = 'endsave')}}">Add End</a>
-                {% endif %}
-              {% endif %}
-            </div>
-            </div>
-            </div>
-            </div>
-          </div>
-        </div>
-
+        {{ institution_block("basesave", "renaissance", "1444", "Renaissance") }}
+        {{ institution_block("renaissance", "colonialism", "Renaissance", "Kolonialismus") }}
+        {{ institution_block("colonialism", "printing_press", "Kolonialismus", "Druckerpresse") }}
+      </div>
+      <div class="row">
+        {{ institution_block("printing_press", "global_trade", "Druckerpresse", "Globaler Handel") }}
+        {{ institution_block("global_trade", "manufactories", "Globaler Handel", "Manufakturen") }}
+        {{ institution_block("manufactories", "enlightenment", "Manufakturen", "Aufklärung") }}
+      </div>
+      <div class="row">
+        {{ institution_block("enlightenment", "industrialization", "Aufklärung", "Industrialiserung") }}
+        {{ institution_block("industrialization", "endsave", "Industrialiserung", "MP-Ende") }}  
+      </div>
 </main>
 </div>
 {% endblock content %}
