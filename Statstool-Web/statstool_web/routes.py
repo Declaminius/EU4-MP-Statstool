@@ -268,6 +268,19 @@ def new_nation(sg_id1,sg_id2 = None):
         return redirect(url_for("setup", sg_id1 = sg_id1, sg_id2 = sg_id2))
     return render_template("new_nation.html", form = form)
 
+@app.route("/setup/all_nations/<int:sg_id1>", methods = ["GET", "POST"], defaults={'sg_id2': None})
+@app.route("/setup/all_nations/<int:sg_id1>/<int:sg_id2>", methods = ["GET", "POST"])
+def all_nations(sg_id1,sg_id2 = None):
+    if sg_id2:
+        sg = Savegame.query.get(sg_id2)
+    else:
+        sg = Savegame.query.get(sg_id1)
+    for nation in sg.nations:
+        if nation not in sg.player_nations:
+            sg.player_nations.append(nation)
+    db.session.commit()
+    return redirect(url_for("setup", sg_id1 = sg_id1, sg_id2 = sg_id2))
+
 @app.route("/setup/remove_nation/<int:sg_id1>/<string:tag>", methods = ["GET", "POST"], defaults={'sg_id2': None})
 @app.route("/setup/remove_nation/<int:sg_id1>/<int:sg_id2>/<string:tag>", methods = ["GET", "POST"])
 def remove_nation(sg_id1, tag, sg_id2 = None):

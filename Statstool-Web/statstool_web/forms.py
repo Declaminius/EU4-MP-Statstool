@@ -11,17 +11,17 @@ class SavegameSelectForm(FlaskForm):
     savegame2 = FileField("Select second savegame", validators = [DataRequired(), FileAllowed(['eu4'], "Only EU4-Saves")])
     savegame2_name = StringField("Second save name (optional)")
     savegame2_map = FileField("Upload second map (optional)", validators = [FileAllowed(['png', 'jpg'])])
-    submit = SubmitField("Parse")
+    submit = SubmitField("Upload")
 
 class OneSavegameSelectForm(FlaskForm):
     savegame = FileField("Select savegame", validators = [DataRequired(), FileAllowed(['eu4'], "Only EU4-Saves")])
     savegame_name = StringField("Save name (optional)")
     map = FileField("Upload map (optional)", validators = [FileAllowed(['png', 'jpg'])])
-    submit = SubmitField("Parse")
+    submit = SubmitField("Upload")
 
 class MapSelectForm(FlaskForm):
     map = FileField("Upload map", validators = [DataRequired(), FileAllowed(['png', 'jpg'])])
-    submit = SubmitField("Parse")
+    submit = SubmitField("Upload")
 
 class TagSetupForm(FlaskForm):
     submit = SubmitField("Parse")
