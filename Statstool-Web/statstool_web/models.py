@@ -77,6 +77,7 @@ class User(db.Model, UserMixin):
     email = db.Column(db.String(120), unique = True, nullable = False)
     password = db.Column(db.String(60), nullable = False)
     savegames = db.relationship("Savegame", backref = "owner", lazy = True)
+    mps = db.relationship("MP", backref = "admin", lazy = True)
 
     def get_reset_token(self, expires_sec = 1800):
         s = Serializer(current_app.config["SECRET_KEY"], expires_sec)
@@ -94,12 +95,19 @@ class User(db.Model, UserMixin):
     def __repr__(self):
         return f"User('{self.username}','{self.email}','{self.image_file}')"
 
-
 class MP(db.Model):
     __tablename__ = 'mp'
     id = db.Column(db.Integer, primary_key = True)
+    admin_id = db.Column(db.Integer, db.ForeignKey('user.id'))
     name = db.Column(db.String, nullable = False)
     savegames = db.relationship("Savegame", backref = "mp", lazy = True)
+    players = db.relationship("MPNationPlayer", backref = "mp", lazy = True)
+
+class MPNationPlayer(db.Model):
+    __tablename__ = 'mp_nation_player'
+    mp_id = db.Column(db.Integer, db.ForeignKey('mp.id'), primary_key = True)
+    nation_tag = db.Column(db.String(3), db.ForeignKey('nation.tag'), primary_key = True)
+    player_name = db.Column(db.String())
 
 class Savegame(db.Model):
     __tablename__ = 'savegame'

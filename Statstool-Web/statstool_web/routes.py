@@ -1,4 +1,4 @@
-from flask import render_template, url_for, send_from_directory, request, redirect, flash
+from flask import render_template, url_for, send_from_directory, request, redirect, flash, abort
 from statstool_web.forms import SavegameSelectForm, OneSavegameSelectForm, MapSelectForm, TagSetupForm, NewNationForm, NationFormationForm, LoginForm, RegistrationForm
 from statstool_web import app, db, bcrypt
 from statstool_web.parserfunctions import edit_parse, parse
@@ -28,7 +28,8 @@ def home():
     savegame_dict = {}
     for inst in institutions:
         savegame_dict[inst] = Savegame.query.filter_by(mp_id=1, institution=inst).first()
-    return render_template("home.html", savegame_dict = savegame_dict)
+    mp = MP.query.get(1)
+    return render_template("home.html", savegame_dict = savegame_dict, mp = mp)
 
 @app.route("/login", methods = ["GET", "POST"])
 def login():
@@ -68,6 +69,7 @@ def register():
     return render_template("register.html", title = "Register", form = form)
 
 @app.route("/upload_savegames", methods = ["GET", "POST"])
+@login_required
 def upload_savegames():
     form = SavegameSelectForm()
     if form.validate_on_submit():
@@ -116,9 +118,13 @@ def upload_savegames():
         return redirect(url_for("setup", sg_id1 = sg_ids[0], sg_id2 = sg_ids[1]))
     return render_template("upload_savegames.html", form = form)
 
-@app.route("/upload_one_savegame", methods = ["GET", "POST"], defaults={'institution': None})
-@app.route("/upload_one_savegame/<string:institution>", methods = ["GET", "POST"])
-def upload_one_savegame(institution = None):
+@app.route("/upload_one_savegame", methods = ["GET", "POST"], defaults={'mp_id': None, 'institution': None})
+@app.route("/upload_one_savegame/<int:mp_id>/<string:institution>", methods = ["GET", "POST"])
+@login_required
+def upload_one_savegame(mp_id = None, institution = None):
+    mp = MP.query.get(mp_id)
+    if (mp_id and mp.admin != current_user):
+        abort(403)
     form = OneSavegameSelectForm()
     if form.validate_on_submit():
         Path(os.path.join(app.root_path, app.config['UPLOAD_FOLDER'])).mkdir(parents=True, exist_ok=True)
@@ -138,9 +144,9 @@ def upload_one_savegame(institution = None):
         try:
             playertags, tag_list, year = edit_parse(path)
             if map_path:
-                savegame = Savegame(file = random, mp_id = 1, map_file = map_random, institution = institution, owner = current_user, year = year, name = form.savegame_name.data)
+                savegame = Savegame(file = random, mp_id = mp_id, map_file = map_random, institution = institution, owner = current_user, year = year, name = form.savegame_name.data)
             else:
-                savegame = Savegame(file = random, mp_id = 1, institution = institution, owner = current_user, year = year, name = form.savegame_name.data)
+                savegame = Savegame(file = random, mp_id = mp_id, institution = institution, owner = current_user, year = year, name = form.savegame_name.data)
             for tag in tag_list:
                 if not Nation.query.get(tag):
                     if tag in app.config["LOCALISATION_DICT"].keys():
@@ -164,6 +170,7 @@ def upload_one_savegame(institution = None):
     return render_template("upload_one_savegame.html", form = form)
 
 @app.route("/upload_map/<int:sg_id>", methods = ["GET", "POST"])
+@login_required
 def upload_map(sg_id):
     form = MapSelectForm()
     if form.validate_on_submit():
@@ -179,6 +186,7 @@ def upload_map(sg_id):
     return render_template("upload_map.html", form = form)
 
 @app.route("/account/<int:user_id>", methods = ["GET"])
+@login_required
 def account(user_id):
     savegames = Savegame.query.filter_by(user_id=user_id).all()
     header_labels = ["ID", "MP-Name", "Name", "Year", "Filename", "Map", "Delete"]
@@ -195,6 +203,7 @@ def account(user_id):
     return render_template("account.html", data = zip(ids,data,maps), header_labels = header_labels)
 
 @app.route("/delete_savegame/<int:sg_id>", methods = ["GET", "POST"])
+@login_required
 def delete_savegame(sg_id):
     savegame = Savegame.query.get(sg_id)
     if savegame:
@@ -203,6 +212,7 @@ def delete_savegame(sg_id):
     return redirect(redirect_url())
 
 @app.route("/setup/<int:sg_id1>/<int:sg_id2>", methods = ["GET", "POST"])
+@login_required
 def setup(sg_id1,sg_id2):
     form = TagSetupForm()
     old_savegame = Savegame.query.get(sg_id1)
@@ -236,6 +246,7 @@ def setup(sg_id1,sg_id2):
         return redirect(url_for("show_stats", sg_id1 = sg_id1, sg_id2 = sg_id2))
 
 @app.route("/setup/new_nation/<int:sg_id1>/<int:sg_id2>", methods = ["GET", "POST"])
+@login_required
 def new_nation(sg_id1,sg_id2):
     form = NewNationForm()
     playertags = [nation.tag for nation in Savegame.query.get(sg_id2).player_nations]
@@ -254,6 +265,7 @@ def new_nation(sg_id1,sg_id2):
     return render_template("new_nation.html", form = form)
 
 @app.route("/setup/all_nations/<int:sg_id1>/<int:sg_id2>", methods = ["GET"])
+@login_required
 def all_nations(sg_id1,sg_id2):
 
     sg = Savegame.query.get(sg_id2)
@@ -264,6 +276,7 @@ def all_nations(sg_id1,sg_id2):
     return redirect(url_for("setup", sg_id1 = sg_id1, sg_id2 = sg_id2))
 
 @app.route("/setup/remove_nation/<int:sg_id1>/<int:sg_id2>/<string:tag>", methods = ["GET", "POST"])
+@login_required
 def remove_nation(sg_id1, tag, sg_id2):
     if sg_id2:
         ids = [sg_id1,sg_id2]
@@ -278,6 +291,7 @@ def remove_nation(sg_id1, tag, sg_id2):
     return redirect(url_for("setup", sg_id1 = sg_id1, sg_id2 = sg_id2))
 
 @app.route("/setup/remove_all/<int:sg_id1>/<int:sg_id2>", methods = ["GET", "POST"])
+@login_required
 def remove_all(sg_id1,sg_id2):
 
     for id in (sg_id1,sg_id2):
@@ -309,7 +323,10 @@ def show_stats(sg_id1,sg_id2):
             formation = NationFormation(old_savegame_id = sg_id1, new_savegame_id = sg_id2, old_nation_tag = nation.tag, new_nation_tag = nation.tag)
             db.session.add(formation)
     db.session.commit()
-    return render_template("show_stats_layout.html", old_savegame = old_savegame, new_savegame = new_savegame)
+    if current_user.is_authenticated and sg_id1 != sg_id2:
+        return redirect(url_for("configure", sg_id1 = sg_id1, sg_id2 = sg_id2))
+    else:
+        return redirect(url_for("overview_table", sg_id1 = sg_id1, sg_id2 = sg_id2))
 
 @app.route("/remove_nation_formation/<int:sg_id1>/<int:sg_id2>/<string:old>/<string:new>", methods = ["GET", "POST"])
 def remove_nation_formation(sg_id1,sg_id2,old,new):
@@ -319,6 +336,7 @@ def remove_nation_formation(sg_id1,sg_id2,old,new):
     return redirect(url_for("show_stats", sg_id1 = sg_id1, sg_id2 = sg_id2))
 
 @app.route("/configure/<int:sg_id1>/<int:sg_id2>", methods = ["GET", "POST"])
+@login_required
 def configure(sg_id1,sg_id2):
     form = NationFormationForm()
     if request.method == "POST":

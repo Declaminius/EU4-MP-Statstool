@@ -22,7 +22,28 @@
                 {% else %}
                   <td>None</td>
                 {% endif %}
-                <td><a class="btn btn-outline-danger btn-center mt-2 mb-2" href = "{{url_for('delete_savegame', sg_id = id)}}">Delete</a></td>
+                <td>
+                  <div class="modal fade" id="deleteModal" tabindex="-1" role="dialog" aria-labelledby="deleteModalLabel" aria-hidden="true">
+                    <div class="modal-dialog" role="document">
+                      <div class="modal-content">
+                        <div class="modal-header">
+                          <h5 class="modal-title" id="deleteModalLabel">Are you sure you want to delete the savegame?</h5>
+                          <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                            <span aria-hidden="true">&times;</span>
+                          </button>
+                        </div>
+                        <div class="modal-footer">
+                          <div class = "col text-center">
+                            <form action = "{{url_for('delete_savegame', sg_id = id)}}" method = "POST">
+                              <input class = "btn btn-danger ml-auto" type = "submit" value = "Delete {{label1}}">
+                            </form>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                  <a class="btn btn-outline-danger btn-center mt-2 mb-2" data-toggle="modal" data-target="#deleteModal" href = "#">Delete</a>
+                </td>
               {% else %}
               </tr>
             {% endfor %}

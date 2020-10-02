@@ -1,4 +1,47 @@
 {% macro institution_block(institution1, institution2, label1, label2) -%}
+{% if savegame_dict[institution1] %}
+  <div class="modal fade" id="deleteModal1" tabindex="-1" role="dialog" aria-labelledby="deleteModalLabel1" aria-hidden="true">
+    <div class="modal-dialog" role="document">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title" id="deleteModalLabel1">Are you sure you want to delete the savegame?</h5>
+          <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+            <span aria-hidden="true">&times;</span>
+          </button>
+        </div>
+        <div class="modal-footer">
+          <div class = "col text-center">
+            <form action = "{{url_for('delete_savegame', sg_id = savegame_dict[institution1].id)}}" method = "POST">
+              <input class = "btn btn-danger ml-auto" type = "submit" value = "Delete {{label1}}">
+            </form>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+{% endif %}
+
+{% if savegame_dict[institution2] %}
+  <div class="modal fade" id="deleteModal2" tabindex="-1" role="dialog" aria-labelledby="deleteModalLabel2" aria-hidden="true">
+    <div class="modal-dialog" role="document">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title" id="deleteModalLabel2">Delete {{label2}}</h5>
+          <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+            <span aria-hidden="true">&times;</span>
+          </button>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+          <form action = "{{url_for('delete_savegame', sg_id = savegame_dict[institution2].id)}}" method = "POST">
+            <input class = "btn btn-danger" type = "submit" value = "Delete">
+          </form>
+        </div>
+      </div>
+    </div>
+  </div>
+{% endif %}
+
 <div class="col-md-4">
   <div class="card mb-4 shadow-sm">
     <div class="card-body">
@@ -19,24 +62,24 @@
       {% if savegame_dict[institution1] and savegame_dict[institution2] %}
       <a class="btn btn-outline-primary btn-center mt-2 mb-2" href = "{{url_for('show_stats', sg_id1 = savegame_dict[institution1].id, sg_id2 = savegame_dict[institution2].id )}}">View</a>
       {% endif %}
-      {% if current_user.is_authenticated %}
+      {% if current_user == mp.admin %}
         {% if savegame_dict[institution1] %}
           {% if savegame_dict[institution2] %}
             {% if not savegame_dict[institution2].map_file %}
               <a class="btn btn-outline-primary btn-center mt-2 mb-2" href = "{{url_for('upload_map', sg_id = savegame_dict[institution2].id)}}">Add Map</a>
             {% endif %}
-            <a class="btn btn-outline-danger btn-center mt-2 mb-2" href = "{{url_for('delete_savegame', sg_id = savegame_dict[institution1].id)}}">Delete {{label1}}</a>
-            <a class="btn btn-outline-danger btn-center mt-2 mb-2" href = "{{url_for('delete_savegame', sg_id = savegame_dict[institution2].id)}}">Delete {{label2}}</a>
+            <a class="btn btn-outline-danger btn-center mt-2 mb-2" data-toggle="modal" data-target="#deleteModal1" href = "#">Delete {{label1}}</a>
+            <a class="btn btn-outline-danger btn-center mt-2 mb-2" data-toggle="modal" data-target="#deleteModal2" href = "#">Delete {{label2}}</a>
         {% else %}
-          <a class="btn btn-outline-danger btn-center mt-2 mb-2" href = "{{url_for('delete_savegame', sg_id = savegame_dict[institution1].id)}}">Delete {{label1}}</a>
-          <a class="btn btn-outline-primary btn-center mt-2 mb-2" href = "{{url_for('upload_one_savegame', institution = institution2)}}">Add {{label2}}</a>
+          <a class="btn btn-outline-danger btn-center mt-2 mb-2" data-toggle="modal" data-target="#deleteModal1" href = "#">Delete {{label1}}</a>
+          <a class="btn btn-outline-primary btn-center mt-2 mb-2" href = "{{url_for('upload_one_savegame', mp_id = mp.id, institution = institution2)}}">Add {{label2}}</a>
         {% endif %}
       {% elif savegame_dict[institution2] %}
-        <a class="btn btn-outline-primary btn-center mt-2 mb-2" href = "{{url_for('upload_one_savegame', institution = institution1)}}">Add {{label1}}</a>
-        <a class="btn btn-outline-danger btn-center mt-2 mb-2" href = "{{url_for('delete_savegame', sg_id = savegame_dict[institution2].id)}}">Delete {{label2}}</a>
+        <a class="btn btn-outline-primary btn-center mt-2 mb-2" href = "{{url_for('upload_one_savegame', mp_id = mp.id, institution = institution1)}}">Add {{label1}}</a>
+        <a class="btn btn-outline-danger btn-center mt-2 mb-2" data-toggle="modal" data-target="#deleteModal2" href = "#">Delete {{label2}}</a>
       {% else %}
-        <a class="btn btn-outline-primary btn-center mt-2 mb-2" href = "{{url_for('upload_one_savegame', institution = institution1)}}">Add {{label1}}</a>
-        <a class="btn btn-outline-primary btn-center mt-2 mb-2" href = "{{url_for('upload_one_savegame', institution = institution2)}}">Add {{label2}}</a>
+        <a class="btn btn-outline-primary btn-center mt-2 mb-2" href = "{{url_for('upload_one_savegame', mp_id = mp.id, institution = institution1)}}">Add {{label1}}</a>
+        <a class="btn btn-outline-primary btn-center mt-2 mb-2" href = "{{url_for('upload_one_savegame', mp_id = mp.id, institution = institution2)}}">Add {{label2}}</a>
       {% endif %}
     {% endif %}
     </div>
@@ -46,36 +89,56 @@
 
 {% extends "home_layout.html" %}
 {% block content %}
-<div class = "container">
-<main role="main">
+<div class = "row" >
+  <div class="col-md-10">
+    <div class = "container">
+      <section class="jumbotron text-center">
+        <div class="container">
+          <h1>Sonntags-MP: S2E2 - Per Aspera Ad Astra</h1>
+          <p class="lead text-muted">Statistiken und Siegpunkts-Übersicht für das 17.Sonntags-MP der Strategie-Zone.</p>
+          <p>
+            <a href="{{url_for('latest_stats', mp_id = mp.id)}}" class="btn btn-primary my-2">Aktuellste Statistik</a>
+            <a href="{{url_for('total_victory_points', mp_id = mp.id)}}" class="btn btn-secondary my-2">Siegpunkte</a>
+          </p>
+        </div>
+      </section>
+      <div class="album py-5 bg-light">
+        <div class="container">
 
-  <section class="jumbotron text-center">
-    <div class="container">
-      <h1>Sonntags-MP: S2E2 - Per Aspera Ad Astra</h1>
-      <p class="lead text-muted">Statistiken und Siegpunkts-Übersicht für das 17.Sonntags-MP der Strategie-Zone.</p>
-      <p>
-        <a href="{{url_for('latest_stats', mp_id = 1)}}" class="btn btn-primary my-2">Aktuellste Statistik</a>
-        <a href="{{url_for('total_victory_points', mp_id = 1)}}" class="btn btn-secondary my-2">Siegpunkte</a>
-      </p>
+          <div class="row">
+            {{ institution_block("basesave", "renaissance", "1444", "Renaissance") }}
+            {{ institution_block("renaissance", "colonialism", "Renaissance", "Kolonialismus") }}
+            {{ institution_block("colonialism", "printing_press", "Kolonialismus", "Druckerpresse") }}
+          </div>
+          <div class="row">
+            {{ institution_block("printing_press", "global_trade", "Druckerpresse", "Globaler Handel") }}
+            {{ institution_block("global_trade", "manufactories", "Globaler Handel", "Manufakturen") }}
+            {{ institution_block("manufactories", "enlightenment", "Manufakturen", "Aufklärung") }}
+          </div>
+          <div class="row">
+            {{ institution_block("enlightenment", "industrialization", "Aufklärung", "Industrialiserung") }}
+            {{ institution_block("industrialization", "endsave", "Industrialiserung", "MP-Ende") }}
+          </div>
+        </div>
+      </div>
     </div>
-  </section>
-  <div class="album py-5 bg-light">
-    <div class="container">
-
-      <div class="row">
-        {{ institution_block("basesave", "renaissance", "1444", "Renaissance") }}
-        {{ institution_block("renaissance", "colonialism", "Renaissance", "Kolonialismus") }}
-        {{ institution_block("colonialism", "printing_press", "Kolonialismus", "Druckerpresse") }}
-      </div>
-      <div class="row">
-        {{ institution_block("printing_press", "global_trade", "Druckerpresse", "Globaler Handel") }}
-        {{ institution_block("global_trade", "manufactories", "Globaler Handel", "Manufakturen") }}
-        {{ institution_block("manufactories", "enlightenment", "Manufakturen", "Aufklärung") }}
-      </div>
-      <div class="row">
-        {{ institution_block("enlightenment", "industrialization", "Aufklärung", "Industrialiserung") }}
-        {{ institution_block("industrialization", "endsave", "Industrialiserung", "MP-Ende") }}  
-      </div>
-</main>
+  </div>
+  <div class="col-md-2">
+    <div class="content-section">
+      <h3><center>Spieler</center></h3>
+        <ul class="list-group">
+          <li class="list-group-item list-group-item-light">Spanien: Wassergeist</li>
+          <li class="list-group-item list-group-item-light">Frankreich: Malcorion</li>
+          <li class="list-group-item list-group-item-light">Großbritannien: Marlagant</li>
+          <li class="list-group-item list-group-item-light">Niederlande: Jin-Roh</li>
+          <li class="list-group-item list-group-item-light">Italien: Shadow</li>
+          <li class="list-group-item list-group-item-light">Österreich: Declaminius</li>
+          <li class="list-group-item list-group-item-light">Polen-Litauen: Xem</li>
+          <li class="list-group-item list-group-item-light">Schweden: Chris</li>
+          <li class="list-group-item list-group-item-light">Russland: Sebulon</li>
+          <li class="list-group-item list-group-item-light">Osmane: Tommy</li>
+        </ul>
+    </div>
+  </div>
 </div>
 {% endblock content %}
