@@ -1,4 +1,3 @@
-
 icon_dir = "files/attack_move.png"
 trade_goods_list = ['', 'Getreide', 'Wein', 'Wolle', 'Tuch', 'Fisch', 'Pelze', 'Salz',
 					'Schiffsbedarf', 'Kupfer', 'Gold', 'Eisen', 'Sklaven', 'Elfenbein',
