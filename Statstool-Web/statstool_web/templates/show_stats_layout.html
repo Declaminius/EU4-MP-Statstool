@@ -29,7 +29,7 @@
             <div class="navbar-nav mr-auto">
               {% if new_savegame.map_file %}
                 <a class="nav-item nav-link"
-                href = "{{url_for('show_stats', sg_id1 = old_savegame.id, sg_id2 = new_savegame.id)}}">Map</a>
+                href = "{{url_for('map', sg_id1 = old_savegame.id, sg_id2 = new_savegame.id)}}">Map</a>
               {% endif %}
               {% if current_user.is_authenticated and old_savegame.id != new_savegame.id %}
                 <a class="nav-item nav-link"

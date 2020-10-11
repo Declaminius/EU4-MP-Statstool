@@ -328,6 +328,10 @@ def show_stats(sg_id1,sg_id2):
     else:
         return redirect(url_for("overview_table", sg_id1 = sg_id1, sg_id2 = sg_id2))
 
+@app.route("/map/<int:sg_id1>/<int:sg_id2>", methods = ["GET"])
+def map(sg_id1,sg_id2):
+    return render_template("show_stats_layout.html", old_savegame = Savegame.query.get(sg_id1), new_savegame = Savegame.query.get(sg_id2))
+
 @app.route("/remove_nation_formation/<int:sg_id1>/<int:sg_id2>/<string:old>/<string:new>", methods = ["GET", "POST"])
 def remove_nation_formation(sg_id1,sg_id2,old,new):
     formation = NationFormation.query.get((sg_id1,sg_id2,old,new))
@@ -701,6 +705,14 @@ def victory_points(sg_id1, sg_id2):
         columns.insert(0, "num_of_colonies")
         min_values["num_of_colonies"] = 5
 
+    if institution is Institutions.printing_press:
+        header_labels.insert(1, "Meiste konvertierte Provinzen")
+        columns.insert(0, "num_converted_religion")
+        min_values["num_converted_religion"] = 0
+
+    if institution is Institutions.global_trade:
+        header_labels.insert(1, "Globaler Handel")
+
     nation_data = []
     nation_colors = []
     nation_tags = []
@@ -718,7 +730,16 @@ def victory_points(sg_id1, sg_id2):
             nation_tag = nation.tag, savegame_id = sg_id2).order_by(NationSavegameProvinces.development.desc()).first().development
         data["highest_dev"] = highest_dev
         data["victory_points"] = 0
+        if institution is Institutions.global_trade:
+            if nation.tag == "GBR":
+                data["global_trade"] = 1
+            else:
+                data["global_trade"] = 0
         nation_data.append(data)
+
+    if institution is Institutions.global_trade:
+        columns.insert(0, "global_trade")
+        min_values["global_trade"] = 0
 
     columns += ["losses", "highest_dev", "victory_points"]
     nation_tags.append("Minimalwert")
@@ -729,11 +750,12 @@ def victory_points(sg_id1, sg_id2):
         max_category = max([x[category] for x in nation_data])
         for data in nation_data[:-1]:
             if data[category] == max_category:
-                if category in ("highest_ae","num_of_colonies"):
+                if category in ("highest_ae","num_of_colonies","num_converted_religion","global_trade"):
                     data["victory_points"] += 2
                 else:
                     data["victory_points"] += 1
 
+    print(header_labels)
     return render_template("table.html", old_savegame = Savegame.query.get(sg_id1), new_savegame = Savegame.query.get(sg_id2), \
         data = zip(nation_data,nation_tags,nation_colors), columns = columns, header_labels = header_labels, colorize_columns = [1,2,3,4,5,6], sort_by = 6)
 
