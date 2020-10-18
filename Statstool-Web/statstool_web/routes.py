@@ -713,6 +713,11 @@ def victory_points(sg_id1, sg_id2):
     if institution is Institutions.global_trade:
         header_labels.insert(1, "Globaler Handel")
 
+    if institution is Institutions.manufactories:
+        header_labels.insert(1, "Meister Produktionsführer")
+        columns.insert(0, "num_of_production_leaders")
+        min_values["num_of_production_leaders"] = 3
+
     nation_data = []
     nation_colors = []
     nation_tags = []

@@ -208,6 +208,7 @@ class NationSavegameData(db.Model):
     total_buildings_value = db.Column(db.Integer, default = 0)
     standing_army = db.Column(db.Float, default = 0)
     navy_cannons = db.Column(db.Integer, default = 0)
+    num_of_production_leaders = db.Column(db.Integer, default = 0)
 
 class NationSavegameGoodsProduced(db.Model):
     __tablename__ = "nation_savegame_goods_produced"

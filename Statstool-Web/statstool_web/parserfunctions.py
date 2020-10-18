@@ -478,6 +478,19 @@ def parse_trade(content):
 	del trade_stats_list[0]
 
 
+def parse_production_leader(content, savegame):
+	regex = compile("production_leader_tag={([^}].+?)}", DOTALL)
+	result = regex.search(content)
+	if result:
+		production_leader_tags = result.group(1).split()
+		for tag in production_leader_tags:
+			nation = NationSavegameData.query.filter_by(nation_tag = tag, savegame_id = savegame.id).first()
+			if nation:
+				nation.num_of_production_leaders += 1
+	db.session.commit()
+
+
+
 def parse(savegame):
 	path = os.path.join(app.root_path, "static/savegames", savegame.file)
 	with open(path, 'r', encoding = 'cp1252') as sg:
@@ -501,6 +514,7 @@ def parse(savegame):
 			print("Länder Done")
 			parse_incomestat(content, savegame)
 			print("Einkommen-Stats Done")
+			parse_production_leader(content, savegame)
 			#parse_trade(content)
 			db.session.flush()
 		except IntegrityError:
