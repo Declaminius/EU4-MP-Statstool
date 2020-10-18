@@ -1,47 +1,4 @@
 {% macro institution_block(institution1, institution2, label1, label2) -%}
-{% if savegame_dict[institution1] %}
-  <div class="modal fade" id="deleteModal1" tabindex="-1" role="dialog" aria-labelledby="deleteModalLabel1" aria-hidden="true">
-    <div class="modal-dialog" role="document">
-      <div class="modal-content">
-        <div class="modal-header">
-          <h5 class="modal-title" id="deleteModalLabel1">Are you sure you want to delete the savegame?</h5>
-          <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-            <span aria-hidden="true">&times;</span>
-          </button>
-        </div>
-        <div class="modal-footer">
-          <div class = "col text-center">
-            <form action = "{{url_for('delete_savegame', sg_id = savegame_dict[institution1].id)}}" method = "POST">
-              <input class = "btn btn-danger ml-auto" type = "submit" value = "Delete {{label1}}">
-            </form>
-          </div>
-        </div>
-      </div>
-    </div>
-  </div>
-{% endif %}
-
-{% if savegame_dict[institution2] %}
-  <div class="modal fade" id="deleteModal2" tabindex="-1" role="dialog" aria-labelledby="deleteModalLabel2" aria-hidden="true">
-    <div class="modal-dialog" role="document">
-      <div class="modal-content">
-        <div class="modal-header">
-          <h5 class="modal-title" id="deleteModalLabel2">Delete {{label2}}</h5>
-          <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-            <span aria-hidden="true">&times;</span>
-          </button>
-        </div>
-        <div class="modal-footer">
-          <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
-          <form action = "{{url_for('delete_savegame', sg_id = savegame_dict[institution2].id)}}" method = "POST">
-            <input class = "btn btn-danger" type = "submit" value = "Delete">
-          </form>
-        </div>
-      </div>
-    </div>
-  </div>
-{% endif %}
-
 <div class="col-md-4">
   <div class="card mb-4 shadow-sm">
     <div class="card-body">
@@ -68,15 +25,15 @@
             {% if not savegame_dict[institution2].map_file %}
               <a class="btn btn-outline-primary btn-center mt-2 mb-2" href = "{{url_for('upload_map', sg_id = savegame_dict[institution2].id)}}">Add Map</a>
             {% endif %}
-            <a class="btn btn-outline-danger btn-center mt-2 mb-2" data-toggle="modal" data-target="#deleteModal1" href = "#">Delete {{label1}}</a>
-            <a class="btn btn-outline-danger btn-center mt-2 mb-2" data-toggle="modal" data-target="#deleteModal2" href = "#">Delete {{label2}}</a>
+            <a class="btn btn-outline-danger btn-center mt-2 mb-2" href = "{{url_for('delete_savegame', sg_id = savegame_dict[institution1].id)}}">Delete {{label1}}</a>
+            <a class="btn btn-outline-danger btn-center mt-2 mb-2" href = "{{url_for('delete_savegame', sg_id = savegame_dict[institution2].id)}}">Delete {{label2}}</a>
         {% else %}
-          <a class="btn btn-outline-danger btn-center mt-2 mb-2" data-toggle="modal" data-target="#deleteModal1" href = "#">Delete {{label1}}</a>
+          <a class="btn btn-outline-danger btn-center mt-2 mb-2" href = "{{url_for('delete_savegame', sg_id = savegame_dict[institution1].id)}}">Delete {{label1}}</a>
           <a class="btn btn-outline-primary btn-center mt-2 mb-2" href = "{{url_for('upload_one_savegame', mp_id = mp.id, institution = institution2)}}">Add {{label2}}</a>
         {% endif %}
       {% elif savegame_dict[institution2] %}
         <a class="btn btn-outline-primary btn-center mt-2 mb-2" href = "{{url_for('upload_one_savegame', mp_id = mp.id, institution = institution1)}}">Add {{label1}}</a>
-        <a class="btn btn-outline-danger btn-center mt-2 mb-2" data-toggle="modal" data-target="#deleteModal2" href = "#">Delete {{label2}}</a>
+        <a class="btn btn-outline-danger btn-center mt-2 mb-2" href = "{{url_for('delete_savegame', sg_id = savegame_dict[institution2].id)}}">Delete {{label2}}</a>
       {% else %}
         <a class="btn btn-outline-primary btn-center mt-2 mb-2" href = "{{url_for('upload_one_savegame', mp_id = mp.id, institution = institution1)}}">Add {{label1}}</a>
         <a class="btn btn-outline-primary btn-center mt-2 mb-2" href = "{{url_for('upload_one_savegame', mp_id = mp.id, institution = institution2)}}">Add {{label2}}</a>

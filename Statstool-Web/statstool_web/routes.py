@@ -718,6 +718,11 @@ def victory_points(sg_id1, sg_id2):
         columns.insert(0, "num_of_production_leaders")
         min_values["num_of_production_leaders"] = 3
 
+    if institution is Institutions.enlightenment:
+         header_labels.insert(1, "Innovativität")
+         columns.insert(0, "innovativeness")
+         min_values["innovativeness"] = 50
+
     nation_data = []
     nation_colors = []
     nation_tags = []
