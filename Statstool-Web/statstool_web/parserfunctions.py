@@ -290,6 +290,14 @@ def compile_tech(info, tag, savegame, nation_data, tech_cost, tech):
 			for idea in result.group(4).split()[1:]])  # Important: Don't count unlocked national ideas
 		del nation_data["idea_groups"]
 
+def compile_score(info, tag, savegame, score):
+
+	result = score.search(info)
+	if result:
+		age_score = result.group(1).split() + result.group(2).split()
+		total_score = sum([float(x) for x in age_score])
+		nation["score"] = total_score
+
 
 def compile_goods_produced(info, tag, savegame, trade_goods):
 
@@ -393,7 +401,8 @@ def parse_countries(content, savegame):
 
 	main = compile("\n\t\tdevelopment=(?P<effective_development>\d+.\d+).+?" \
 				 "raw_development=(?P<development>\d+.\d+).+?country_color=[{]\n\t\t\t\t(?P<color>[^\n]+).+?" \
-				 "navy_strength=(?P<navy_strength>\d+.\d+).+?estimated_monthly_income=(?P<income>\d+.\d+).+?" \
+				 "navy_strength=(?P<navy_strength>\d+.\d+).+?"
+				 "estimated_monthly_income=(?P<income>\d+.\d+).+?" \
 				 "manpower=(?P<manpower>\d+.\d+).+?max_manpower=(?P<max_manpower>\d+.\d+).+?" \
 				 "members=[{]\n\t\t\t\t(?P<losses>[^\n]+)", DOTALL)
 
@@ -401,6 +410,7 @@ def parse_countries(content, savegame):
 	num_converted_religion = compile("num_converted_religion=(\d+)")
 	num_of_colonies = compile("num_of_colonies=(\d+)")
 	side_regex_dict = {"great_power_score": great_power, "num_converted_religion": num_converted_religion, "num_of_colonies": num_of_colonies}
+	score = compile("age_score={(?P<age_score>[^}].+?)}.+?vc_age_score={(?P<vc_age_score>[^}].+?)}", DOTALL)
 
 	tech_cost = compile("technology_cost=(\d+.\d+)")
 	tech = compile("technology={.+?(?P<adm_tech>\d+).+?(?P<dip_tech>\d+).+?(?P<mil_tech>\d+).+?"\
@@ -415,6 +425,7 @@ def parse_countries(content, savegame):
 	for info, tag in zip(info_list, tag_list):
 		nation_data = compile_main(info, tag, savegame, main, side_regex_dict, tech_cost, tech)
 		if nation_data:
+			compile_score(info, tag, savegame, score, nation_data)
 			compile_goods_produced(info, tag, savegame, trade_goods)
 			compile_points_spent(info, tag, savegame)
 			parse_history(info, tag, savegame, monarch_id, previous_monarchs_id)

@@ -723,6 +723,10 @@ def victory_points(sg_id1, sg_id2):
          columns.insert(0, "innovativeness")
          min_values["innovativeness"] = 50
 
+    if institution is Institutions.industrialization:
+        pass
+
+
     nation_data = []
     nation_colors = []
     nation_tags = []

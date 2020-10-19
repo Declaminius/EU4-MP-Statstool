@@ -3,6 +3,5 @@
 .spyproject/
 __pycache__/
 old_versions/
-paradox_files/
 savegames/
 plots/
