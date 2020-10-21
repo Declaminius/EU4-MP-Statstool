@@ -290,13 +290,18 @@ def compile_tech(info, tag, savegame, nation_data, tech_cost, tech):
 			for idea in result.group(4).split()[1:]])  # Important: Don't count unlocked national ideas
 		del nation_data["idea_groups"]
 
-def compile_score(info, tag, savegame, score, nation_data):
+def compile_score(info, tag, savegame, score, card_score, nation_data):
 
 	result = score.search(info)
 	if result:
 		age_score = result.group(1).split() + result.group(2).split()
 		total_score = sum([float(x) for x in age_score])
 		nation_data["score"] = total_score
+
+		result = card_score.search(info)
+		if result:
+			card_score = float(result.group(1))
+			nation_data["score"] += card_score
 
 
 def compile_goods_produced(info, tag, savegame, trade_goods):
@@ -411,6 +416,7 @@ def parse_countries(content, savegame):
 	num_of_colonies = compile("num_of_colonies=(\d+)")
 	side_regex_dict = {"great_power_score": great_power, "num_converted_religion": num_converted_religion, "num_of_colonies": num_of_colonies}
 	score = compile("age_score={(?P<age_score>[^}].+?)}.+?vc_age_score={(?P<vc_age_score>[^}].+?)}", DOTALL)
+	card_score = compile("card_score=(\d+.\d+)")
 
 	tech_cost = compile("technology_cost=(\d+.\d+)")
 	tech = compile("technology={.+?(?P<adm_tech>\d+).+?(?P<dip_tech>\d+).+?(?P<mil_tech>\d+).+?"\
@@ -425,7 +431,7 @@ def parse_countries(content, savegame):
 	for info, tag in zip(info_list, tag_list):
 		nation_data = compile_main(info, tag, savegame, main, side_regex_dict, tech_cost, tech)
 		if nation_data:
-			compile_score(info, tag, savegame, score, nation_data)
+			compile_score(info, tag, savegame, score, card_score, nation_data)
 			compile_goods_produced(info, tag, savegame, trade_goods)
 			compile_points_spent(info, tag, savegame)
 			parse_history(info, tag, savegame, monarch_id, previous_monarchs_id)
