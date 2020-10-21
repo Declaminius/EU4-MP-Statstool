@@ -724,7 +724,9 @@ def victory_points(sg_id1, sg_id2):
          min_values["innovativeness"] = 50
 
     if institution is Institutions.industrialization:
-        pass
+        header_labels.insert(1, "InGame-Score")
+        columns.insert(0, "score")
+        min_values["score"] = 0
 
 
     nation_data = []
@@ -764,7 +766,7 @@ def victory_points(sg_id1, sg_id2):
         max_category = max([x[category] for x in nation_data])
         for data in nation_data[:-1]:
             if data[category] == max_category:
-                if category in ("highest_ae","num_of_colonies","num_converted_religion","global_trade"):
+                if category in ("highest_ae","num_of_colonies","num_converted_religion","global_trade","num_of_production_leaders","innovativeness"):
                     data["victory_points"] += 2
                 else:
                     data["victory_points"] += 1
@@ -782,18 +784,18 @@ def total_victory_points(mp_id):
         nation_tags = [x.tag for x in savegame.player_nations]
         nation_colors = [str(NationSavegameData.query.filter_by(nation_tag = tag, \
                 savegame_id = savegame.id).first().color) for tag in nation_tags]
-        data = {tag:[2,0,0,0,0,0,0,0,0] for tag in nation_tags}
 
-        data["TUR"][0] = 1
-        data["TUR"][2] = 2
-        data["TUR"][3] = 1
+        data = {}
 
-        data["MOS"][0] = 1
-        data["MOS"][1] = 3
-
-        data["SWE"][1] = -2
-
-        data["POL"][1] = -1
+        data["SPA"] = [2,0,0,0,0,0,0,0,0]
+        data["FRA"] = [2,0,0,0,0,0,0,0,0]
+        data["GBR"] = [2,-1,0,2,3,2,0,0,0]
+        data["NED"] = [2,1,0,0,0,1,1,3,0]
+        data["HAB"] = [2,1,0,0,0,0,3,1,0]
+        data["SWE"] = [2,-2,0,0,0,0,0,0,0]
+        data["PLC"] = [2,0,0,0,0,0,0,1,0]
+        data["TUR"] = [1,-1,2,1,1,2,2,0,0]
+        data["RUS"] = [1,2,0,0,1,1,0,1,0]
 
         for tag in data.keys():
             data[tag].append(sum(data[tag]))

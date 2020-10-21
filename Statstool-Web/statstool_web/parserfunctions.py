@@ -290,13 +290,13 @@ def compile_tech(info, tag, savegame, nation_data, tech_cost, tech):
 			for idea in result.group(4).split()[1:]])  # Important: Don't count unlocked national ideas
 		del nation_data["idea_groups"]
 
-def compile_score(info, tag, savegame, score):
+def compile_score(info, tag, savegame, score, nation_data):
 
 	result = score.search(info)
 	if result:
 		age_score = result.group(1).split() + result.group(2).split()
 		total_score = sum([float(x) for x in age_score])
-		nation["score"] = total_score
+		nation_data["score"] = total_score
 
 
 def compile_goods_produced(info, tag, savegame, trade_goods):
