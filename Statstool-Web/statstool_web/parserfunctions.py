@@ -1,11 +1,12 @@
 from re import DOTALL, split, compile, findall, search
 import numpy as np
 import matplotlib.pyplot as plt
-from statstool_web import app, db
+from statstool_web import db
 from statstool_web.models import *
 from sqlalchemy.exc import IntegrityError
 import datetime
 from colour import Color
+from flask import current_app
 import os
 
 def edit_parse(filename):
@@ -509,7 +510,7 @@ def parse_production_leader(content, savegame):
 
 
 def parse(savegame):
-	path = os.path.join(app.root_path, "static/savegames", savegame.file)
+	path = os.path.join(current_app.root_path, "static/savegames", savegame.file)
 	with open(path, 'r', encoding = 'cp1252') as sg:
 		content = sg.read()
 		provinces = content.split("\nprovinces={")[1].split("countries={")[0]

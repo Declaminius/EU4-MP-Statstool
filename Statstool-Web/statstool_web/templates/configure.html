@@ -29,7 +29,7 @@
                   <td style="text-align:center" bgcolor = "white">
                     <div>
                       <a class="tn btn-danger btn-sm m-1"
-                      href = "{{url_for('remove_nation_formation', sg_id1 = old_savegame.id, sg_id2 = new_savegame.id, old = old, new = new)}}">Remove</a>
+                      href = "{{url_for('show_stats.remove_nation_formation', sg_id1 = old_savegame.id, sg_id2 = new_savegame.id, old = old, new = new)}}">Remove</a>
                     </div>
                   </td>
                 </tr>
@@ -39,7 +39,7 @@
 
   <div class = "col text-center">
     <a class="btn btn-secondary btn mt-1 mb-1"
-    href = "{{url_for('reload_all_plots', sg_id1 = old_savegame.id, sg_id2 = new_savegame.id)}}">Reload All Plots</a>
+    href = "{{url_for('show_stats.reload_all_plots', sg_id1 = old_savegame.id, sg_id2 = new_savegame.id)}}">Reload All Plots</a>
   </div>
 </div>
 {% endblock content %}

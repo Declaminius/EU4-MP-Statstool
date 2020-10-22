@@ -21,7 +21,7 @@
     <header class="site-header">
       <nav class="navbar navbar-expand-xl navbar-dark bg-steel fixed-top justify-content-center">
         <div class="container-fluid">
-          <a class="navbar-brand mr-4" href="{{url_for('home')}}">Decla's Stats-Tool</a>
+          <a class="navbar-brand mr-4" href="{{url_for('main.home')}}">Decla's Stats-Tool</a>
           <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarToggle" aria-controls="navbarToggle" aria-expanded="false" aria-label="Toggle navigation">
             <span class="navbar-toggler-icon"></span>
           </button>
@@ -29,33 +29,33 @@
             <div class="navbar-nav mr-auto">
               {% if new_savegame.map_file %}
                 <a class="nav-item nav-link"
-                href = "{{url_for('map', sg_id1 = old_savegame.id, sg_id2 = new_savegame.id)}}">Map</a>
+                href = "{{url_for('show_stats.map', sg_id1 = old_savegame.id, sg_id2 = new_savegame.id)}}">Map</a>
               {% endif %}
               {% if current_user.is_authenticated and old_savegame.id != new_savegame.id %}
                 <a class="nav-item nav-link"
-                href = "{{url_for('configure', sg_id1 = old_savegame.id, sg_id2 = new_savegame.id)}}">Configure</a>
+                href = "{{url_for('show_stats.configure', sg_id1 = old_savegame.id, sg_id2 = new_savegame.id)}}">Configure</a>
               {% endif %}
               <a class="nav-item nav-link"
-              href = "{{url_for('overview_table', sg_id1 = old_savegame.id, sg_id2 = new_savegame.id)}}">Overview</a>
+              href = "{{url_for('show_stats.overview_table', sg_id1 = old_savegame.id, sg_id2 = new_savegame.id)}}">Overview</a>
               <a class="nav-item nav-link"
-              href = "{{url_for('development', sg_id1 = old_savegame.id, sg_id2 = new_savegame.id)}}">Development</a>
+              href = "{{url_for('show_stats.development', sg_id1 = old_savegame.id, sg_id2 = new_savegame.id)}}">Development</a>
               <a class="nav-item nav-link"
-              href = "{{url_for('income', sg_id1 = old_savegame.id, sg_id2 = new_savegame.id)}}">Income</a>
+              href = "{{url_for('show_stats.income', sg_id1 = old_savegame.id, sg_id2 = new_savegame.id)}}">Income</a>
               <a class="nav-item nav-link"
-              href = "{{url_for('max_manpower', sg_id1 = old_savegame.id, sg_id2 = new_savegame.id)}}">Max. Manpower</a>
+              href = "{{url_for('show_stats.max_manpower', sg_id1 = old_savegame.id, sg_id2 = new_savegame.id)}}">Max. Manpower</a>
               <a class="nav-item nav-link"
-              href = "{{url_for('army_losses', sg_id1 = old_savegame.id, sg_id2 = new_savegame.id)}}">Army Losses</a>
+              href = "{{url_for('show_stats.army_losses', sg_id1 = old_savegame.id, sg_id2 = new_savegame.id)}}">Army Losses</a>
               <a class="nav-item nav-link"
-              href = "{{url_for('income_over_time', sg_id1 = old_savegame.id, sg_id2 = new_savegame.id)}}">Income Over Time</a>
+              href = "{{url_for('show_stats.income_over_time', sg_id1 = old_savegame.id, sg_id2 = new_savegame.id)}}">Income Over Time</a>
               <a class="nav-item nav-link"
-              href = "{{url_for('provinces', sg_id1 = old_savegame.id, sg_id2 = new_savegame.id)}}">Provinces</a>
+              href = "{{url_for('show_stats.provinces', sg_id1 = old_savegame.id, sg_id2 = new_savegame.id)}}">Provinces</a>
               <a class="nav-item nav-link"
-              href = "{{url_for('army_battles', sg_id1 = old_savegame.id, sg_id2 = new_savegame.id)}}">Army Battles</a>
+              href = "{{url_for('show_stats.army_battles', sg_id1 = old_savegame.id, sg_id2 = new_savegame.id)}}">Army Battles</a>
               <a class="nav-item nav-link"
-              href = "{{url_for('mana_spent', sg_id1 = old_savegame.id, sg_id2 = new_savegame.id)}}">Mana Spent</a>
+              href = "{{url_for('show_stats.mana_spent', sg_id1 = old_savegame.id, sg_id2 = new_savegame.id)}}">Mana Spent</a>
               {% if new_savegame.institution %}
                 <a class="nav-item nav-link"
-                href = "{{url_for('victory_points', sg_id1 = old_savegame.id, sg_id2 = new_savegame.id)}}">Victory Points</a>
+                href = "{{url_for('show_stats.victory_points', sg_id1 = old_savegame.id, sg_id2 = new_savegame.id)}}">Victory Points</a>
               {% endif %}
             </div>
           </div>
@@ -82,6 +82,6 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.7/umd/popper.min.js" integrity="sha384-UO2eT0CpHqdSJQ6hJty5KVphtPhzWj9WO1clHTMGa3JDZwrnQq4sF86dIHNDz0W1" crossorigin="anonymous"></script>
     <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js" integrity="sha384-JjSmVgyd0p3pXB1rRibZUAYoIIy6OrQ6VrjIEaFf/nJGzIxFDsf4x0xIM+B07jRM" crossorigin="anonymous"></script>
     <script type="text/javascript" charset="utf8" src="https://cdn.datatables.net/1.10.21/js/jquery.dataTables.js"></script>
-    <script src="{{url_for('colorize')}}"></script>
+    <script src="{{url_for('main.colorize')}}"></script>
   </body>
 </html>

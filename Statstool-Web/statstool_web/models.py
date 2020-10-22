@@ -1,17 +1,12 @@
-from statstool_web import db, app
+from statstool_web import db
 import enum
 from colour import Color
-from flask_sqlalchemy import models_committed
 from sqlalchemy_utils import ColorType
 from statstool_web import login_manager
 from flask_login import UserMixin
+from flask import current_app
 import os
 
-@models_committed.connect_via(app)
-def on_models_committed(sender, changes):
-    for obj, change in changes:
-        if change == 'delete' and hasattr(obj, '__commit_delete__'):
-            obj.__commit_delete__()
 
 
 class PointCategories(enum.Enum):
@@ -138,14 +133,14 @@ class Savegame(db.Model):
 
     def __commit_delete__(self):
         try:
-            os.remove(os.path.join(app.root_path, 'static/savegames', self.file))
+            os.remove(os.path.join(current_app.root_path, 'static/savegames', self.file))
         except FileNotFoundError:
-            print(os.path.join(app.root_path, 'static/savegames', self.file))
+            print(os.path.join(current_app.root_path, 'static/savegames', self.file))
         if self.map_file:
             try:
-                os.remove(os.path.join(app.root_path, 'static/maps', self.map_file))
+                os.remove(os.path.join(current_app.root_path, 'static/maps', self.map_file))
             except FileNotFoundError:
-                print(os.path.join(app.root_path, 'static/maps', self.map_file))
+                print(os.path.join(current_app.root_path, 'static/maps', self.map_file))
 
 
 class NationFormation(db.Model):
@@ -164,9 +159,9 @@ class SavegamePlots(db.Model):
 
     def __commit_delete__(self):
         try:
-            os.remove(os.path.join(app.root_path, 'static/plots', self.filename))
+            os.remove(os.path.join(current_app.root_path, 'static/plots', self.filename))
         except FileNotFoundError:
-            print(os.path.join(app.root_path, 'static/plots', self.filename))
+            print(os.path.join(current_app.root_path, 'static/plots', self.filename))
             pass
 
 class Nation(db.Model):
