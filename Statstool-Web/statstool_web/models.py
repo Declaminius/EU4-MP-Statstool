@@ -7,8 +7,6 @@ from flask_login import UserMixin
 from flask import current_app
 import os
 
-
-
 class PointCategories(enum.Enum):
     adm = "adm"
     dip = "dip"
