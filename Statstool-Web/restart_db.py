@@ -1,4 +1,4 @@
-from statstool_web import db, bcrypt
+from statstool_web import create_app, db, bcrypt
 from statstool_web.models import Nation, TradeGood, Province, Area, Region, SuperRegion, MP, User
 import re
 
@@ -6,6 +6,8 @@ with open("../paradox_files/1.30/00_tradegoods.txt", "r") as file:
 	content = file.read()
 	trade_goods = re.findall("\n(\w+) = {", content)
 
+app = create_app()
+app.app_context().push()
 
 db.drop_all()
 db.create_all()
