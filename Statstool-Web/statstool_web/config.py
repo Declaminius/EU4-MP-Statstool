@@ -5,6 +5,6 @@ class Config():
     SQLALCHEMY_TRACK_MODIFICATIONS = True
     UPLOAD_FOLDER = 'static/savegames'
     ADMIN_NAME = "Declaminius"
-    ADMIN_PASSWORD = "1234"
+    ADMIN_PASSWORD = "12345"
     ADMIN_EMAIL = "schagerflorian@gmail.com"
     MP_NAME = "Sonntags-MP: S2E2 - Per Aspera Ad Astra"

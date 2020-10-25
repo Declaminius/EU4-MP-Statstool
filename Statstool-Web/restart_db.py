@@ -51,9 +51,9 @@ with open("files/area.txt", "r", encoding = 'cp1252') as sg:
 				province = Province(id = id, name = province_dict[id], area = area)
 				db.session.add(province)
 
-hashed_password = bcrypt.generate_password_hash("12345").decode('utf-8')
-admin = User(id = 1, username = "Declaminius", email = "schagerflorian@gmail.com", password = hashed_password)
-so_mp = MP(id = 1, name = "Sonntags-MP: S2E2 - Per Aspera Ad Astra", admin = admin)
+hashed_password = bcrypt.generate_password_hash(app.config["ADMIN_PASSWORD"]).decode('utf-8')
+admin = User(id = 1, username = app.config["ADMIN_NAME"], email = app.config["ADMIN_EMAIL"], password = hashed_password)
+so_mp = MP(id = 1, name = app.config["MP_NAME"], admin = admin)
 db.session.add(so_mp)
 db.session.add(admin)
 db.session.commit()
