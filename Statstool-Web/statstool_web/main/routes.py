@@ -210,7 +210,7 @@ def total_victory_points(mp_id):
     savegame = Savegame.query.filter_by(mp_id = mp_id).order_by(desc(Savegame.year)).first()
 
     if savegame:
-        header_labels = ["Nation", "Basis", "Kriege", "Renaissance", "Kolonialismus", "Druckerpresse", "Globaler Handel", "Manufakturen", "Aufklärung", "Industrialiserung", "Gesamt"]
+        header_labels = ["Nation", "Basis", "Kriege", "Renaissance", "Kolonialismus", "Druckerpresse", "Globaler Handel", "Manufakturen", "Aufklärung", "Industrialisierung", "Gesamt"]
         nation_tags = [x.tag for x in savegame.player_nations]
         nation_colors = [str(NationSavegameData.query.filter_by(nation_tag = tag, \
                 savegame_id = savegame.id).first().color) for tag in nation_tags]
