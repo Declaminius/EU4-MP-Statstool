@@ -7,3 +7,4 @@ savegames/
 plots/
 venv/
 *.db
+config.py
