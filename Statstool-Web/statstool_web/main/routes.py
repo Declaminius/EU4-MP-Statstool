@@ -15,13 +15,14 @@ main = Blueprint('main', __name__)
 
 @main.route("/", methods = ["GET"])
 @main.route("/home", methods = ["GET"])
-def home():
+def home(mp_id = 1):
     institutions = ["basesave", "renaissance", "colonialism", "printing_press", "global_trade", "manufactories", "enlightenment", "industrialization", "endsave"]
     savegame_dict = {}
     for inst in institutions:
         savegame_dict[inst] = Savegame.query.filter_by(mp_id=1, institution=inst).first()
-    mp = MP.query.get(1)
-    return render_template("home.html", savegame_dict = savegame_dict, mp = mp)
+    mps = MP.query.all()
+    current_mp = MP.query.get(mp_id)
+    return render_template("home.html", savegame_dict = savegame_dict, mps = mps, current_mp = current_mp)
 
 @main.route("/login", methods = ["GET", "POST"])
 def login():

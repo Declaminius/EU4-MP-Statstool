@@ -19,7 +19,7 @@
       {% if savegame_dict[institution1] and savegame_dict[institution2] %}
       <a class="btn btn-outline-primary btn-center mt-2 mb-2" href = "{{url_for('show_stats.parse', sg_id1 = savegame_dict[institution1].id, sg_id2 = savegame_dict[institution2].id )}}">View</a>
       {% endif %}
-      {% if current_user == mp.admin %}
+      {% if current_user == current_mp.admin %}
         {% if savegame_dict[institution1] %}
           {% if savegame_dict[institution2] %}
             {% if not savegame_dict[institution2].map_file %}
@@ -29,14 +29,14 @@
             <a class="btn btn-outline-danger btn-center mt-2 mb-2" href = "{{url_for('main.delete_savegame', sg_id = savegame_dict[institution2].id)}}">Delete {{label2}}</a>
         {% else %}
           <a class="btn btn-outline-danger btn-center mt-2 mb-2" href = "{{url_for('main.delete_savegame', sg_id = savegame_dict[institution1].id)}}">Delete {{label1}}</a>
-          <a class="btn btn-outline-primary btn-center mt-2 mb-2" href = "{{url_for('main.upload_one_savegame', mp_id = mp.id, institution = institution2)}}">Add {{label2}}</a>
+          <a class="btn btn-outline-primary btn-center mt-2 mb-2" href = "{{url_for('main.upload_one_savegame', mp_id = current_mp.id, institution = institution2)}}">Add {{label2}}</a>
         {% endif %}
       {% elif savegame_dict[institution2] %}
-        <a class="btn btn-outline-primary btn-center mt-2 mb-2" href = "{{url_for('main.upload_one_savegame', mp_id = mp.id, institution = institution1)}}">Add {{label1}}</a>
+        <a class="btn btn-outline-primary btn-center mt-2 mb-2" href = "{{url_for('main.upload_one_savegame', mp_id = current_mp.id, institution = institution1)}}">Add {{label1}}</a>
         <a class="btn btn-outline-danger btn-center mt-2 mb-2" href = "{{url_for('main.delete_savegame', sg_id = savegame_dict[institution2].id)}}">Delete {{label2}}</a>
       {% else %}
-        <a class="btn btn-outline-primary btn-center mt-2 mb-2" href = "{{url_for('main.upload_one_savegame', mp_id = mp.id, institution = institution1)}}">Add {{label1}}</a>
-        <a class="btn btn-outline-primary btn-center mt-2 mb-2" href = "{{url_for('main.upload_one_savegame', mp_id = mp.id, institution = institution2)}}">Add {{label2}}</a>
+        <a class="btn btn-outline-primary btn-center mt-2 mb-2" href = "{{url_for('main.upload_one_savegame', mp_id = current_mp.id, institution = institution1)}}">Add {{label1}}</a>
+        <a class="btn btn-outline-primary btn-center mt-2 mb-2" href = "{{url_for('main.upload_one_savegame', mp_id = current_mp.id, institution = institution2)}}">Add {{label2}}</a>
       {% endif %}
     {% endif %}
     </div>
@@ -49,8 +49,13 @@
 <div class = "row" >
   <div class="col-md-2">
     <div class="content-section">
-      <h3><center>Spielleitung:</center></h3>
-      <h3><center>Declaminius</center></h3>
+      <h3><center>Organisation</center></h3>
+      <ul class="list-group">
+        <li class="list-group-item list-group-item-light">Spielleiter: Declaminius</li>
+        <li class="list-group-item list-group-item-light">Host: Wassergeist</li>
+        <li class="list-group-item list-group-item-light">Nächster Spieltag: 01.11.</li>
+        <li class="list-group-item list-group-item-light">Checksumme: 3a95</li>
+      </ul>
     </div>
   </div>
   <div class="col-md-8">
@@ -60,8 +65,8 @@
           <h1>Sonntags-MP: S2E2 - Per Aspera Ad Astra</h1>
           <p class="lead text-muted">Statistiken und Siegpunkts-Übersicht für das 17.Sonntags-MP der Strategie-Zone.</p>
           <p>
-            <a href="{{url_for('main.latest_stats', mp_id = mp.id)}}" class="btn btn-primary my-2">Aktuellste Statistik</a>
-            <a href="{{url_for('main.total_victory_points', mp_id = mp.id)}}" class="btn btn-secondary my-2">Siegpunkte</a>
+            <a href="{{url_for('main.latest_stats', mp_id = current_mp.id)}}" class="btn btn-primary my-2">Aktuellste Statistik</a>
+            <a href="{{url_for('main.total_victory_points', mp_id = current_mp.id)}}" class="btn btn-secondary my-2">Siegpunkte</a>
           </p>
         </div>
       </section>

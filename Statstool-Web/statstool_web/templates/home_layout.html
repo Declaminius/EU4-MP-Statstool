@@ -25,11 +25,14 @@
           <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarToggle" aria-controls="navbarToggle" aria-expanded="false" aria-label="Toggle navigation">
             <span class="navbar-toggler-icon"></span>
           </button>
-          <div class="collapse navbar-collapse order-1" id="navbarToggle">
-            <div class="navbar-nav mr-auto">
-              <a class="nav-item nav-link" href = "{{url_for('main.home')}}">Sonntags-MP</a>
+            <div class="nav-item dropdown">
+              <a class="nav-link dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false">Sonntag-MPs<span class="caret"></span></a>
+              <ul class="dropdown-menu dropdown-primary">
+                {% for mp in mps %}
+                  <li><a class="dropdown-item" href="{{url_for('main.home', mp_id = mp.id)}}">{{mp.name}}</a></li>
+                {% endfor %}
+              </ul>
             </div>
-          </div>
           <div class="collapse navbar-collapse order-3" id="navbarToggle">
             <div class="navbar-nav ml-auto">
               {% if current_user.is_authenticated %}
