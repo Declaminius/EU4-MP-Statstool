@@ -51,7 +51,7 @@ def edit_parse(filename):
 
 	with open(filename, 'r', encoding = 'cp1252') as sg:
 		content = sg.read()
-		localisation_dict = parse_paradox_files("files/tags.txt")
+		localisation_dict = parse_paradox_files("../parsed_paradox_files/tags.txt")
 		compile_player = compile("was_player=yes")
 		compile_real_nations = compile("\n\t\tdevelopment")  # Dead nations don't have development
 		countries = split("\n\t([A-Z0-9]{3})", content.split("\ncountries={")[1].split('active_advisors')[0])
@@ -91,9 +91,9 @@ def parse_provinces(provinces, pbar, plabel):
 	plabel.setText("Loading Province Data...")
 
 	id_index_dict = {}
-	area_dict = parse_paradox_files("files/area.txt")
-	region_dict = parse_paradox_files("files/region.txt")
-	superregion_dict = parse_paradox_files("files/superregion.txt")
+	area_dict = parse_paradox_files("../parsed_paradox_files/area.txt")
+	region_dict = parse_paradox_files("../parsed_paradox_files/region.txt")
+	superregion_dict = parse_paradox_files("../parsed_paradox_files/superregion.txt")
 
 	province_stats_list = []
 	province_list = split("-\d+=[{]", provinces)[1:]

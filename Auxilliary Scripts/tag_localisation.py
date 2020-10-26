@@ -3,7 +3,7 @@ import re
 filename = "paradox_files/1.30/tags.txt"
 filename2 = "paradox_files/1.30/extra_tags.txt"
 filename3 = "paradox_files/1.30/extra_extra_tags.txt"
-savefile = "files/tags.txt"
+savefile = "parsed_paradox_files/tags.txt"
 
 encoding = "utf-8"
 

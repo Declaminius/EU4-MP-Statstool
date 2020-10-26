@@ -2,7 +2,7 @@ import re
 
 filename = "paradox_files/1.30/positions.txt"
 
-savefile = "files/provinces.txt"
+savefile = "parsed_paradox_files/provinces.txt"
 
 encoding = "cp1252"
 

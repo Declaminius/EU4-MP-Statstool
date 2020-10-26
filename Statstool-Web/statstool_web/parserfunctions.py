@@ -368,7 +368,7 @@ def parse_regiments(info, tag, regiment_strength, nation_data):
 
 
 def parse_ships(info, tag, nation_data):
-	with open("../Statstool-Web/files/ship_cannons.txt", "r") as file:
+	with open("../parsed_paradox_files/ship_cannons.txt", "r") as file:
 		ship_cannons_dict = eval(file.read())
 	ship_type = compile('type="(.+?)"')
 	ship_data = split("ship={",info)[1:]

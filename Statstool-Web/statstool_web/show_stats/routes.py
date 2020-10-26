@@ -23,10 +23,11 @@ def parse(sg_id1,sg_id2):
         savegame = Savegame.query.get(id)
         if not savegame.parse_flag:
             statstool_web.parserfunctions.parse(savegame)
-            try:
-                os.remove(os.path.join(current_app.root_path, current_app.config["UPLOAD_FOLDER"], savegame.file))
-            except FileNotFoundError:
-                pass
+            if savegame.parse_flag:
+                try:
+                    os.remove(os.path.join(current_app.root_path, current_app.config["UPLOAD_FOLDER"], savegame.file))
+                except FileNotFoundError:
+                    pass
 
     old_savegame = Savegame.query.get(sg_id1)
     new_savegame = Savegame.query.get(sg_id2)

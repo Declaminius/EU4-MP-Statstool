@@ -3,9 +3,9 @@ import re
 filename = "paradox_files/1.30/area.txt"
 filename2 = "paradox_files/1.30/region.txt"
 filename3 = "paradox_files/1.30/superregion.txt"
-savefile = "files/area.txt"
-savefile2 = "files/region.txt"
-savefile3 = "files/superregion.txt"
+savefile = "parsed_paradox_files/area.txt"
+savefile2 = "parsed_paradox_files/region.txt"
+savefile3 = "parsed_paradox_files/superregion.txt"
 
 with open(filename, "r") as sg:
 	content = sg.read()

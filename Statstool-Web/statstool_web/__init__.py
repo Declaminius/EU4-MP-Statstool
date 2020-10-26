@@ -23,7 +23,7 @@ def create_app(config_class = Config):
     login_manager.init_app(app)
 
     app.url_map.converters['list'] = ListConverter
-    with open("files/tags.txt", "r", encoding = 'utf-8') as tags:
+    with open("../parsed_paradox_files/tags.txt", "r", encoding = 'utf-8') as tags:
         app.config["LOCALISATION_DICT"] = eval(tags.read())
 
     @models_committed.connect_via(app)
