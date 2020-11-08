@@ -39,4 +39,4 @@ def write_html_block(institution1,institution2,label1,label2,start_year = None):
 
 
 with open("Statstool-Web\statstool_web\templates\html-snippet.html", "w") as file:
-    file.write(write_html_block("industrialization", "endsave", "Industrialiserung", "End"))
+    file.write(write_html_block("industrialization", "endsave", "Industrialisierung", "End"))
