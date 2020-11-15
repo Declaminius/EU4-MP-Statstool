@@ -484,7 +484,7 @@ def victory_points(sg_id1, sg_id2):
         max_category = max([x[category] for x in nation_data])
         for data in nation_data[:-1]:
             if data[category] == max_category:
-                if category in ("highest_ae","num_of_colonies","num_converted_religion","global_trade","num_of_production_leaders","innovativeness"):
+                if category in ("highest_ae","num_of_colonies","num_converted_religion","global_trade","num_of_production_leaders","innovativeness", "score"):
                     data["victory_points"] += 2
                 else:
                     data["victory_points"] += 1
