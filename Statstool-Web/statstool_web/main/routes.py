@@ -1,5 +1,5 @@
 from flask import render_template, url_for, request, redirect, flash, abort, Blueprint, current_app
-from statstool_web.main.forms import SavegameSelectForm, OneSavegameSelectForm, MapSelectForm, LoginForm, RegistrationForm
+from statstool_web.main.forms import SavegameSelectForm, OneSavegameSelectForm, MapSelectForm, LoginForm, RegistrationForm, AddMPForm
 from statstool_web import db, bcrypt
 from statstool_web.parserfunctions import edit_parse
 from statstool_web.models import User, MP, Savegame, Nation, NationSavegameData
@@ -178,14 +178,19 @@ def upload_map(sg_id):
         return redirect(url_for("main.home"))
     return render_template("upload_map.html", form = form)
 
-@main.route("/account/<int:user_id>", methods = ["GET"])
+@main.route("/account/<int:user_id>", methods = ["GET", "POST"])
 @login_required
 def account(user_id):
     savegames = Savegame.query.filter_by(user_id=user_id).all()
+    mps = MP.query.filter_by(admin_id=user_id).all()
     header_labels = ["ID", "MP-Name", "Name", "Year", "Filename", "Map", "Delete"]
+    mp_header_labels = ["ID", "Name", "Delete"]
     ids = []
+    mp_ids = []
     data = []
+    mp_names = []
     maps = []
+    mp_form = AddMPForm()
     for sg in savegames:
         ids.append(sg.id)
         if sg.mp:
@@ -193,12 +198,28 @@ def account(user_id):
         else:
             data.append([None, sg.name, sg.year, sg.file])
         maps.append(sg.map_file)
-    return render_template("account.html", data = zip(ids,data,maps), header_labels = header_labels)
+    for mp in mps:
+        mp_ids.append(mp.id)
+        mp_names.append(mp.name)
+    if mp_form.validate_on_submit():
+        so_mp = MP(name = mp_form.mp_name.data, admin = current_user)
+        db.session.add(so_mp)
+        db.session.commit()
+    return render_template("account.html", data = zip(ids,data,maps), header_labels = header_labels, mp_header_labels = mp_header_labels, mp_data = zip(mp_ids,mp_names), form = mp_form)
 
 @main.route("/delete_savegame/<int:sg_id>", methods = ["GET", "POST"])
 @login_required
 def delete_savegame(sg_id):
     savegame = Savegame.query.get(sg_id)
+    if savegame:
+        db.session.delete(savegame)
+        db.session.commit()
+    return redirect(redirect_url())
+
+@main.route("/delete_mp/<int:mp_id>", methods = ["GET", "POST"])
+@login_required
+def delete_mp(mp_id):
+    savegame = MP.query.get(mp_id)
     if savegame:
         db.session.delete(savegame)
         db.session.commit()

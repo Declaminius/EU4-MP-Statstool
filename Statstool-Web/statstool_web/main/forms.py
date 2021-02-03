@@ -50,3 +50,7 @@ class RegistrationForm(FlaskForm):
         email = User.query.filter_by(email = email.data).first()
         if email:
             raise ValidationError("Email already exists.")
+
+class AddMPForm(FlaskForm):
+    mp_name = StringField("MP-Name", validators = [DataRequired(), Length(min = 2, max = 20)])
+    submit = SubmitField("Add MP")
