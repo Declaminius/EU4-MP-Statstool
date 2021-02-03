@@ -93,7 +93,8 @@ class MP(db.Model):
     id = db.Column(db.Integer, primary_key = True)
     admin_id = db.Column(db.Integer, db.ForeignKey('user.id'))
     name = db.Column(db.String, nullable = False)
-    savegames = db.relationship("Savegame", backref = "mp", lazy = True)
+    description = db.Column(db.String)
+    savegames = db.relationship("Savegame", backref = "mp", lazy = True, cascade = "all, delete")
     players = db.relationship("MPNationPlayer", backref = "mp", lazy = True)
 
 class MPNationPlayer(db.Model):

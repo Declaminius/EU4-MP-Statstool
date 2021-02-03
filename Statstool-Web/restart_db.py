@@ -53,7 +53,7 @@ with open("../parsed_paradox_files/area.txt", "r", encoding = 'cp1252') as sg:
 
 hashed_password = bcrypt.generate_password_hash(app.config["ADMIN_PASSWORD"]).decode('utf-8')
 admin = User(id = 1, username = app.config["ADMIN_NAME"], email = app.config["ADMIN_EMAIL"], password = hashed_password)
-so_mp = MP(id = 1, name = app.config["MP_NAME"], admin = admin)
+so_mp = MP(id = 1, name = app.config["MP_NAME"], description = "Statistiken und Siegpunkts-Übersicht für das 17.Sonntags-MP der Strategie-Zone." , admin = admin)
 db.session.add(so_mp)
 db.session.add(admin)
 db.session.commit()

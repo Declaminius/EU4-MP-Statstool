@@ -52,9 +52,9 @@
       <h3><center>Organisation</center></h3>
       <ul class="list-group">
         <li class="list-group-item list-group-item-light">Spielleiter: Declaminius</li>
-        <li class="list-group-item list-group-item-light">Host: Wassergeist</li>
-        <li class="list-group-item list-group-item-light">Nächster Spieltag: 01.11.</li>
-        <li class="list-group-item list-group-item-light">Checksumme: 3a95</li>
+        <li class="list-group-item list-group-item-light">Host: RoLJZ1</li>
+        <li class="list-group-item list-group-item-light">Nächster Spieltag: 07.02.</li>
+        <li class="list-group-item list-group-item-light">Checksumme: ????</li>
       </ul>
     </div>
   </div>
@@ -62,8 +62,8 @@
     <div class = "container">
       <section class="jumbotron text-center">
         <div class="container">
-          <h1>Sonntags-MP: S2E2 - Per Aspera Ad Astra</h1>
-          <p class="lead text-muted">Statistiken und Siegpunkts-Übersicht für das 17.Sonntags-MP der Strategie-Zone.</p>
+          <h1>{{current_mp.name}}</h1>
+          <p class="lead text-muted">{{current_mp.description}}</p>
           <p>
             <a href="{{url_for('main.latest_stats', mp_id = current_mp.id)}}" class="btn btn-primary my-2">Aktuellste Statistik</a>
             <a href="{{url_for('main.total_victory_points', mp_id = current_mp.id)}}" class="btn btn-secondary my-2">Siegpunkte</a>

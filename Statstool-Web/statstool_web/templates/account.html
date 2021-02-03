@@ -1,4 +1,4 @@
-{% extends "home_layout.html" %}
+{% extends "base_layout.html" %}
 {% block content %}
 <center><h1>My Savegames</h1></center>
   <div class = "container mb-3 mt-3">
@@ -62,10 +62,11 @@
               </tr>
             </thead>
             <tbody>
-              {% for id, name in mp_data%}
+              {% for id, name, description in mp_data%}
                 <tr>
                   <td><a class="btn btn-outline-secondary btn-center mt-2 mb-2" href = "{{url_for('main.home', mp_id = id)}}">{{id}}</a></td>
                   <td>{{name}}</td>
+                  <td>{{description}}</td>
                   <td>
                     <div class="modal fade" id="deleteModal2" tabindex="-1" role="dialog" aria-labelledby="deleteModalLabel2" aria-hidden="true">
                       <div class="modal-dialog" role="document">
@@ -112,6 +113,8 @@
             {% else %}
               {{ form.mp_name(class = "form-control form-control-lg")}}
             {% endif %}
+            {{ form.mp_description.label(class = "form-control_label")}}
+            {{ form.mp_description(class = "form-control form-control-lg") }}
           </div>
         </fieldset>
         <div class = "col text-center">

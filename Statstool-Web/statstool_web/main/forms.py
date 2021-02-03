@@ -1,6 +1,6 @@
 from flask_wtf import FlaskForm
 from flask_wtf.file import FileAllowed
-from wtforms import FileField, SubmitField, StringField, PasswordField, BooleanField
+from wtforms import FileField, SubmitField, StringField, PasswordField, BooleanField, TextField
 from wtforms.validators import DataRequired, Length, Email, EqualTo
 from statstool_web.models import User
 
@@ -53,4 +53,5 @@ class RegistrationForm(FlaskForm):
 
 class AddMPForm(FlaskForm):
     mp_name = StringField("MP-Name", validators = [DataRequired(), Length(min = 2, max = 20)])
+    mp_description = TextField("Description")
     submit = SubmitField("Add MP")

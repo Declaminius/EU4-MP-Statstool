@@ -14,12 +14,13 @@ import secrets
 main = Blueprint('main', __name__)
 
 @main.route("/", methods = ["GET"])
-@main.route("/home", methods = ["GET"])
+@main.route("/home/<int:mp_id>", methods = ["GET"])
 def home(mp_id = 1):
+    print(mp_id)
     institutions = ["basesave", "renaissance", "colonialism", "printing_press", "global_trade", "manufactories", "enlightenment", "industrialization", "endsave"]
     savegame_dict = {}
     for inst in institutions:
-        savegame_dict[inst] = Savegame.query.filter_by(mp_id=1, institution=inst).first()
+        savegame_dict[inst] = Savegame.query.filter_by(mp_id=mp_id, institution=inst).first()
     mps = MP.query.all()
     current_mp = MP.query.get(mp_id)
     return render_template("home.html", savegame_dict = savegame_dict, mps = mps, current_mp = current_mp)
@@ -184,11 +185,12 @@ def account(user_id):
     savegames = Savegame.query.filter_by(user_id=user_id).all()
     mps = MP.query.filter_by(admin_id=user_id).all()
     header_labels = ["ID", "MP-Name", "Name", "Year", "Filename", "Map", "Delete"]
-    mp_header_labels = ["ID", "Name", "Delete"]
+    mp_header_labels = ["ID", "Name", "Description", "Delete"]
     ids = []
     mp_ids = []
     data = []
     mp_names = []
+    mp_descriptions = []
     maps = []
     mp_form = AddMPForm()
     for sg in savegames:
@@ -201,11 +203,16 @@ def account(user_id):
     for mp in mps:
         mp_ids.append(mp.id)
         mp_names.append(mp.name)
+        mp_descriptions.append(mp.description)
     if mp_form.validate_on_submit():
-        so_mp = MP(name = mp_form.mp_name.data, admin = current_user)
+        so_mp = MP(name = mp_form.mp_name.data, description = mp_form.mp_description.data, admin = current_user)
         db.session.add(so_mp)
         db.session.commit()
-    return render_template("account.html", data = zip(ids,data,maps), header_labels = header_labels, mp_header_labels = mp_header_labels, mp_data = zip(mp_ids,mp_names), form = mp_form)
+        mp_form.mp_name.data = ""
+        mp_form.mp_description.data = ""
+        flash(f'Successfully created MP.', 'success')
+        return redirect(url_for("main.account", user_id = user_id))
+    return render_template("account.html", data = zip(ids,data,maps), header_labels = header_labels, mp_header_labels = mp_header_labels, mp_data = zip(mp_ids,mp_names,mp_descriptions), form = mp_form)
 
 @main.route("/delete_savegame/<int:sg_id>", methods = ["GET", "POST"])
 @login_required
