@@ -25,11 +25,16 @@
                 </div>
               </th>
             </thead>
+            <thead>
+              <th style = "text-align:center"> Nation </th>
+              <th style = "text-align:center"> Spieler </th>
+              <th style = "text-align:center"> </th>
+            </thead>
             <tbody>
-                {% for tag, label in playertags %}
+                {% for tag, label, name in playertags %}
                     <tr>
                       <td style="text-align:center">{{ label }}</td>
-                      <td></td>
+                      <td style="text-align:center" contenteditable>{{name}}</td>
                       <td style="text-align:center">
                         <div>
                           <a class="tn btn-danger btn-sm m-1" href = "{{url_for('parse.remove_nation', sg_id1 = sg_id1, sg_id2 = sg_id2, tag = tag)}}">Remove</a>

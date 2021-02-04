@@ -2,7 +2,7 @@ from flask import render_template, url_for, request, redirect, flash, abort, Blu
 from statstool_web.main.forms import SavegameSelectForm, OneSavegameSelectForm, MapSelectForm, LoginForm, RegistrationForm, AddMPForm
 from statstool_web import db, bcrypt
 from statstool_web.parserfunctions import edit_parse
-from statstool_web.models import User, MP, Savegame, Nation, NationSavegameData
+from statstool_web.models import User, MP, Savegame, Nation, NationSavegameData, Player, NationPlayer
 from statstool_web.util import redirect_url
 from pathlib import Path
 from sqlalchemy import desc
@@ -13,17 +13,25 @@ import secrets
 
 main = Blueprint('main', __name__)
 
-@main.route("/", methods = ["GET"])
+@main.route("/", methods = ["GET"], defaults = {'mp_id': 1})
 @main.route("/home/<int:mp_id>", methods = ["GET"])
 def home(mp_id = 1):
-    print(mp_id)
     institutions = ["basesave", "renaissance", "colonialism", "printing_press", "global_trade", "manufactories", "enlightenment", "industrialization", "endsave"]
     savegame_dict = {}
     for inst in institutions:
         savegame_dict[inst] = Savegame.query.filter_by(mp_id=mp_id, institution=inst).first()
     mps = MP.query.all()
     current_mp = MP.query.get(mp_id)
-    return render_template("home.html", savegame_dict = savegame_dict, mps = mps, current_mp = current_mp)
+    current_save = Savegame.query.filter_by(mp_id = mp_id).order_by(desc(Savegame.year)).first()
+
+    names_dict = {}
+    if current_save:
+        for nation in current_save.player_nations:
+            if (result := NationPlayer.query.filter_by(savegame_id = current_save.id, nation_tag = nation.tag).first()):
+                names_dict[nation.name] = Player.query.filter_by(id = result.player_id).first().name
+            else:
+                names_dict[nation.name] = "???"
+    return render_template("home.html", savegame_dict = savegame_dict, mps = mps, current_mp = current_mp, current_save = current_save, names_dict = names_dict)
 
 @main.route("/login", methods = ["GET", "POST"])
 def login():
@@ -62,9 +70,14 @@ def register():
         return redirect(url_for("main.login"))
     return render_template("register.html", title = "Register", form = form)
 
-@main.route("/upload_savegames", methods = ["GET", "POST"])
+
+@main.route("/upload_savegames", methods = ["GET", "POST"], defaults = {'mp_id': None})
+@main.route("/upload_savegames/<int:mp_id>", methods = ["GET", "POST"])
 @login_required
-def upload_savegames():
+def upload_savegames(mp_id = None):
+    mp = MP.query.get(mp_id)
+    if (mp_id and mp.admin != current_user):
+        abort(403)
     form = SavegameSelectForm()
     if form.validate_on_submit():
         sg_ids = []
@@ -82,8 +95,7 @@ def upload_savegames():
             else:
                 map_path = None
             try:
-                playertags, tag_list, year = edit_parse(path)
-                print(name)
+                player_names_dict, tag_list, year = edit_parse(path)
                 if map_path:
                     savegame = Savegame(file = random, map_file = map_random, owner = current_user, year = year, name = name)
                 else:
@@ -98,8 +110,13 @@ def upload_savegames():
                         db.session.commit()
 
                     savegame.nations.append(Nation.query.get(tag))
-                    if tag in playertags:
+                    if tag in player_names_dict.keys():
                         savegame.player_nations.append(Nation.query.get(tag))
+                        if not Player.query.filter_by(name = player_names_dict[tag]).all():
+                            p = Player(name = player_names_dict[tag])
+                            db.session.add(p)
+                        t = NationPlayer(player = p, savegame = savegame, nation_tag = tag)
+                        db.session.add(t)
 
                 db.session.add(savegame)
                 db.session.commit()
@@ -136,7 +153,7 @@ def upload_one_savegame(mp_id = None, institution = None):
         else:
             map_path = None
         try:
-            playertags, tag_list, year = edit_parse(path)
+            player_names_dict, tag_list, year = edit_parse(path)
             if map_path:
                 savegame = Savegame(file = random, mp_id = mp_id, map_file = map_random, institution = institution, owner = current_user, year = year, name = form.savegame_name.data)
             else:
@@ -151,9 +168,15 @@ def upload_one_savegame(mp_id = None, institution = None):
                     db.session.commit()
 
                 savegame.nations.append(Nation.query.get(tag))
-                if tag in playertags:
+                if tag in player_names_dict.keys():
                     savegame.player_nations.append(Nation.query.get(tag))
-
+                    if player_names_dict[tag]:
+                        if not Player.query.filter_by(name = player_names_dict[tag]).all():
+                            player = Player(name = player_names_dict[tag])
+                            db.session.add(player)
+                        p = Player.query.filter_by(name = player_names_dict[tag]).first()
+                        t = NationPlayer(player = p, savegame = savegame, nation_tag = tag)
+                        db.session.add(t)
             db.session.add(savegame)
             db.session.commit()
         except AttributeError as e:
@@ -185,12 +208,14 @@ def account(user_id):
     savegames = Savegame.query.filter_by(user_id=user_id).all()
     mps = MP.query.filter_by(admin_id=user_id).all()
     header_labels = ["ID", "MP-Name", "Name", "Year", "Filename", "Map", "Delete"]
-    mp_header_labels = ["ID", "Name", "Description", "Delete"]
+    mp_header_labels = ["ID", "Name", "Description", "Game Master", "Host", "Delete"]
     ids = []
     mp_ids = []
     data = []
     mp_names = []
     mp_descriptions = []
+    mp_gms = []
+    mp_hosts = []
     maps = []
     mp_form = AddMPForm()
     for sg in savegames:
@@ -204,6 +229,8 @@ def account(user_id):
         mp_ids.append(mp.id)
         mp_names.append(mp.name)
         mp_descriptions.append(mp.description)
+        mp_gms.append(mp.gm)
+        mp_hosts.append(mp.host)
     if mp_form.validate_on_submit():
         so_mp = MP(name = mp_form.mp_name.data, description = mp_form.mp_description.data, admin = current_user)
         db.session.add(so_mp)
@@ -212,7 +239,7 @@ def account(user_id):
         mp_form.mp_description.data = ""
         flash(f'Successfully created MP.', 'success')
         return redirect(url_for("main.account", user_id = user_id))
-    return render_template("account.html", data = zip(ids,data,maps), header_labels = header_labels, mp_header_labels = mp_header_labels, mp_data = zip(mp_ids,mp_names,mp_descriptions), form = mp_form)
+    return render_template("account.html", data = zip(ids,data,maps), header_labels = header_labels, mp_header_labels = mp_header_labels, mp_data = zip(mp_ids,mp_names,mp_descriptions, mp_gms, mp_hosts), form = mp_form)
 
 @main.route("/delete_savegame/<int:sg_id>", methods = ["GET", "POST"])
 @login_required

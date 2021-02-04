@@ -1,7 +1,7 @@
 from flask import render_template, url_for, request, redirect, flash, Blueprint, current_app
 from statstool_web.parse.forms import TagSetupForm, NewNationForm
 from statstool_web import db
-from statstool_web.models import Savegame, NationFormation, Nation
+from statstool_web.models import Savegame, NationFormation, Nation, Player, NationPlayer
 from sqlalchemy.exc import IntegrityError
 from flask_login import current_user, login_required
 
@@ -16,9 +16,15 @@ def setup(sg_id1,sg_id2):
     old_savegame = Savegame.query.get(sg_id1)
     new_savegame = Savegame.query.get(sg_id2)
     nations = set(old_savegame.player_nations + new_savegame.player_nations)
+    names_dict = {}
+    for nation in nations:
+        if (result := NationPlayer.query.filter_by(savegame_id = sg_id2, nation_tag = nation.tag).first()):
+            names_dict[nation.tag] = Player.query.filter_by(id = result.player_id).first().name
+        else:
+            names_dict[nation.tag] = "???"
 
-    playertags =  sorted([(nation.tag,current_app.config["LOCALISATION_DICT"][nation.tag]) \
-        if nation.tag in current_app.config["LOCALISATION_DICT"].keys() else (nation.tag,nation.tag) \
+    playertags =  sorted([(nation.tag,current_app.config["LOCALISATION_DICT"][nation.tag], names_dict[nation.tag]) \
+        if nation.tag in current_app.config["LOCALISATION_DICT"].keys() else (nation.tag,nation.tag, names_dict[nation.tag]) \
         for nation in nations], key = lambda x: x[1])
     if request.method == "GET":
         return render_template("setup.html", form = form, playertags = playertags,\

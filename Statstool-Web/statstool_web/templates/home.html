@@ -51,10 +51,21 @@
     <div class="content-section">
       <h3><center>Organisation</center></h3>
       <ul class="list-group">
-        <li class="list-group-item list-group-item-light">Spielleiter: Declaminius</li>
-        <li class="list-group-item list-group-item-light">Host: RoLJZ1</li>
-        <li class="list-group-item list-group-item-light">Nächster Spieltag: 07.02.</li>
-        <li class="list-group-item list-group-item-light">Checksumme: ????</li>
+        {% if current_mp.gm %}
+          <li class="list-group-item list-group-item-light">Spielleiter: {{current_mp.gm}}</li>
+        {% endif %}
+
+        {% if current_mp.host %}
+          <li class="list-group-item list-group-item-light">Host: {{current_mp.host}}</li>
+        {% endif %}
+
+        {% if current_mp.next_gameday %}
+          <li class="list-group-item list-group-item-light">Nächster Spieltag: {{current_mp.next_gameday}}</li>
+        {% endif %}
+
+        {% if current_mp.checksum %}
+          <li class="list-group-item list-group-item-light">Checksumme: {{current_mp.checksum}}</li>
+        {% endif %}
       </ul>
     </div>
   </div>
@@ -95,16 +106,9 @@
     <div class="content-section">
       <h3><center>Spieler</center></h3>
         <ul class="list-group">
-          <li class="list-group-item list-group-item-light">Spanien: Wassergeist</li>
-          <li class="list-group-item list-group-item-light">Frankreich: Malcorion</li>
-          <li class="list-group-item list-group-item-light">Großbritannien: Marlagant</li>
-          <li class="list-group-item list-group-item-light">Niederlande: Jin-Roh</li>
-          <li class="list-group-item list-group-item-light">Italien: Shadow</li>
-          <li class="list-group-item list-group-item-light">Österreich: Declaminius</li>
-          <li class="list-group-item list-group-item-light">Polen-Litauen: Xem</li>
-          <li class="list-group-item list-group-item-light">Schweden: Chris</li>
-          <li class="list-group-item list-group-item-light">Russland: Sebulon</li>
-          <li class="list-group-item list-group-item-light">Osmane: Tommy</li>
+          {% for nation in names_dict.keys()%}
+            <li class="list-group-item list-group-item-light">{{nation}}: {{names_dict[nation]}}</li>
+          {% endfor %}
         </ul>
     </div>
   </div>

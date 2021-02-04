@@ -10,7 +10,7 @@ from flask import current_app
 import os
 
 def edit_parse(filename):
-	""" Pre-Parser: Parsing player nations and real (alive) nations
+	""" Pre-Parser: Parsing player nations and real (not 0 dev) nations
 		in order to enable dynamic nation selection.
 		Returns list of Player-Nations-Tag and list of all real nations tag in alphabetical order. """
 
@@ -23,6 +23,13 @@ def edit_parse(filename):
 		playertag_list = []
 		real_nations_list = []
 
+
+		player_names_and_tags = compile("players_countries={([^}].+?)}", DOTALL).search(content).group(1).split('"')[1::2]
+		print(player_names_and_tags)
+		player_names = player_names_and_tags[::2]
+		player_tags = player_names_and_tags[1::2]
+		player_names_dict = dict(zip(player_tags, player_names))
+
 		year = int(search("date=(?P<year>\d{4})", content).group(1))
 
 		for info, tag in zip(info_list, tag_list):
@@ -31,9 +38,13 @@ def edit_parse(filename):
 				real_nations_list.append(tag)
 				result = compile_player.search(info)
 				if result:
-					playertag_list.append(tag)
+					if tag not in player_names_dict.keys():
+						player_names_dict[tag] = None
 
-	return playertag_list, sorted(real_nations_list), year
+
+	print(player_names_dict)
+
+	return player_names_dict, sorted(real_nations_list), year
 
 
 def parse_provinces(provinces, savegame):

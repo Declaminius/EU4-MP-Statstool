@@ -53,8 +53,14 @@ with open("../parsed_paradox_files/area.txt", "r", encoding = 'cp1252') as sg:
 
 hashed_password = bcrypt.generate_password_hash(app.config["ADMIN_PASSWORD"]).decode('utf-8')
 admin = User(id = 1, username = app.config["ADMIN_NAME"], email = app.config["ADMIN_EMAIL"], password = hashed_password)
-so_mp = MP(id = 1, name = app.config["MP_NAME"], description = "Statistiken und Siegpunkts-Übersicht für das 17.Sonntags-MP der Strategie-Zone." , admin = admin)
-db.session.add(so_mp)
+so_mp1 = MP(id = 1, name = "Sonntags-MP: S2E2 - Per Aspera Ad Astra",
+			description = "Statistiken und Siegpunkts-Übersicht für das 17.Sonntags-MP der Strategie-Zone.",
+			gm = "Declaminius", host = "Wassergeist", admin = admin)
+so_mp2 = MP(id = 2, name = "Sonntags-MP: S2E3 - Faber est suae quisque fortunae",
+			description = "Statistiken und Siegpunkts-Übersicht für das 18.Sonntags-MP der Strategie-Zone." ,
+			gm = "Declaminius", host = "RoLJZ1", checksum = "0095", next_gameday = "07.01.2021", admin = admin)
+db.session.add(so_mp1)
+db.session.add(so_mp2)
 db.session.add(admin)
 db.session.commit()
 #Todo: create tags, trade_goods, ... (all static values)

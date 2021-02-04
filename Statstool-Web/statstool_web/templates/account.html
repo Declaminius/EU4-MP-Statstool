@@ -62,10 +62,16 @@
               </tr>
             </thead>
             <tbody>
-              {% for id, name, description in mp_data%}
+              {% for id, name, gm, host, description in mp_data%}
                 <tr>
                   <td><a class="btn btn-outline-secondary btn-center mt-2 mb-2" href = "{{url_for('main.home', mp_id = id)}}">{{id}}</a></td>
                   <td>{{name}}</td>
+                  {% if gm %}
+                    <td>{{gm}}</td>
+                  {% else %}
+                    <td> None </td>
+                  {% endif %}
+                  <td>{{host}}</td>
                   <td>{{description}}</td>
                   <td>
                     <div class="modal fade" id="deleteModal2" tabindex="-1" role="dialog" aria-labelledby="deleteModalLabel2" aria-hidden="true">
