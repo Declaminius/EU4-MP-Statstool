@@ -12,7 +12,6 @@ login_manager.login_view = "main.login"
 login_manager.login_message_category = "info"
 db = SQLAlchemy()
 
-
 def create_app(config_class = Config):
     app = Flask(__name__)
 
@@ -25,6 +24,9 @@ def create_app(config_class = Config):
     app.url_map.converters['list'] = ListConverter
     with open("../parsed_paradox_files/tags.txt", "r", encoding = 'utf-8') as tags:
         app.config["LOCALISATION_DICT"] = eval(tags.read())
+
+    with open("../parsed_paradox_files/custom_nations_tags.txt", "r", encoding = 'utf-8') as tags:
+        app.config["LOCALISATION_DICT"] = {**app.config["LOCALISATION_DICT"], **eval(tags.read())}
 
     @models_committed.connect_via(app)
     def on_models_committed(sender, changes):
