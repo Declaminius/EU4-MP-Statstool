@@ -13,9 +13,9 @@ import secrets
 
 main = Blueprint('main', __name__)
 
-@main.route("/", methods = ["GET"], defaults = {'mp_id': 1})
+@main.route("/", methods = ["GET"], defaults = {'mp_id': 2})
 @main.route("/home/<int:mp_id>", methods = ["GET"])
-def home(mp_id = 1):
+def home(mp_id = 2):
     institutions = ["basesave", "renaissance", "colonialism", "printing_press", "global_trade", "manufactories", "enlightenment", "industrialization", "endsave"]
     savegame_dict = {}
     for inst in institutions:

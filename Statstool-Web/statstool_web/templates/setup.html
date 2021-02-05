@@ -34,7 +34,7 @@
                 {% for tag, label, name in playertags %}
                     <tr>
                       <td style="text-align:center">{{ label }}</td>
-                      <td style="text-align:center" contenteditable>{{name}}</td>
+                      <td style="text-align:center">{{name}}</td>
                       <td style="text-align:center">
                         <div>
                           <a class="tn btn-danger btn-sm m-1" href = "{{url_for('parse.remove_nation', sg_id1 = sg_id1, sg_id2 = sg_id2, tag = tag)}}">Remove</a>
