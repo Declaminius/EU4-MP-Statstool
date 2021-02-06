@@ -1,0 +1,18 @@
+{% extends "show_stats_layout.html" %}
+{% block content %}
+
+<div class="container mt-3 mb-3">
+  <div class = "row">
+  {% for image_file in image_files %}
+    <div class="col-md">
+      <img class="img-fluid" src="{{ url_for('static', filename='plots/' + image_file) }}">
+    </div>
+  {% endfor %}
+  </div>
+</div>
+<div class = "col text-center">
+  <a class="btn btn-secondary btn mt-1 mb-1"
+  href = "{{url_for('show_stats.reload_plot', sg_id1 = old_savegame.id, sg_id2 = new_savegame.id, image_files = image_files)}}">Reload Plot</a>
+</div>
+
+{% endblock content %}

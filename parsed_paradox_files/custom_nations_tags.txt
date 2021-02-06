@@ -1,2 +1,2 @@
 {'D00': 'Orden der heiligen Gans', 'D01': 'Wärangir', 'D02': 'Homerien', 'D03': 'Mordor',
-'D04': 'Nilfgaard', 'D05': 'Sebulonia', 'D07': 'Allemannia', 'D08': 'Beira'}
+'D04': 'Nilfgaard', 'D05': 'Sebulonia', 'D07': 'Allemannia', 'D08': 'Beira', 'MPK': 'Malopolska'}
