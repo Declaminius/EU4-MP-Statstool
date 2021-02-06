@@ -18,11 +18,6 @@ for name in trade_goods:
     trade_good = TradeGood(name = name)
     db.session.add(trade_good)
 
-with open("../parsed_paradox_files/tags.txt", "r", encoding = 'utf-8') as tags:
-    localisation_dict = eval(tags.read())
-    for key,value in localisation_dict.items():
-        nation = Nation(tag = key, name = value)
-        db.session.add(nation)
 
 with open("../parsed_paradox_files/superregion.txt", "r", encoding = 'cp1252') as sg:
 	superregion_dict = eval(sg.read())

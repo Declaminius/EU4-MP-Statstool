@@ -11,9 +11,13 @@
             </tr>
           </thead>
           <tbody>
-            {% for row,tag,color in data%}
+            {% for row,tag,color_hex,color_hsl in data%}
               <tr>
-                <td bgcolor = "{{color}}">{{tag}}</td>
+                {% if color_hsl[2] > 0.5 %}
+                  <td bgcolor = "{{color_hex}}" style="color:black">{{tag}}</td>
+                {% else %}
+                  <td bgcolor = "{{color_hex}}" style="color:white">{{tag}}</td>
+                {% endif %}
                 {% for name in columns %}
                   <td>{{row[name]}}</td>
                 {% endfor %}

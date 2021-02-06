@@ -114,7 +114,6 @@ class Savegame(db.Model):
     parse_flag = db.Column(db.Boolean, default = False, nullable = False)
     nations = db.relationship("Nation", secondary = savegame_nations)
     player_nations = db.relationship("Nation", secondary = savegame_player_nations)
-    players = db.relationship("NationPlayer", backref = "savegame", cascade = "all, delete")
     army_battles = db.relationship("ArmyBattle", backref = "savegame", cascade = "all, delete")
     navy_battles = db.relationship("NavyBattle", backref = "savegame", cascade = "all, delete")
     wars = db.relationship("War", backref = "savegame", cascade = "all, delete")
@@ -165,7 +164,6 @@ class SavegamePlots(db.Model):
 class Nation(db.Model):
     __tablename__ = 'nation'
     tag = db.Column(db.String(3), primary_key = True)
-    name = db.Column(db.String)
     savegame_data = db.relationship("NationSavegameData", backref = "nation", cascade = "all, delete")
     savegame_goods_produced = db.relationship("NationSavegameGoodsProduced", backref = "nation", cascade = "all, delete")
     savegame_points_spent = db.relationship("NationSavegamePointsSpent", backref = "nation", cascade = "all, delete")
@@ -174,21 +172,14 @@ class Nation(db.Model):
     savegame_navy_losses = db.relationship("NationSavegameNavyLosses", backref = "nation", cascade = "all, delete")
     provinces = db.relationship("NationSavegameProvinces", backref = "nation", cascade = "all, delete")
 
-class Player(db.Model):
-    __tablename__ = 'player'
-    id = db.Column(db.Integer, primary_key = True)
-    name = db.Column(db.String(20), nullable = False)
-    nations = db.relationship("NationPlayer", backref = "player", lazy = True)
-
-class NationPlayer(db.Model):
-    savegame_id = db.Column(db.Integer, db.ForeignKey('savegame.id'), primary_key = True)
-    nation_tag = db.Column(db.String(3), db.ForeignKey('nation.tag'), primary_key = True)
-    player_id = db.Column(db.Integer, db.ForeignKey('player.id'))
 
 class NationSavegameData(db.Model):
     __tablename__ = "nation_savegame_data"
     nation_tag = db.Column(db.String(3), db.ForeignKey('nation.tag'), primary_key = True)
     savegame_id = db.Column(db.Integer, db.ForeignKey('savegame.id'), primary_key = True)
+
+    nation_name = db.Column(db.String)
+    player_name = db.Column(db.String)
 
     effective_development = db.Column(db.Float, default = 0)
     development = db.Column(db.Integer, default = 0)

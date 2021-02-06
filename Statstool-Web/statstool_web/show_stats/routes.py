@@ -80,23 +80,15 @@ def configure(sg_id1,sg_id2):
     new_tag_list = [nation.tag for nation in new_savegame.player_nations if nation.tag not in new_matching_tags]
 
 
-    for field,tag_list in ((form.old_nation,old_tag_list), (form.new_nation,new_tag_list)):
+    for field, tag_list, sg_id in ((form.old_nation,old_tag_list, sg_id1), (form.new_nation,new_tag_list, sg_id2)):
         field.choices = \
-            sorted([(tag,current_app.config["LOCALISATION_DICT"][tag]) \
-            if tag in current_app.config["LOCALISATION_DICT"].keys() else (tag,tag) \
-            for tag in tag_list], key = lambda x: x[1])
+            sorted([(tag,NationSavegameData.query.filter_by(savegame_id = sg_id, \
+            nation_tag = tag).first().nation_name) for tag in tag_list], key = lambda x: x[1])
 
     nation_formations = []
     for x in NationFormation.query.filter_by(old_savegame_id = sg_id1, new_savegame_id = sg_id2).all():
-        if x.old_nation_tag in current_app.config["LOCALISATION_DICT"].keys():
-            old_nation = current_app.config["LOCALISATION_DICT"][x.old_nation_tag]
-        else:
-            old_nation = x.old_nation_tag
-
-        if x.new_nation_tag in current_app.config["LOCALISATION_DICT"].keys():
-            new_nation = current_app.config["LOCALISATION_DICT"][x.new_nation_tag]
-        else:
-            new_nation = x.new_nation_tag
+        old_nation = NationSavegameData.query.filter_by(savegame_id = sg_id1, nation_tag = x.old_nation_tag).first().nation_name
+        new_nation = NationSavegameData.query.filter_by(savegame_id = sg_id2, nation_tag = x.new_nation_tag).first().nation_name
         nation_formations.append((old_nation, new_nation))
     return render_template("configure.html", old_savegame = old_savegame, new_savegame = new_savegame, form = form, nation_formations = nation_formations)
 
@@ -105,17 +97,21 @@ def overview_table(sg_id1,sg_id2):
     columns = ["great_power_score", "development", "effective_development", "navy_strength", "max_manpower", "income"]
     header_labels = ["Nation", "Great Power Score", "Development", "Effective Development", "Navy Strength", "Maximum Manpower", "Monthly Income"]
     nation_data = []
-    nation_colors = []
-    nation_tags = []
+    nation_colors_hex = []
+    nation_colors_hsl = []
+    nation_names = []
     for nation in Savegame.query.get(sg_id2).player_nations:
         data = NationSavegameData.query.filter_by(nation_tag = nation.tag, \
                 savegame_id = sg_id2).with_entities(*columns).first()._asdict()
         nation_data.append(data)
-        nation_colors.append( str(NationSavegameData.query.filter_by(nation_tag = nation.tag, \
-                savegame_id = sg_id2).first().color))
-        nation_tags.append(nation.tag)
-    return render_template("table.html", old_savegame = Savegame.query.get(sg_id1), new_savegame = Savegame.query.get(sg_id2), \
-        data = zip(nation_data,nation_tags,nation_colors), columns = columns, header_labels = header_labels, colorize_columns = [1,2,3,4,5,6], sort_by = 1, map = map)
+        nation_colors_hex.append( NationSavegameData.query.filter_by(nation_tag = nation.tag, \
+                savegame_id = sg_id2).first().color)
+        nation_colors_hsl.append( NationSavegameData.query.filter_by(nation_tag = nation.tag, \
+                savegame_id = sg_id2).first().color.hsl)
+        nation_names.append(NationSavegameData.query.filter_by(savegame_id = sg_id2, nation_tag = nation.tag).first().nation_name)
+    return render_template("table.html", old_savegame = Savegame.query.get(sg_id1), \
+            new_savegame = Savegame.query.get(sg_id2), data = zip(nation_data,nation_names,nation_colors_hex, nation_colors_hsl), \
+            columns = columns, header_labels = header_labels, colorize_columns = [1,2,3,4,5,6], sort_by = 1, map = map)
 
 @show_stats.route("/development/<int:sg_id1>/<int:sg_id2>", methods = ["GET"])
 def development(sg_id1, sg_id2):

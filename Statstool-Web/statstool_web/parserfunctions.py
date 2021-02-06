@@ -20,15 +20,14 @@ def edit_parse(filename):
 		compile_real_nations = compile("\n\t\tdevelopment")  # Dead nations don't have development
 		countries = split("\n\t([A-Z0-9]{3})", content.split("\ncountries={")[1].split('active_advisors')[0])
 		tag_list, info_list = countries[1:-1:2], countries[2:-1:2]
-		playertag_list = []
 		real_nations_list = []
 
 
 		player_names_and_tags = compile("players_countries={([^}].+?)}", DOTALL).search(content).group(1).split('"')[1::2]
-		print(player_names_and_tags)
 		player_names = player_names_and_tags[::2]
 		player_tags = player_names_and_tags[1::2]
 		player_names_dict = dict(zip(player_tags, player_names))
+
 
 		year = int(search("date=(?P<year>\d{4})", content).group(1))
 
@@ -38,11 +37,9 @@ def edit_parse(filename):
 				real_nations_list.append(tag)
 				result = compile_player.search(info)
 				if result:
-					if tag not in player_names_dict.keys():
+					if not tag in player_names_dict.keys():
 						player_names_dict[tag] = None
 
-
-	print(player_names_dict)
 
 	return player_names_dict, sorted(real_nations_list), year
 
@@ -227,7 +224,7 @@ def parse_war_participants(participant, compile_participants, war):
 	db.session.add(war_participant)
 
 
-def compile_main(info, tag, savegame, main, side_regex_dict, tech_cost, tech):
+def compile_main(info, tag, savegame, main, name, side_regex_dict, tech_cost, tech):
 
 	result = main.search(info)
 	if result:
@@ -250,6 +247,15 @@ def compile_main(info, tag, savegame, main, side_regex_dict, tech_cost, tech):
 				nation_data[category] = result.group(1)
 			else:
 				nation_data[category] = 0
+
+		name_result = name.search(info)
+		if name_result:
+			nation_data["nation_name"] = name_result.group(1)
+		elif tag in current_app.config["LOCALISATION_DICT"].keys():
+			nation_data["nation_name"] = current_app.config["LOCALISATION_DICT"][tag]
+		else:
+			nation_data["nation_name"] = tag
+
 
 		compile_army_losses(info, tag, savegame, nation_data)
 		compile_tech(info, tag, savegame, nation_data, tech_cost, tech)
@@ -301,6 +307,7 @@ def compile_tech(info, tag, savegame, nation_data, tech_cost, tech):
 		nation_data["number_of_ideas"] = sum([int(idea.split("=")[1])\
 			for idea in result.group(4).split()[1:]])  # Important: Don't count unlocked national ideas
 		del nation_data["idea_groups"]
+
 
 def compile_score(info, tag, savegame, score, card_score, nation_data):
 
@@ -418,15 +425,18 @@ def parse_countries(content, savegame):
 
 	main = compile("\n\t\tdevelopment=(?P<effective_development>\d+.\d+).+?" \
 				 "raw_development=(?P<development>\d+.\d+).+?country_color=[{]\n\t\t\t\t(?P<color>[^\n]+).+?" \
-				 "navy_strength=(?P<navy_strength>\d+.\d+).+?"
+				 "navy_strength=(?P<navy_strength>\d+.\d+).+?" \
 				 "estimated_monthly_income=(?P<income>\d+.\d+).+?" \
 				 "manpower=(?P<manpower>\d+.\d+).+?max_manpower=(?P<max_manpower>\d+.\d+).+?" \
 				 "members=[{]\n\t\t\t\t(?P<losses>[^\n]+)", DOTALL)
 
+	name = compile('\n\t\tname="(?P<nation_name>.+?)"')
 	great_power = compile("great_power_score=(\d+.\d+)")
 	num_converted_religion = compile("num_converted_religion=(\d+)")
 	num_of_colonies = compile("num_of_colonies=(\d+)")
+
 	side_regex_dict = {"great_power_score": great_power, "num_converted_religion": num_converted_religion, "num_of_colonies": num_of_colonies}
+
 	score = compile("age_score={(?P<age_score>[^}].+?)}.+?vc_age_score={(?P<vc_age_score>[^}].+?)}", DOTALL)
 	card_score = compile("card_score=(\d+.\d+)")
 
@@ -441,7 +451,7 @@ def parse_countries(content, savegame):
 
 	ae_dict = {}
 	for info, tag in zip(info_list, tag_list):
-		nation_data = compile_main(info, tag, savegame, main, side_regex_dict, tech_cost, tech)
+		nation_data = compile_main(info, tag, savegame, main, name, side_regex_dict, tech_cost, tech)
 		if nation_data:
 			compile_score(info, tag, savegame, score, card_score, nation_data)
 			compile_goods_produced(info, tag, savegame, trade_goods)
@@ -450,8 +460,8 @@ def parse_countries(content, savegame):
 			parse_relations(info, tag, ae, ae_dict)
 			parse_regiments(info, tag, regiment_strength, nation_data)
 			parse_ships(info, tag, nation_data)
-			nd = NationSavegameData(**nation_data)
-			db.session.add(nd)
+			nd = NationSavegameData.query.filter_by(savegame_id = savegame.id, nation_tag = tag)
+			nd.update(nation_data)
 
 	for tag in tag_list:
 		nation = NationSavegameData.query.filter_by(nation_tag = tag, savegame_id = savegame.id).first()

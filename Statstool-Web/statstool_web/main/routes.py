@@ -2,7 +2,7 @@ from flask import render_template, url_for, request, redirect, flash, abort, Blu
 from statstool_web.main.forms import SavegameSelectForm, OneSavegameSelectForm, MapSelectForm, LoginForm, RegistrationForm, AddMPForm
 from statstool_web import db, bcrypt
 from statstool_web.parserfunctions import edit_parse
-from statstool_web.models import User, MP, Savegame, Nation, NationSavegameData, Player, NationPlayer
+from statstool_web.models import User, MP, Savegame, Nation, NationSavegameData
 from statstool_web.util import redirect_url
 from pathlib import Path
 from sqlalchemy import desc
@@ -27,10 +27,11 @@ def home(mp_id = 2):
     names_dict = {}
     if current_save:
         for nation in current_save.player_nations:
-            if (result := NationPlayer.query.filter_by(savegame_id = current_save.id, nation_tag = nation.tag).first()):
-                names_dict[nation.name] = Player.query.filter_by(id = result.player_id).first().name
+            nation_data = NationSavegameData.query.filter_by(savegame_id = current_save.id, nation_tag = nation.tag).first()
+            if nation_data.player_name:
+                names_dict[nation_data.nation_name] = nation_data.player_name
             else:
-                names_dict[nation.name] = "???"
+                names_dict[nation_data.nation_name] = "???"
     return render_template("home.html", savegame_dict = savegame_dict, mps = mps, current_mp = current_mp, current_save = current_save, names_dict = names_dict)
 
 @main.route("/login", methods = ["GET", "POST"])
@@ -102,21 +103,19 @@ def upload_savegames(mp_id = None):
                     savegame = Savegame(file = random, owner = current_user, year = year, name = name)
                 for tag in tag_list:
                     if not Nation.query.get(tag):
-                        if tag in current_app.config["LOCALISATION_DICT"].keys():
-                            t = Nation(tag = tag, name = current_app.config["LOCALISATION_DICT"][tag])
-                        else:
-                            t = Nation(tag = tag, name = tag)
-                        db.session.add(t)
+                        nation = Nation(tag = tag)
+                        db.session.add(nation)
                         db.session.commit()
 
                     savegame.nations.append(Nation.query.get(tag))
                     if tag in player_names_dict.keys():
                         savegame.player_nations.append(Nation.query.get(tag))
-                        if not Player.query.filter_by(name = player_names_dict[tag]).all():
-                            p = Player(name = player_names_dict[tag])
-                            db.session.add(p)
-                        t = NationPlayer(player = p, savegame = savegame, nation_tag = tag)
-                        db.session.add(t)
+                        player_name = player_names_dict[tag]
+                    else:
+                        player_name = None
+
+                    nation_data = NationSavegameData(savegame_id = savegame.id, nation_tag = tag, player_name = player_name)
+                    db.session.add(nation_data)
 
                 db.session.add(savegame)
                 db.session.commit()
@@ -158,25 +157,23 @@ def upload_one_savegame(mp_id = None, institution = None):
                 savegame = Savegame(file = random, mp_id = mp_id, map_file = map_random, institution = institution, owner = current_user, year = year, name = form.savegame_name.data)
             else:
                 savegame = Savegame(file = random, mp_id = mp_id, institution = institution, owner = current_user, year = year, name = form.savegame_name.data)
-            for tag in tag_list:
-                if not Nation.query.get(tag):
-                    if tag in current_app.config["LOCALISATION_DICT"].keys():
-                        t = Nation(tag = tag, name = current_app.config["LOCALISATION_DICT"][tag])
-                    else:
-                        t = Nation(tag = tag, name = tag)
-                    db.session.add(t)
-                    db.session.commit()
+                for tag in tag_list:
+                    if not Nation.query.get(tag):
+                        nation = Nation(tag = tag)
+                        db.session.add(nation)
+                        db.session.commit()
 
-                savegame.nations.append(Nation.query.get(tag))
-                if tag in player_names_dict.keys():
-                    savegame.player_nations.append(Nation.query.get(tag))
-                    if player_names_dict[tag]:
-                        if not Player.query.filter_by(name = player_names_dict[tag]).all():
-                            player = Player(name = player_names_dict[tag])
-                            db.session.add(player)
-                        p = Player.query.filter_by(name = player_names_dict[tag]).first()
-                        t = NationPlayer(player = p, savegame = savegame, nation_tag = tag)
-                        db.session.add(t)
+                    savegame.nations.append(Nation.query.get(tag))
+                    if tag in player_names_dict.keys():
+                        savegame.player_nations.append(Nation.query.get(tag))
+                        player_name = player_names_dict[tag]
+                    else:
+                        player_name = None
+
+                    nation_data = NationSavegameData(savegame_id = savegame.id, nation_tag = tag, player_name = player_name)
+                    db.session.add(nation_data)
+
+
             db.session.add(savegame)
             db.session.commit()
         except AttributeError as e:
