@@ -140,6 +140,15 @@ class Savegame(db.Model):
                 print(os.path.join(current_app.root_path, 'static/maps', self.map_file))
 
 
+class VictoryPoints(db.Model):
+    __tablename__ = 'victory_points'
+    mp_id = db.Column(db.Integer, db.ForeignKey('mp.id'), primary_key = True)
+    institution = db.Column(db.Enum(Institutions), primary_key = True)
+    nation_tag = db.Column(db.String(3), db.ForeignKey('nation.tag'), primary_key = True)
+    victory_points = db.Column(db.Integer)
+
+
+
 class NationFormation(db.Model):
     __tablename__ = 'nation_formation'
     old_savegame_id = db.Column(db.Integer, db.ForeignKey('savegame.id'), primary_key = True)

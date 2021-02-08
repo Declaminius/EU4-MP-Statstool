@@ -277,53 +277,63 @@ def reload_all_plots(sg_id1, sg_id2):
 
 @show_stats.route("/victory_points/<int:sg_id1>/<int:sg_id2>", methods = ["GET"])
 def victory_points(sg_id1, sg_id2):
+    # institution = Savegame.query.get(sg_id2).institution
+    # columns = ["standing_army", "navy_cannons"]
+    # header_labels = ["Nation", "Stehendes Heer", "Flotte: Gesamtanzahl Kanonen", "Armeeverluste im Kampf", "höchstentwickelte Provinz", "Siegpunkte"]
+    # min_values = {"standing_army": 100000, "navy_cannons": 2000, "losses": 500000, "highest_dev": 50}
+    #
+    # if institution is Institutions.renaissance:
+    #     header_labels.insert(1,"Höchste AE")
+    #     columns.insert(0, "highest_ae")
+    #     min_values["highest_ae"] = 50
+    #
+    # if institution is Institutions.colonialism:
+    #     header_labels.insert(1, "Meiste laufende Kolonien")
+    #     columns.insert(0, "num_of_colonies")
+    #     min_values["num_of_colonies"] = 5
+    #
+    # if institution is Institutions.printing_press:
+    #     header_labels.insert(1, "Meiste konvertierte Provinzen")
+    #     columns.insert(0, "num_converted_religion")
+    #     min_values["num_converted_religion"] = 0
+    #
+    # if institution is Institutions.global_trade:
+    #     header_labels.insert(1, "Globaler Handel")
+    #
+    # if institution is Institutions.manufactories:
+    #     header_labels.insert(1, "Meister Produktionsführer")
+    #     columns.insert(0, "num_of_production_leaders")
+    #     min_values["num_of_production_leaders"] = 3
+    #
+    # if institution is Institutions.enlightenment:
+    #      header_labels.insert(1, "Innovativität")
+    #      columns.insert(0, "innovativeness")
+    #      min_values["innovativeness"] = 50
+    #
+    # if institution is Institutions.industrialization:
+    #     header_labels.insert(1, "InGame-Score")
+    #     columns.insert(0, "score")
+    #     min_values["score"] = 0
+
     institution = Savegame.query.get(sg_id2).institution
     columns = ["standing_army", "navy_cannons"]
     header_labels = ["Nation", "Stehendes Heer", "Flotte: Gesamtanzahl Kanonen", "Armeeverluste im Kampf", "höchstentwickelte Provinz", "Siegpunkte"]
     min_values = {"standing_army": 100000, "navy_cannons": 2000, "losses": 500000, "highest_dev": 50}
 
-    if institution is Institutions.renaissance:
-        header_labels.insert(1,"Höchste AE")
-        columns.insert(0, "highest_ae")
-        min_values["highest_ae"] = 50
-
-    if institution is Institutions.colonialism:
-        header_labels.insert(1, "Meiste laufende Kolonien")
-        columns.insert(0, "num_of_colonies")
-        min_values["num_of_colonies"] = 5
-
-    if institution is Institutions.printing_press:
-        header_labels.insert(1, "Meiste konvertierte Provinzen")
-        columns.insert(0, "num_converted_religion")
-        min_values["num_converted_religion"] = 0
-
-    if institution is Institutions.global_trade:
-        header_labels.insert(1, "Globaler Handel")
-
-    if institution is Institutions.manufactories:
-        header_labels.insert(1, "Meister Produktionsführer")
-        columns.insert(0, "num_of_production_leaders")
-        min_values["num_of_production_leaders"] = 3
-
-    if institution is Institutions.enlightenment:
-         header_labels.insert(1, "Innovativität")
-         columns.insert(0, "innovativeness")
-         min_values["innovativeness"] = 50
-
-    if institution is Institutions.industrialization:
-        header_labels.insert(1, "InGame-Score")
-        columns.insert(0, "score")
-        min_values["score"] = 0
-
 
     nation_data = []
-    nation_colors = []
+    nation_colors_hex = []
+    nation_colors_hsl = []
+    nation_names = []
     nation_tags = []
     for nation in Savegame.query.get(sg_id2).player_nations:
         data = NationSavegameData.query.filter_by(nation_tag = nation.tag, \
                 savegame_id = sg_id2).with_entities(*columns).first()._asdict()
-        nation_colors.append( str(NationSavegameData.query.filter_by(nation_tag = nation.tag, \
-                savegame_id = sg_id2).first().color))
+        nation_colors_hex.append(NationSavegameData.query.filter_by(nation_tag = nation.tag, \
+                savegame_id = sg_id2).first().color)
+        nation_colors_hsl.append(NationSavegameData.query.filter_by(nation_tag = nation.tag, \
+                savegame_id = sg_id2).first().color.hsl)
+        nation_names.append(NationSavegameData.query.filter_by(savegame_id = sg_id2, nation_tag = nation.tag).first().nation_name)
         nation_tags.append(nation.tag)
 
         losses = NationSavegameArmyLosses.query.filter_by(nation_tag = nation.tag, savegame_id = sg_id2).first().combat
@@ -333,31 +343,25 @@ def victory_points(sg_id1, sg_id2):
             nation_tag = nation.tag, savegame_id = sg_id2).order_by(NationSavegameProvinces.development.desc()).first().development
         data["highest_dev"] = highest_dev
         data["victory_points"] = 0
-        if institution is Institutions.global_trade:
-            if nation.tag == "GBR":
-                data["global_trade"] = 1
-            else:
-                data["global_trade"] = 0
         nation_data.append(data)
 
-    if institution is Institutions.global_trade:
-        columns.insert(0, "global_trade")
-        min_values["global_trade"] = 0
-
     columns += ["losses", "highest_dev", "victory_points"]
-    nation_tags.append("Minimalwert")
-    nation_colors.append("ffffff")
+    nation_names.append("Minimalwert")
+    nation_colors_hex.append("ffffff")
+    nation_colors_hsl.append([0,0,1])
     nation_data.append(min_values)
 
     for category in min_values.keys():
         max_category = max([x[category] for x in nation_data])
         for data in nation_data[:-1]:
             if data[category] == max_category:
-                if category in ("highest_ae","num_of_colonies","num_converted_religion","global_trade","num_of_production_leaders","innovativeness", "score"):
-                    data["victory_points"] += 2
-                else:
-                    data["victory_points"] += 1
+                data["victory_points"] += 1
 
-    print(header_labels)
+    for data, tag in zip(nation_data[:-1], nation_tags):
+        if not VictoryPoints.query.filter_by(mp_id = Savegame.query.get(sg_id2).mp_id, institution = institution, nation_tag = tag).first():
+            vp = VictoryPoints(mp_id = Savegame.query.get(sg_id2).mp_id, institution = institution, nation_tag = tag, victory_points = data["victory_points"])
+            db.session.add(vp)
+    db.session.commit()
+
     return render_template("table.html", old_savegame = Savegame.query.get(sg_id1), new_savegame = Savegame.query.get(sg_id2), \
-        data = zip(nation_data,nation_tags,nation_colors), columns = columns, header_labels = header_labels, colorize_columns = [1,2,3,4,5,6], sort_by = 6)
+        data = zip(nation_data,nation_names,nation_colors_hex,nation_colors_hsl), columns = columns, header_labels = header_labels, colorize_columns = [1,2,3,4,5], sort_by = 5)

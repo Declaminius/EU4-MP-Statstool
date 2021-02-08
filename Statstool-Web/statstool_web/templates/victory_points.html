@@ -11,13 +11,17 @@
     </tr>
   </thead>
   <tbody>
-    {% for tag,color in nation_info%}
-    <tr>
-      <td bgcolor = "{{color}}">{{tag}}</td>
-      {% for value in data[tag] %}
-      <td>{{value}}</td>
-      {% endfor %}
-    </tr>
+    {% for name, tag, color_hex,color_hsl in nation_info%}
+      <tr>
+        {% if color_hsl[2] > 0.5 %}
+          <td bgcolor = "{{color_hex}}" style="color:black">{{name}}</td>
+        {% else %}
+          <td bgcolor = "{{color_hex}}" style="color:white">{{name}}</td>
+        {% endif %}
+        {% for value in data[tag] %}
+          <td>{{value}}</td>
+        {% endfor %}
+      </tr>
     {% endfor %}
   </tbody>
 </table>
@@ -28,10 +32,10 @@
 <script type="text/javascript">
   $(document).ready(function() {
     // Table Heat Map;
-    for (i = 2; i <= 11; i++) {
+    for (i = 2; i <= 15; i++) {
       $('table tbody td:nth-child(' + i + ')').colorize();
     }
   });
-  $('.mydatatable').DataTable({paging: false, info: false, "order": [[ 10, "desc" ]], searching: false});
+  $('.mydatatable').DataTable({paging: false, info: false, "order": [[ 14, "desc" ]], searching: false});
 </script>
 {% endblock content %}
