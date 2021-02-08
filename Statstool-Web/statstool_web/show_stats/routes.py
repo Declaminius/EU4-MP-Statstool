@@ -117,27 +117,26 @@ def overview_table(sg_id1,sg_id2):
 @show_stats.route("/development/<int:sg_id1>/<int:sg_id2>", methods = ["GET"])
 def development(sg_id1, sg_id2):
 
-    content, header_labels, columns, flattened_image_files, map = get_images_and_table_data(("development","effective_development"), \
+    content, ids, header_labels, columns, flattened_image_files, map = get_images_and_table_data(("development","effective_development"), \
             (NationSavegameData.development,NationSavegameData.effective_development), NationSavegameData, sg_id1, sg_id2)
     return render_template("plot.html", old_savegame = Savegame.query.get(sg_id1), new_savegame = Savegame.query.get(sg_id2), \
-            flattened_image_files = flattened_image_files, content = content, header_labels = header_labels, columns = columns, map = map)
+            flattened_image_files = flattened_image_files, content = content, ids = ids, header_labels = header_labels, columns = columns, map = map)
 
 @show_stats.route("/income/<int:sg_id1>/<int:sg_id2>", methods = ["GET"])
 def income(sg_id1, sg_id2):
 
-    content, header_labels, columns, flattened_image_files, map = get_images_and_table_data(["income"], [NationSavegameData.income], NationSavegameData, sg_id1, sg_id2)
+    content, ids, header_labels, columns, flattened_image_files, map = get_images_and_table_data(["income"], [NationSavegameData.income], NationSavegameData, sg_id1, sg_id2)
 
     return render_template("plot.html", old_savegame = Savegame.query.get(sg_id1), new_savegame = Savegame.query.get(sg_id2), \
-            content = content, header_labels = header_labels, columns = columns, map = map)
+            content = content, ids = ids, header_labels = header_labels, columns = columns, map = map)
 
 @show_stats.route("/max_manpower/<int:sg_id1>/<int:sg_id2>", methods = ["GET"])
 def max_manpower(sg_id1, sg_id2):
 
-    content, header_labels, columns, flattened_image_files, map = get_images_and_table_data(["max_manpower"], [NationSavegameData.max_manpower], NationSavegameData, sg_id1, sg_id2)
+    content, ids, header_labels, columns, flattened_image_files, map = get_images_and_table_data(["max_manpower"], [NationSavegameData.max_manpower], NationSavegameData, sg_id1, sg_id2)
 
     return render_template("plot.html", old_savegame = Savegame.query.get(sg_id1), new_savegame = Savegame.query.get(sg_id2), \
-            content = content, header_labels = header_labels, columns = columns, map = map)
-
+            content = content, ids = ids, header_labels = header_labels, columns = columns, map = map)
 
 @show_stats.route("/army_losses/<int:sg_id1>/<int:sg_id2>", methods = ["GET"])
 def army_losses(sg_id1, sg_id2):
@@ -145,11 +144,10 @@ def army_losses(sg_id1, sg_id2):
     columns = ( NationSavegameArmyLosses.infantry,NationSavegameArmyLosses.cavalry,NationSavegameArmyLosses.artillery,\
                 NationSavegameArmyLosses.combat,NationSavegameArmyLosses.attrition,NationSavegameArmyLosses.total)
 
-    content, header_labels, columns, flattened_image_files, map = get_images_and_table_data(categories, columns, NationSavegameArmyLosses, sg_id1, sg_id2)
+    content, ids, header_labels, columns, flattened_image_files, map = get_images_and_table_data(categories, columns, NationSavegameArmyLosses, sg_id1, sg_id2)
 
     return render_template("plot.html", old_savegame = Savegame.query.get(sg_id1), new_savegame = Savegame.query.get(sg_id2), \
-            content = content, header_labels = header_labels, columns = columns, map = map)
-
+            content = content, ids = ids, header_labels = header_labels, columns = columns, map = map)
 
 @show_stats.route("/income_over_time/<int:sg_id1>/<int:sg_id2>", methods = ["GET"])
 def income_over_time(sg_id1, sg_id2):
@@ -225,8 +223,9 @@ def mana_spent(sg_id1, sg_id2):
     columns = ["adm", "dip", "mil", "total"]
     header_labels = ["Nation", "ADM", "DIP", "MIL", "Total"]
     mana_data = []
-    nation_colors = []
-    nation_tags = []
+    nation_colors_hex = []
+    nation_colors_hsl = []
+    nation_names = []
     for nation in Savegame.query.get(sg_id2).player_nations:
         data = {}
         mana = NationSavegamePointsSpent.query.filter_by(savegame_id = sg_id2, nation_tag = nation.tag).all()
@@ -242,12 +241,14 @@ def mana_spent(sg_id1, sg_id2):
             for category in ("adm", "dip", "mil", "total"):
                 data[category] = 0
         mana_data.append(data)
-        nation_colors.append( str(NationSavegameData.query.filter_by(nation_tag = nation.tag, \
-                savegame_id = sg_id2).first().color))
-        nation_tags.append(nation.tag)
+        nation_colors_hex.append(NationSavegameData.query.filter_by(nation_tag = nation.tag, \
+                savegame_id = sg_id2).first().color)
+        nation_colors_hsl.append(NationSavegameData.query.filter_by(nation_tag = nation.tag, \
+                savegame_id = sg_id2).first().color.hsl)
+        nation_names.append(NationSavegameData.query.filter_by(savegame_id = sg_id2, nation_tag = nation.tag).first().nation_name)
     map = Savegame.query.get(sg_id2).map_file
     return render_template("table.html", old_savegame = Savegame.query.get(sg_id1), new_savegame = Savegame.query.get(sg_id2), \
-        data = zip(mana_data,nation_tags,nation_colors), columns = columns, header_labels = header_labels, colorize_columns = [1,2,3,4], sort_by = 4, map = map)
+        data = zip(mana_data,nation_names,nation_colors_hex, nation_colors_hsl), columns = columns, header_labels = header_labels, colorize_columns = [1,2,3,4], sort_by = 4, map = map)
 
 @show_stats.route("/reload_plot/<int:sg_id1>/<int:sg_id2>/<list:image_files>", methods = ["GET", "POST"])
 def reload_plot(sg_id1, sg_id2, image_files):

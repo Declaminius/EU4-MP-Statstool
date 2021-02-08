@@ -69,7 +69,8 @@ def get_images_and_table_data(categories, columns, model, sg_id1, sg_id2):
 
     flattened_image_files = [file for sublist in image_files for file in sublist]
     map = Savegame.query.get(sg_id2).map_file
-    return zip(image_files, data), header_labels, table_columns, flattened_image_files, map
+    ids = [i for i in range(len(image_files))]
+    return zip(image_files, data, ids), ids, header_labels, table_columns, flattened_image_files, map
 
 
 def table_data(category, old_year, new_year, tag_list, sg_id1, sg_id2, data_type, model):

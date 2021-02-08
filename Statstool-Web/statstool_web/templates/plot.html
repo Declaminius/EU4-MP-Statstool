@@ -1,7 +1,7 @@
 {% extends "show_stats_layout.html" %}
 {% block content %}
 
-{% for images, data in content %}
+{% for images, data, id in content %}
   <div class="container mt-3">
     <div class = "row">
     {% for image_file in images %}
@@ -12,7 +12,7 @@
     </div>
   </div>
   <div class = "container mb-3">
-      <table class = "table table-striped table-bordered mydatatable" style = "width: 100%">
+      <table class = "table table-striped table-bordered mydatatable" style = "width: 100%" id = {{id}}>
           <thead>
             <tr>
               {% for label in header_labels%}
@@ -47,10 +47,13 @@
   <script type="text/javascript">
   $(document).ready(function() {
     // Table Heat Map
-  $("table tbody td:nth-child(2)").colorize();
-  $("table tbody td:nth-child(3)").colorize();
-  $("table tbody td:nth-child(4)").colorize();
-  $("table tbody td:nth-child(5)").colorize();
+  var ids = {{ids|tojson}};
+  for (let i of ids) {
+      $("table#" + i + " tbody td:nth-child(2)").colorize();
+      $("table#" + i + " tbody td:nth-child(3)").colorize();
+      $("table#" + i + " tbody td:nth-child(4)").colorize();
+      $("table#" + i + " tbody td:nth-child(5)").colorize();
+    }
   });
   $('.mydatatable').DataTable({paging: false, searching: false, "order": [[ 2, "desc" ]]});
   </script>
