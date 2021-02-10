@@ -262,35 +262,60 @@ def total_victory_points(mp_id):
     savegame = Savegame.query.filter_by(mp_id = mp_id).order_by(desc(Savegame.year)).first()
 
     if savegame:
-        header_labels = ["Nation", "Basis", "Kriege", "Kolonialismus", "Druckerpresse", \
-        "Globaler Handel", "Manufakturen", "Aufklärung", "Industrialisierung", \
-        "erster Spielerkrieg-Sieger", "erste Weltumseglung", "Armee-Professionalität", \
-        "Großmacht", "Hegemonie", "Gesamt"]
-        nation_tags = [x.tag for x in savegame.player_nations]
-        nation_names = [NationSavegameData.query.filter_by(savegame_id = savegame.id, nation_tag = tag).first().nation_name for tag in nation_tags]
-        nation_colors_hex = [NationSavegameData.query.filter_by(nation_tag = tag, \
-                savegame_id = savegame.id).first().color for tag in nation_tags]
-        nation_colors_hsl = [NationSavegameData.query.filter_by(nation_tag = tag, \
-                savegame_id = savegame.id).first().color.hsl for tag in nation_tags]
+        if mp_id == 2:
+            header_labels = ["Nation", "Basis", "Kriege", "Kolonialismus", "Druckerpresse", \
+            "Globaler Handel", "Manufakturen", "Aufklärung", "Industrialisierung", \
+            "erster Spielerkrieg-Sieger", "erste Weltumseglung", "Armee-Professionalität", \
+            "Großmacht", "Hegemonie", "Gesamt"]
+            nation_tags = [x.tag for x in savegame.player_nations]
+            nation_names = [NationSavegameData.query.filter_by(savegame_id = savegame.id, nation_tag = tag).first().nation_name for tag in nation_tags]
+            nation_colors_hex = [NationSavegameData.query.filter_by(nation_tag = tag, \
+                    savegame_id = savegame.id).first().color for tag in nation_tags]
+            nation_colors_hsl = [NationSavegameData.query.filter_by(nation_tag = tag, \
+                    savegame_id = savegame.id).first().color.hsl for tag in nation_tags]
 
-        data = {}
-        for tag in nation_tags:
-            data[tag] = [0]*(len(header_labels)-2)
-
-        institutions = ("colonialism", "printing_press", "global_trade", "manufactories", "enlightenment","industrialization")
-
-        for institution, column in zip(institutions, range(2,8)):
+            data = {}
             for tag in nation_tags:
-                if (result := VictoryPoints.query.filter_by(mp_id = mp_id, institution = institution, nation_tag = tag).first()):
-                    data[tag][column] = result.victory_points
+                data[tag] = [0]*(len(header_labels)-2)
 
-        #erster Spielerkrieg
-        data["D00"][8] = 1
+            institutions = ("colonialism", "printing_press", "global_trade", "manufactories", "enlightenment","industrialization")
 
-        for tag in data.keys():
-            data[tag].append(sum(data[tag]))
+            for institution, column in zip(institutions, range(2,8)):
+                for tag in nation_tags:
+                    if (result := VictoryPoints.query.filter_by(mp_id = mp_id, institution = institution, nation_tag = tag).first()):
+                        data[tag][column] = result.victory_points
 
-        return render_template("victory_points.html", header_labels = header_labels, nation_info = zip(nation_names,nation_tags,nation_colors_hex,nation_colors_hsl), data = data)
+            #erster Spielerkrieg
+            data["D00"][8] = 1
+
+            for tag in data.keys():
+                data[tag].append(sum(data[tag]))
+
+            return render_template("victory_points.html", header_labels = header_labels, nation_info = zip(nation_names,nation_tags,nation_colors_hex,nation_colors_hsl), data = data)
+
+        elif mp_id == 1:
+
+            header_labels = ["Nation", "Basis", "Kriege", "Renaissance", "Kolonialismus", "Druckerpresse", "Globaler Handel", "Manufakturen", "Aufklärung", "Industrialisierung", "Gesamt"]
+            nation_tags = [x.tag for x in savegame.player_nations]
+            nation_colors = [str(NationSavegameData.query.filter_by(nation_tag = tag, \
+                    savegame_id = savegame.id).first().color) for tag in nation_tags]
+
+            data = {}
+
+            data["SPA"] = [2,0,0,0,0,0,0,0,0]
+            data["FRA"] = [2,-2,0,0,0,0,0,0,0]
+            data["GBR"] = [2,-2,0,2,3,2,0,0,0]
+            data["NED"] = [2,2,0,0,0,1,1,3,0]
+            data["HAB"] = [2,4,0,0,0,0,3,1,0]
+            data["SWE"] = [2,-2,0,0,0,0,0,0,0]
+            data["PLC"] = [2,-1,0,0,0,0,0,1,0]
+            data["TUR"] = [1,-3,2,1,1,2,2,0,0]
+            data["RUS"] = [1,4,0,0,1,1,0,1,0]
+
+            for tag in data.keys():
+                data[tag].append(sum(data[tag]))
+
+            return render_template("victory_points.html", header_labels = header_labels, nation_info = zip(nation_tags,nation_colors), data = data)
 
     else:
         flash(f'Noch keine Siegpunkte vergeben.', 'danger')
