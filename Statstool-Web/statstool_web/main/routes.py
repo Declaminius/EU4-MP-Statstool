@@ -279,7 +279,7 @@ def total_victory_points(mp_id):
 
             data = {}
             for tag in nation_tags:
-                data[tag] = [0]*(len(header_labels)-2)
+                data[tag] = [2] + [0]*(len(header_labels)-3)
 
             institutions = ("colonialism", "printing_press", "global_trade", "manufactories", "enlightenment","industrialization")
 
@@ -290,6 +290,12 @@ def total_victory_points(mp_id):
 
             #erster Spielerkrieg
             data["D00"][8] = 1
+
+            #global_trade
+            data["D05"][4] += 2
+
+            #great_power
+            data["D08"][11] = 1
 
             for tag in data.keys():
                 data[tag].append(sum(data[tag]))

@@ -35824,3 +35824,189 @@ AttributeError: 'NoneType' object has no attribute 'highest_ae'
 [2021-02-10 19:40:11 +0000] [881] [INFO] Booting worker with pid: 881
 [2021-02-10 19:40:11 +0000] [882] [INFO] Booting worker with pid: 882
 [2021-02-10 19:40:11 +0000] [883] [INFO] Booting worker with pid: 883
+[2021-02-10 20:00:12 +0000] [883] [INFO] Worker exiting (pid: 883)
+[2021-02-10 20:00:12 +0000] [882] [INFO] Worker exiting (pid: 882)
+[2021-02-10 20:00:12 +0000] [881] [INFO] Worker exiting (pid: 881)
+[2021-02-10 20:00:12 +0000] [813] [INFO] Handling signal: term
+[2021-02-10 20:00:12 +0000] [813] [INFO] Shutting down: Master
+[2021-02-10 20:00:14 +0000] [1474] [INFO] Starting gunicorn 20.0.4
+[2021-02-10 20:00:14 +0000] [1474] [INFO] Listening at: http://127.0.0.1:8000 (1474)
+[2021-02-10 20:00:14 +0000] [1474] [INFO] Using worker: sync
+[2021-02-10 20:00:14 +0000] [1478] [INFO] Booting worker with pid: 1478
+[2021-02-10 20:00:14 +0000] [1479] [INFO] Booting worker with pid: 1479
+[2021-02-10 20:00:15 +0000] [1480] [INFO] Booting worker with pid: 1480
+[2021-02-10 20:06:41,560] ERROR in app: Exception on /total_victory_points/1 [GET]
+Traceback (most recent call last):
+  File "/home/declaminius/EU4-MP-Statstool/Statstool-Web/venv/lib/python3.8/site-packages/flask/app.py", line 2447, in wsgi_app
+    response = self.full_dispatch_request()
+  File "/home/declaminius/EU4-MP-Statstool/Statstool-Web/venv/lib/python3.8/site-packages/flask/app.py", line 1952, in full_dispatch_request
+    rv = self.handle_user_exception(e)
+  File "/home/declaminius/EU4-MP-Statstool/Statstool-Web/venv/lib/python3.8/site-packages/flask/app.py", line 1821, in handle_user_exception
+    reraise(exc_type, exc_value, tb)
+  File "/home/declaminius/EU4-MP-Statstool/Statstool-Web/venv/lib/python3.8/site-packages/flask/_compat.py", line 39, in reraise
+    raise value
+  File "/home/declaminius/EU4-MP-Statstool/Statstool-Web/venv/lib/python3.8/site-packages/flask/app.py", line 1950, in full_dispatch_request
+    rv = self.dispatch_request()
+  File "/home/declaminius/EU4-MP-Statstool/Statstool-Web/venv/lib/python3.8/site-packages/flask/app.py", line 1936, in dispatch_request
+    return self.view_functions[rule.endpoint](**req.view_args)
+  File "/home/declaminius/EU4-MP-Statstool/Statstool-Web/statstool_web/main/routes.py", line 288, in total_victory_points
+    data["D00"][8] = 1
+KeyError: 'D00'
+[2021-02-10 20:06:46,128] ERROR in app: Exception on /total_victory_points/1 [GET]
+Traceback (most recent call last):
+  File "/home/declaminius/EU4-MP-Statstool/Statstool-Web/venv/lib/python3.8/site-packages/flask/app.py", line 2447, in wsgi_app
+    response = self.full_dispatch_request()
+  File "/home/declaminius/EU4-MP-Statstool/Statstool-Web/venv/lib/python3.8/site-packages/flask/app.py", line 1952, in full_dispatch_request
+    rv = self.handle_user_exception(e)
+  File "/home/declaminius/EU4-MP-Statstool/Statstool-Web/venv/lib/python3.8/site-packages/flask/app.py", line 1821, in handle_user_exception
+    reraise(exc_type, exc_value, tb)
+  File "/home/declaminius/EU4-MP-Statstool/Statstool-Web/venv/lib/python3.8/site-packages/flask/_compat.py", line 39, in reraise
+    raise value
+  File "/home/declaminius/EU4-MP-Statstool/Statstool-Web/venv/lib/python3.8/site-packages/flask/app.py", line 1950, in full_dispatch_request
+    rv = self.dispatch_request()
+  File "/home/declaminius/EU4-MP-Statstool/Statstool-Web/venv/lib/python3.8/site-packages/flask/app.py", line 1936, in dispatch_request
+    return self.view_functions[rule.endpoint](**req.view_args)
+  File "/home/declaminius/EU4-MP-Statstool/Statstool-Web/statstool_web/main/routes.py", line 288, in total_victory_points
+    data["D00"][8] = 1
+KeyError: 'D00'
+[2021-02-10 20:23:37 +0000] [1480] [INFO] Worker exiting (pid: 1480)
+[2021-02-10 20:23:37 +0000] [1479] [INFO] Worker exiting (pid: 1479)
+[2021-02-10 20:23:37 +0000] [1474] [INFO] Handling signal: term
+[2021-02-10 20:23:37 +0000] [1478] [INFO] Worker exiting (pid: 1478)
+[2021-02-10 20:23:38 +0000] [1474] [INFO] Shutting down: Master
+[2021-02-10 20:23:40 +0000] [1933] [INFO] Starting gunicorn 20.0.4
+[2021-02-10 20:23:40 +0000] [1933] [INFO] Listening at: http://127.0.0.1:8000 (1933)
+[2021-02-10 20:23:40 +0000] [1933] [INFO] Using worker: sync
+[2021-02-10 20:23:40 +0000] [1935] [INFO] Booting worker with pid: 1935
+[2021-02-10 20:23:40 +0000] [1936] [INFO] Booting worker with pid: 1936
+[2021-02-10 20:23:40 +0000] [1937] [INFO] Booting worker with pid: 1937
+[2021-02-10 20:23:44,065] ERROR in app: Exception on /total_victory_points/1 [GET]
+Traceback (most recent call last):
+  File "/home/declaminius/EU4-MP-Statstool/Statstool-Web/venv/lib/python3.8/site-packages/flask/app.py", line 2447, in wsgi_app
+    response = self.full_dispatch_request()
+  File "/home/declaminius/EU4-MP-Statstool/Statstool-Web/venv/lib/python3.8/site-packages/flask/app.py", line 1952, in full_dispatch_request
+    rv = self.handle_user_exception(e)
+  File "/home/declaminius/EU4-MP-Statstool/Statstool-Web/venv/lib/python3.8/site-packages/flask/app.py", line 1821, in handle_user_exception
+    reraise(exc_type, exc_value, tb)
+  File "/home/declaminius/EU4-MP-Statstool/Statstool-Web/venv/lib/python3.8/site-packages/flask/_compat.py", line 39, in reraise
+    raise value
+  File "/home/declaminius/EU4-MP-Statstool/Statstool-Web/venv/lib/python3.8/site-packages/flask/app.py", line 1950, in full_dispatch_request
+    rv = self.dispatch_request()
+  File "/home/declaminius/EU4-MP-Statstool/Statstool-Web/venv/lib/python3.8/site-packages/flask/app.py", line 1936, in dispatch_request
+    return self.view_functions[rule.endpoint](**req.view_args)
+  File "/home/declaminius/EU4-MP-Statstool/Statstool-Web/statstool_web/main/routes.py", line 318, in total_victory_points
+    return render_template("victory_points.html", header_labels = header_labels, nation_info = zip(nation_tags,nation_colors), data = data)
+  File "/home/declaminius/EU4-MP-Statstool/Statstool-Web/venv/lib/python3.8/site-packages/flask/templating.py", line 137, in render_template
+    return _render(
+  File "/home/declaminius/EU4-MP-Statstool/Statstool-Web/venv/lib/python3.8/site-packages/flask/templating.py", line 120, in _render
+    rv = template.render(context)
+  File "/home/declaminius/EU4-MP-Statstool/Statstool-Web/venv/lib/python3.8/site-packages/jinja2/environment.py", line 1090, in render
+    self.environment.handle_exception()
+  File "/home/declaminius/EU4-MP-Statstool/Statstool-Web/venv/lib/python3.8/site-packages/jinja2/environment.py", line 832, in handle_exception
+    reraise(*rewrite_traceback_stack(source=source))
+  File "/home/declaminius/EU4-MP-Statstool/Statstool-Web/venv/lib/python3.8/site-packages/jinja2/_compat.py", line 28, in reraise
+    raise value.with_traceback(tb)
+  File "/home/declaminius/EU4-MP-Statstool/Statstool-Web/statstool_web/templates/victory_points.html", line 1, in top-level template code
+    {% extends "base_layout.html" %}
+  File "/home/declaminius/EU4-MP-Statstool/Statstool-Web/statstool_web/templates/base_layout.html", line 58, in top-level template code
+    {% block content %}{% endblock %}
+  File "/home/declaminius/EU4-MP-Statstool/Statstool-Web/statstool_web/templates/victory_points.html", line 14, in block "content"
+    {% for name, tag, color_hex,color_hsl in nation_info%}
+ValueError: not enough values to unpack (expected 4, got 2)
+[2021-02-10 20:23:45,929] ERROR in app: Exception on /total_victory_points/1 [GET]
+Traceback (most recent call last):
+  File "/home/declaminius/EU4-MP-Statstool/Statstool-Web/venv/lib/python3.8/site-packages/flask/app.py", line 2447, in wsgi_app
+    response = self.full_dispatch_request()
+  File "/home/declaminius/EU4-MP-Statstool/Statstool-Web/venv/lib/python3.8/site-packages/flask/app.py", line 1952, in full_dispatch_request
+    rv = self.handle_user_exception(e)
+  File "/home/declaminius/EU4-MP-Statstool/Statstool-Web/venv/lib/python3.8/site-packages/flask/app.py", line 1821, in handle_user_exception
+    reraise(exc_type, exc_value, tb)
+  File "/home/declaminius/EU4-MP-Statstool/Statstool-Web/venv/lib/python3.8/site-packages/flask/_compat.py", line 39, in reraise
+    raise value
+  File "/home/declaminius/EU4-MP-Statstool/Statstool-Web/venv/lib/python3.8/site-packages/flask/app.py", line 1950, in full_dispatch_request
+    rv = self.dispatch_request()
+  File "/home/declaminius/EU4-MP-Statstool/Statstool-Web/venv/lib/python3.8/site-packages/flask/app.py", line 1936, in dispatch_request
+    return self.view_functions[rule.endpoint](**req.view_args)
+  File "/home/declaminius/EU4-MP-Statstool/Statstool-Web/statstool_web/main/routes.py", line 318, in total_victory_points
+    return render_template("victory_points.html", header_labels = header_labels, nation_info = zip(nation_tags,nation_colors), data = data)
+  File "/home/declaminius/EU4-MP-Statstool/Statstool-Web/venv/lib/python3.8/site-packages/flask/templating.py", line 137, in render_template
+    return _render(
+  File "/home/declaminius/EU4-MP-Statstool/Statstool-Web/venv/lib/python3.8/site-packages/flask/templating.py", line 120, in _render
+    rv = template.render(context)
+  File "/home/declaminius/EU4-MP-Statstool/Statstool-Web/venv/lib/python3.8/site-packages/jinja2/environment.py", line 1090, in render
+    self.environment.handle_exception()
+  File "/home/declaminius/EU4-MP-Statstool/Statstool-Web/venv/lib/python3.8/site-packages/jinja2/environment.py", line 832, in handle_exception
+    reraise(*rewrite_traceback_stack(source=source))
+  File "/home/declaminius/EU4-MP-Statstool/Statstool-Web/venv/lib/python3.8/site-packages/jinja2/_compat.py", line 28, in reraise
+    raise value.with_traceback(tb)
+  File "/home/declaminius/EU4-MP-Statstool/Statstool-Web/statstool_web/templates/victory_points.html", line 1, in top-level template code
+    {% extends "base_layout.html" %}
+  File "/home/declaminius/EU4-MP-Statstool/Statstool-Web/statstool_web/templates/base_layout.html", line 58, in top-level template code
+    {% block content %}{% endblock %}
+  File "/home/declaminius/EU4-MP-Statstool/Statstool-Web/statstool_web/templates/victory_points.html", line 14, in block "content"
+    {% for name, tag, color_hex,color_hsl in nation_info%}
+ValueError: not enough values to unpack (expected 4, got 2)
+[2021-02-10 20:37:29 +0000] [1936] [INFO] Worker exiting (pid: 1936)
+[2021-02-10 20:37:29 +0000] [1935] [INFO] Worker exiting (pid: 1935)
+[2021-02-10 20:37:29 +0000] [1933] [INFO] Handling signal: term
+[2021-02-10 20:37:29 +0000] [1937] [INFO] Worker exiting (pid: 1937)
+[2021-02-10 20:37:29 +0000] [1933] [INFO] Shutting down: Master
+[2021-02-10 20:37:32 +0000] [2236] [INFO] Starting gunicorn 20.0.4
+[2021-02-10 20:37:32 +0000] [2236] [INFO] Listening at: http://127.0.0.1:8000 (2236)
+[2021-02-10 20:37:32 +0000] [2236] [INFO] Using worker: sync
+[2021-02-10 20:37:32 +0000] [2238] [INFO] Booting worker with pid: 2238
+[2021-02-10 20:37:32 +0000] [2239] [INFO] Booting worker with pid: 2239
+[2021-02-10 20:37:32 +0000] [2240] [INFO] Booting worker with pid: 2240
+[2021-02-10 20:56:36 +0000] [2240] [INFO] Worker exiting (pid: 2240)
+[2021-02-10 20:56:36 +0000] [2239] [INFO] Worker exiting (pid: 2239)
+[2021-02-10 20:56:36 +0000] [2238] [INFO] Worker exiting (pid: 2238)
+[2021-02-10 20:56:36 +0000] [2236] [INFO] Handling signal: term
+[2021-02-10 20:56:37 +0000] [2236] [INFO] Shutting down: Master
+[2021-02-10 20:56:39 +0000] [2612] [INFO] Starting gunicorn 20.0.4
+[2021-02-10 20:56:39 +0000] [2612] [INFO] Listening at: http://127.0.0.1:8000 (2612)
+[2021-02-10 20:56:39 +0000] [2612] [INFO] Using worker: sync
+[2021-02-10 20:56:39 +0000] [2616] [INFO] Booting worker with pid: 2616
+[2021-02-10 20:56:39 +0000] [2617] [INFO] Booting worker with pid: 2617
+[2021-02-10 20:56:39 +0000] [2618] [INFO] Booting worker with pid: 2618
+[2021-02-10 21:00:06 +0000] [2667] [INFO] Booting worker with pid: 2667
+[2021-02-10 21:03:23,236] ERROR in app: Exception on /remove_nation_formation/9/9/Neapel/Neapel [GET]
+Traceback (most recent call last):
+  File "/home/declaminius/EU4-MP-Statstool/Statstool-Web/venv/lib/python3.8/site-packages/sqlalchemy/orm/session.py", line 2050, in delete
+    state = attributes.instance_state(instance)
+AttributeError: 'NoneType' object has no attribute '_sa_instance_state'
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "/home/declaminius/EU4-MP-Statstool/Statstool-Web/venv/lib/python3.8/site-packages/flask/app.py", line 2447, in wsgi_app
+    response = self.full_dispatch_request()
+  File "/home/declaminius/EU4-MP-Statstool/Statstool-Web/venv/lib/python3.8/site-packages/flask/app.py", line 1952, in full_dispatch_request
+    rv = self.handle_user_exception(e)
+  File "/home/declaminius/EU4-MP-Statstool/Statstool-Web/venv/lib/python3.8/site-packages/flask/app.py", line 1821, in handle_user_exception
+    reraise(exc_type, exc_value, tb)
+  File "/home/declaminius/EU4-MP-Statstool/Statstool-Web/venv/lib/python3.8/site-packages/flask/_compat.py", line 39, in reraise
+    raise value
+  File "/home/declaminius/EU4-MP-Statstool/Statstool-Web/venv/lib/python3.8/site-packages/flask/app.py", line 1950, in full_dispatch_request
+    rv = self.dispatch_request()
+  File "/home/declaminius/EU4-MP-Statstool/Statstool-Web/venv/lib/python3.8/site-packages/flask/app.py", line 1936, in dispatch_request
+    return self.view_functions[rule.endpoint](**req.view_args)
+  File "/home/declaminius/EU4-MP-Statstool/Statstool-Web/statstool_web/show_stats/routes.py", line 57, in remove_nation_formation
+    db.session.delete(formation)
+  File "/home/declaminius/EU4-MP-Statstool/Statstool-Web/venv/lib/python3.8/site-packages/sqlalchemy/orm/scoping.py", line 163, in do
+    return getattr(self.registry(), name)(*args, **kwargs)
+  File "/home/declaminius/EU4-MP-Statstool/Statstool-Web/venv/lib/python3.8/site-packages/sqlalchemy/orm/session.py", line 2052, in delete
+    util.raise_(
+  File "/home/declaminius/EU4-MP-Statstool/Statstool-Web/venv/lib/python3.8/site-packages/sqlalchemy/util/compat.py", line 182, in raise_
+    raise exception
+sqlalchemy.orm.exc.UnmappedInstanceError: Class 'builtins.NoneType' is not mapped
+[2021-02-10 21:04:16 +0000] [2730] [INFO] Booting worker with pid: 2730
+[2021-02-10 21:05:09 +0000] [2746] [INFO] Booting worker with pid: 2746
+[2021-02-10 21:06:24 +0000] [2774] [INFO] Booting worker with pid: 2774
+[2021-02-10 21:11:09 +0000] [2849] [INFO] Booting worker with pid: 2849
+[2021-02-10 21:14:15 +0000] [2900] [INFO] Booting worker with pid: 2900
+[2021-02-10 21:19:06 +0000] [2969] [INFO] Booting worker with pid: 2969
+[2021-02-10 21:20:01 +0000] [2980] [INFO] Booting worker with pid: 2980
+[2021-02-10 21:20:55 +0000] [2992] [INFO] Booting worker with pid: 2992
+[2021-02-10 21:21:09 +0000] [2995] [INFO] Booting worker with pid: 2995
+[2021-02-10 21:22:25 +0000] [3012] [INFO] Booting worker with pid: 3012
+[2021-02-10 21:22:30 +0000] [3013] [INFO] Booting worker with pid: 3013
