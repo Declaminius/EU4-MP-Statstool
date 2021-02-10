@@ -30,12 +30,13 @@
 <script src="https://cdn.datatables.net/1.10.19/js/jquery.dataTables.min.js"></script>
 <script src="https://cdn.datatables.net/1.10.19/js/dataTables.bootstrap4.min.js"></script>
 <script type="text/javascript">
+  var num_columns = {{num_columns|tojson}};
   $(document).ready(function() {
     // Table Heat Map;
-    for (i = 2; i <= 15; i++) {
+    for (i = 2; i <= num_columns; i++) {
       $('table tbody td:nth-child(' + i + ')').colorize();
     }
   });
-  $('.mydatatable').DataTable({paging: false, info: false, "order": [[ 14, "desc" ]], searching: false});
+  $('.mydatatable').DataTable({paging: false, info: false, "order": [[ num_columns - 1, "desc" ]], searching: false});
 </script>
 {% endblock content %}

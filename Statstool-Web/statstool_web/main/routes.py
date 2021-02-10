@@ -274,6 +274,8 @@ def total_victory_points(mp_id):
             "erster Spielerkrieg-Sieger", "erste Weltumseglung", "Armee-Professionalität", \
             "Großmacht", "Hegemonie", "Gesamt"]
 
+            num_columns = len(header_labels)
+
 
             data = {}
             for tag in nation_tags:
@@ -292,11 +294,13 @@ def total_victory_points(mp_id):
             for tag in data.keys():
                 data[tag].append(sum(data[tag]))
 
-            return render_template("victory_points.html", header_labels = header_labels, nation_info = zip(nation_names,nation_tags,nation_colors_hex,nation_colors_hsl), data = data)
+            return render_template("victory_points.html", header_labels = header_labels, num_columns = num_columns, nation_info = zip(nation_names,nation_tags,nation_colors_hex,nation_colors_hsl), data = data)
 
         elif mp_id == 1:
 
             header_labels = ["Nation", "Basis", "Kriege", "Renaissance", "Kolonialismus", "Druckerpresse", "Globaler Handel", "Manufakturen", "Aufklärung", "Industrialisierung", "Gesamt"]
+
+            num_columns = len(header_labels)
 
             data = {}
 
@@ -313,7 +317,7 @@ def total_victory_points(mp_id):
             for tag in data.keys():
                 data[tag].append(sum(data[tag]))
 
-            return render_template("victory_points.html", header_labels = header_labels, nation_info = zip(nation_names,nation_tags,nation_colors_hex,nation_colors_hsl), data = data)
+            return render_template("victory_points.html", header_labels = header_labels, num_columns = num_columns, nation_info = zip(nation_names,nation_tags,nation_colors_hex,nation_colors_hsl), data = data)
 
     else:
         flash(f'Noch keine Siegpunkte vergeben.', 'danger')
