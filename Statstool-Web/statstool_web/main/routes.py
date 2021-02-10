@@ -157,21 +157,21 @@ def upload_one_savegame(mp_id = None, institution = None):
                 savegame = Savegame(file = random, mp_id = mp_id, map_file = map_random, institution = institution, owner = current_user, year = year, name = form.savegame_name.data)
             else:
                 savegame = Savegame(file = random, mp_id = mp_id, institution = institution, owner = current_user, year = year, name = form.savegame_name.data)
-                for tag in tag_list:
-                    if not Nation.query.get(tag):
-                        nation = Nation(tag = tag)
-                        db.session.add(nation)
-                        db.session.commit()
+            for tag in tag_list:
+                if not Nation.query.get(tag):
+                    nation = Nation(tag = tag)
+                    db.session.add(nation)
+                    db.session.commit()
 
-                    savegame.nations.append(Nation.query.get(tag))
-                    if tag in player_names_dict.keys():
-                        savegame.player_nations.append(Nation.query.get(tag))
-                        player_name = player_names_dict[tag]
-                    else:
-                        player_name = None
+                savegame.nations.append(Nation.query.get(tag))
+                if tag in player_names_dict.keys():
+                    savegame.player_nations.append(Nation.query.get(tag))
+                    player_name = player_names_dict[tag]
+                else:
+                    player_name = None
 
-                    nation_data = NationSavegameData(savegame_id = savegame.id, nation_tag = tag, player_name = player_name)
-                    db.session.add(nation_data)
+                nation_data = NationSavegameData(savegame_id = savegame.id, nation_tag = tag, player_name = player_name)
+                db.session.add(nation_data)
 
 
             db.session.add(savegame)
