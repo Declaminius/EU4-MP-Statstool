@@ -53,7 +53,7 @@ so_mp1 = MP(id = 1, name = "Sonntags-MP: S2E2 - Per Aspera Ad Astra",
 			gm = "Declaminius", host = "Wassergeist", admin = admin)
 so_mp2 = MP(id = 2, name = "Sonntags-MP: S2E3 - Faber est suae quisque fortunae",
 			description = "Statistiken und Siegpunkts-Übersicht für das 18.Sonntags-MP der Strategie-Zone." ,
-			gm = "Declaminius", host = "RoLJZ1", checksum = "0095", next_gameday = "07.01.2021", admin = admin)
+			gm = "Declaminius", host = "RoLJZ1", checksum = "f22f", next_gameday = "14.02.2021", admin = admin)
 db.session.add(so_mp1)
 db.session.add(so_mp2)
 db.session.add(admin)

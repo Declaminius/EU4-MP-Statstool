@@ -44,6 +44,9 @@
 </div>
 {%- endmacro %}
 
+
+
+
 {% extends "home_layout.html" %}
 {% block content %}
 <div class = "row" >
@@ -67,6 +70,22 @@
           <li class="list-group-item list-group-item-light">Checksumme: {{current_mp.checksum}}</li>
         {% endif %}
       </ul>
+    </div>
+    <div class="content-section">
+      <h3><center>Die 10 Gebote:</center></h3>
+      <ul class="list-group">
+        <li class="list-group-item list-group-item-action" data-toggle="modal" data-target="#ModalZ1">§ Z 1: Der Spieler</li>
+        <li class="list-group-item list-group-item-action" data-toggle="modal" data-target="#ModalZ2">§ Z 2: Die Spielleitung</li>
+        <li class="list-group-item list-group-item-action" data-toggle="modal" data-target="#ModalZ3">§ Z 3: Pünktlichkeits-Belohnung /<br> Verspätungs-Bestrafung</li>
+        <li class="list-group-item list-group-item-action" data-toggle="modal" data-target="#ModalZ4">§ Z 4: Fehlen am Spieltag /<br> Ausfall des Spieltages</li>
+        <li class="list-group-item list-group-item-action" data-toggle="modal" data-target="#ModalZ5">§ Z 5: Ehrenvolle Kriegsführung</li>
+        <li class="list-group-item list-group-item-action" data-toggle="modal" data-target="#ModalZ6">§ Z 6: Raus aus der Bratpfanne, rein ins Feuer</li>
+        <li class="list-group-item list-group-item-action" data-toggle="modal" data-target="#ModalZ7">§ Z 7: Pausen & Spielgeschwindigkeit</li>
+        <li class="list-group-item list-group-item-action" data-toggle="modal" data-target="#ModalZ8">§ Z 8: MP-Mod (aka. Bündnissperre)</li>
+        <li class="list-group-item list-group-item-action" data-toggle="modal" data-target="#ModalZ9">§ Z 9: Statistiken</li>
+        <li class="list-group-item list-group-item-action" data-toggle="modal" data-target="#ModalZ10">§ Z 10: Nicht alles machen was geht</li>
+      </ul>
+
     </div>
   </div>
   <div class="col-md-8">
@@ -113,4 +132,363 @@
     </div>
   </div>
 </div>
+
+
+<div class="modal fade" id="ModalZ1" tabindex="-1" role="dialog" aria-labelledby="ModalLabelZ1" aria-hidden="true">
+  <div class="modal-dialog" role="document">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="ModalLabelZ1">§ Z 1: Der Spieler</h5>
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body">
+        <ul class = "list-group">
+          <li class="list-group-item list-group-item-light">Z1.1 Eigenschaften von Spielern</li>
+          <ul class = "list-subgroup">
+            <li class="list-subgroup-item list-subgroup-item-light">
+              Gesucht werden zuverlässige Spieler, welche verlieren können und nicht direkt nach Rückschlägen aufgeben.
+            </li>
+          </ul>
+          <li class="list-group-item list-group-item-light">Z 1.2 Pflichten der Spieler</li>
+          <ul class = "list-subgroup">
+            <li class="list-subgroup-item list-subgroup-item-light">
+              Die Regeln sind stehts einzuhalten und ein Regelbruch wird streng geahndet.
+            </li>
+            <li class="list-subgroup-item list-subgroup-item-light">
+              Jedes Fehlen ist am Vortag anzukündigen.
+            </li>
+            <li class="list-subgroup-item list-subgroup-item-light">
+              Pünktlichkeit.
+            </li>
+            <li class="list-subgroup-item list-subgroup-item-light">
+              Jedes Fehlen ist am Vortag anzukündigen.
+            </li>
+            <li class="list-subgroup-item list-subgroup-item-light">
+              Jeder Spieler ist für seine KI Einstellungen selbst verantwortlich.
+            </li>
+            <li class="list-subgroup-item list-subgroup-item-light">
+              Bei ständigen Verbindungsproblemen muss ein Spieler den MP verlassen.
+            </li>
+            <li class="list-subgroup-item list-subgroup-item-light">
+              Es wird ein gepflegter Umgang im Teamspeak/Discord und Chat erwartet. Persönliche Angriffe sind zu unterlassen.
+            </li>
+            <li class="list-subgroup-item list-subgroup-item-light">
+              Aussagen anderer Spieler sollten nicht persönlich genommen und als diplomatische Handlung angesehen werden.
+            </li>
+            <li class="list-subgroup-item list-subgroup-item-light">
+              Für eine moralische Diskussionen ist der Diplomatiefaden und nicht der Hauptfaden zu nutzen.
+            </li>
+          </ul>
+          <li class="list-group-item list-group-item-light">Z 1.3 Rechte der Spieler</li>
+          <ul class = "list-subgroup">
+            <li class="list-subgroup-item list-subgroup-item-light">
+              Ist ein Spieler mit Entscheidungen der Spielleitung unzufrieden kann er sich beim anderen Spielleiter oder einem Vertrauensspieler beschweren.
+            </li>
+          </ul>
+        </ul>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+
+<div class="modal fade" id="ModalZ2" tabindex="-1" role="dialog" aria-labelledby="ModalLabelZ2" aria-hidden="true">
+  <div class="modal-dialog" role="document">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="ModalLabelZ2">§ Z 2: Die Spielleitung</h5>
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body">
+        <ul class = "list-subgroup">
+          <li class="list-subgroup-item list-subgroup-item-light">
+            Die Aufgabe des Spielleiters ist die Verwaltung und Leitung des Multiplayers.
+          </li>
+          <li class="list-subgroup-item list-subgroup-item-light">
+            Der Spielleiter verpflichtet sich in Regelfragen stets neutral zu bleiben und jede Situation objektiv zu betrachten.
+          </li>
+          <li class="list-subgroup-item list-subgroup-item-light">
+            Bei unklarer Auslegung einer Regel entscheidet der Spielleiter über die Auslegung und mögliche Konsequenzen.
+          </li>
+          <li class="list-subgroup-item list-subgroup-item-light">
+            Die Spielleitung kann nach Ankündigung und Begründung neue Regeln einführen oder alte verändern. Ist ein Spielleiter betroffen oder befangen entscheidet der zweite Spielleiter.
+          </li>
+          <li class="list-subgroup-item list-subgroup-item-light">
+            Der Spielleiter kann bei Fehlverhalten von Spielern Strafen aussprechen.
+          </li>
+          <li class="list-subgroup-item list-subgroup-item-light">
+            Die Standardbestrafung bei geringfügigen Vergehen: <br>
+            - 1 Stabilität <br>
+            - 10 Prestige <br>
+            - Goldstrafe (-30% der Jahreseinnahmen) <br>
+            Sollte nach einer Strafe keine Vernunft einkehren, wird die Strafe einfach mehrfach vergeben (2x, 3x, 4x...).
+          </li>
+        </ul>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="modal fade" id="ModalZ3" tabindex="-1" role="dialog" aria-labelledby="ModalLabelZ3" aria-hidden="true">
+  <div class="modal-dialog" role="document">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="ModalLabelZ3">§ Z 3: Pünktlichkeits-Belohnung /<br> Verspätungs-Bestrafung</h5>
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body">
+        <ul class = "list-subgroup">
+          <li class="list-subgroup-item list-subgroup-item-light">
+            Ein Spieler ist verspätet, genau dann wenn der Spieler um 18:31 nicht in der Lobby bereit ist.
+          </li>
+          <li class="list-subgroup-item list-subgroup-item-light">
+            Ein Spieler ist pünktlich, genau dann wenn der Spieler um 18:15 im TS/Discord anwesend ist.
+          </li>
+          <li class="list-subgroup-item list-subgroup-item-light">
+            Jeder pünktliche Spieler erhält die einfache Belohnung.
+          </li>
+          <li class="list-subgroup-item list-subgroup-item-light">
+            Jeder verspätete Spieler erhält eine Bestrafung.
+          </li>
+          <li class="list-subgroup-item list-subgroup-item-light">
+            Bei wiederholten Verspätungen behält sich die Spielleitung das Recht vor, die Strafe zu verschärfen.
+          </li>
+          <li class="list-subgroup-item list-subgroup-item-light">
+            Sollte ein Spieler sowohl pünktlich, als auch verspätet sein, erhält er weder Belohnung noch Bestrafung.
+          </li>
+        </ul>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+
+<div class="modal fade" id="ModalZ4" tabindex="-1" role="dialog" aria-labelledby="ModalLabelZ4" aria-hidden="true">
+  <div class="modal-dialog" role="document">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="ModalLabelZ4">§ Z 4: Fehlen am Spieltag / <br> Ausfall des Spieltages</h5>
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body">
+        <ul class = "list-subgroup">
+          <li class="list-subgroup-item list-subgroup-item-light">
+            Beim Fehlen eines Spielers übernimmt die KI, bei zu vielen fehlenden Ländern entscheidet die Spielleitung, ob der Spieltag ausfällt. Für eine eventuelle Vertretung muss eigenständig gesorgt werden.
+          <li class="list-subgroup-item list-subgroup-item-light">
+            Es dürfen keine Angriffskriege gegen KI-gesteuerte Spielernationen begonnen werden. In anderen Kriegen sollte bei Kriegsforderungen gegen diese Nationen Rücksicht genommen werden (keine Provinzforderungen).
+          </li>
+          <li class="list-subgroup-item list-subgroup-item-light">
+            Wird ein Land das zweite Mal in Folge von der KI gesteuert, verfällt dieser Schutz.
+          </li>
+          <li class="list-subgroup-item list-subgroup-item-light">
+            Stürzt bei einem Spieler das Spiel ab, wird er auf "braindead" gestellt und kann so bald wie möglich hotjoinen.
+          </li>
+        </ul>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+
+<div class="modal fade" id="ModalZ5" tabindex="-1" role="dialog" aria-labelledby="ModalLabelZ5" aria-hidden="true">
+  <div class="modal-dialog" role="document">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="ModalLabelZ5">§ Z 5: Ehrenvolle Kriegsführung</h5>
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body">
+        <ul class = "list-subgroup">
+          <li class="list-subgroup-item list-subgroup-item-light">
+            Parallele Kriege gegen eine Partei sind immer separat zu behandeln. Dabei ist besonders das In-laufende-Schlachten-Stellen von Drittparteien verboten.
+          <li class="list-subgroup-item list-subgroup-item-light">
+            Das Blockieren des Aufhebens von Militärzugängen, durch die Dauerstationierung von Truppen, ist verboten.
+          </li>
+          <li class="list-subgroup-item list-subgroup-item-light">
+            Das Ausnutzen des Exil-Status um Truppen an einen auf normalem Wege nicht erreichbaren Ort zu befördern, ist verboten.
+          </li>
+          <li class="list-subgroup-item list-subgroup-item-light">
+            Ohne Zustimmung des Spielers darf nicht über eine KI-Nation vom Spieler etwas gefordert werden.
+          </li>
+          <li class="list-subgroup-item list-subgroup-item-light">
+            Friedensgesuche der verlierenden Kriegspartei sind zu respektieren.
+          </li>
+          <li class="list-subgroup-item list-subgroup-item-light">
+            Das Weiterführen von Kriegen, das einzig dazu da ist, Länder im Chaos versinken zu lassen, ist untersagt.
+          </li>
+          <li class="list-subgroup-item list-subgroup-item-light">
+            Wenn ein Kriegsführer bedingungslos kapituliert, darf gegen Co-Kriegsziele (die mit dem X) weiter gekämpft werden um eventuelle Forderungen durchzudrücken. Wenn ein Nicht-Kriegsführer kapituliert, muss ihm ein (Seperat-)Friedensangebot unterbreitet werden.
+          </li>
+          <li class="list-subgroup-item list-subgroup-item-light">
+            Betrug bei beidseitig vereinbarten Friedensverträgen ist verboten (zB. senden von abweichenden Forderungen nach festen Verhandlungen).
+          </li>
+        </ul>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+
+<div class="modal fade" id="ModalZ6" tabindex="-1" role="dialog" aria-labelledby="ModalLabelZ6" aria-hidden="true">
+  <div class="modal-dialog" role="document">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="ModalLabelZ6">§ Z 6: Raus aus der Bratpfanne, rein ins Feuer</h5>
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body">
+        <ul class = "list-subgroup">
+          <li class="list-subgroup-item list-subgroup-item-light">
+            Wird das Land eines Spielers vernichtet, darf er sich, nach Absprache mit der Spielleitung, ein neues Land aussuchen. Beim Spielen von Untertanen ist die Freiheitsstrebenmechanik zu beachten.
+          </li>
+        </ul>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+
+<div class="modal fade" id="ModalZ7" tabindex="-1" role="dialog" aria-labelledby="ModalLabelZ7" aria-hidden="true">
+  <div class="modal-dialog" role="document">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="ModalLabelZ7">§ Z 7: Pausen & Spielgeschwindigkeit</h5>
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body">
+        <ul class = "list-subgroup">
+          <li class="list-subgroup-item list-subgroup-item-light">
+            Pausen sind generell verboten! Ausnahmen nur nach Spielleiterentscheidung.
+          </li>
+          <li class="list-subgroup-item list-subgroup-item-light">
+            Standardgeschwindigkeit: 3
+          </li>
+          <li class="list-subgroup-item list-subgroup-item-light">
+            Geschwindigkeit bei Spielerkriegen: 2
+          </li>
+          <li class="list-subgroup-item list-subgroup-item-light">
+            In Ausnahmefällen: 1
+          </li>
+        </ul>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+
+<div class="modal fade" id="ModalZ8" tabindex="-1" role="dialog" aria-labelledby="ModalLabelZ8" aria-hidden="true">
+  <div class="modal-dialog" role="document">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="ModalLabelZ8">§ Z 8: MP-Mod (aka. Bündnissperre)</h5>
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body">
+        <ul class = "list-subgroup">
+          <li class="list-subgroup-item list-subgroup-item-light">
+            Wir spielen mit einer eigenen Mod, welche dem Spielleiter ein Menü für Bestrafungen und Belohnungen zur Verfügung stellt. Außerdem wird die Bündnissperre durch die Friedensforderung "Verträge aufkündigen" von 10 auf 25 Jahre erhöht. Ein Umgehen dieser Sperre, beispielsweise durch Tributstaaten, ist verboten.
+          </li>
+        </ul>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+
+<div class="modal fade" id="ModalZ9" tabindex="-1" role="dialog" aria-labelledby="ModalLabelZ9" aria-hidden="true">
+  <div class="modal-dialog" role="document">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="ModalLabelZ9">§ Z 9: Statistiken</h5>
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body">
+        <ul class = "list-subgroup">
+          <li class="list-subgroup-item list-subgroup-item-light">
+            Auch dieses MP wird es wieder Statistiken beim Spawn jeder Institution geben.
+          </li>
+          <li class="list-subgroup-item list-subgroup-item-light">
+            Mit der Teilnahme am MP erklärt sich der Spieler bereit dazu, die Daten
+            seines Landes für die Statistik auswerten zu lassen.
+          </li>
+        </ul>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="modal fade" id="ModalZ10" tabindex="-1" role="dialog" aria-labelledby="ModalLabelZ10" aria-hidden="true">
+  <div class="modal-dialog" role="document">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="ModalLabelZ10">§ Z 10: Nicht alles machen was geht</h5>
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body">
+        <ul class = "list-subgroup">
+          <li class="list-subgroup-item list-subgroup-item-light">
+            Das Nutzen von Exploits und schummeln ist verboten.
+          </li>
+          <li class="list-subgroup-item list-subgroup-item-light">
+            Im Zweifelsfall ist im Vorhinein die Spielleitung zu kontaktieren.
+          </li>
+          <li class="list-subgroup-item list-subgroup-item-light">
+            Insbesondere ist verboten als freigelassene Kolonialnation weiterzuspielen.
+          </li>
+        </ul>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+      </div>
+    </div>
+  </div>
+</div>
+
 {% endblock content %}

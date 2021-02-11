@@ -51,7 +51,12 @@ class RegistrationForm(FlaskForm):
         if email:
             raise ValidationError("Email already exists.")
 
-class AddMPForm(FlaskForm):
-    mp_name = StringField("MP-Name", validators = [DataRequired(), Length(min = 2, max = 20)])
-    mp_description = TextField("Description")
-    submit = SubmitField("Add MP")
+
+class MPForm(FlaskForm):
+    mp_name = StringField("MP-Name", validators = [DataRequired(), Length(min = 2, max = 100)])
+    mp_description = TextField("Beschreibung")
+    gm = StringField("Spielleiter")
+    host = StringField("Host")
+    checksum = StringField("Checksumme", validators = [Length(min = 4, max = 4)])
+    next_gameday = StringField("Nächster Spieltag")
+    submit = SubmitField("Save Changes")

@@ -1,5 +1,5 @@
 from flask import render_template, url_for, request, redirect, flash, abort, Blueprint, current_app
-from statstool_web.main.forms import SavegameSelectForm, OneSavegameSelectForm, MapSelectForm, LoginForm, RegistrationForm, AddMPForm
+from statstool_web.main.forms import SavegameSelectForm, OneSavegameSelectForm, MapSelectForm, LoginForm, RegistrationForm, MPForm
 from statstool_web import db, bcrypt
 from statstool_web.parserfunctions import edit_parse
 from statstool_web.models import User, MP, Savegame, Nation, NationSavegameData, VictoryPoints
@@ -205,7 +205,7 @@ def account(user_id):
     savegames = Savegame.query.filter_by(user_id=user_id).all()
     mps = MP.query.filter_by(admin_id=user_id).all()
     header_labels = ["ID", "MP-Name", "Name", "Year", "Filename", "Map", "Delete"]
-    mp_header_labels = ["ID", "Name", "Description", "Game Master", "Host", "Delete"]
+    mp_header_labels = ["ID", "Name", "Description", "Spielleiter", "Host", "Settings", "Delete"]
     ids = []
     mp_ids = []
     data = []
@@ -214,7 +214,7 @@ def account(user_id):
     mp_gms = []
     mp_hosts = []
     maps = []
-    mp_form = AddMPForm()
+    mp_form = MPForm()
     for sg in savegames:
         ids.append(sg.id)
         if sg.mp:
@@ -236,7 +236,10 @@ def account(user_id):
         mp_form.mp_description.data = ""
         flash(f'Successfully created MP.', 'success')
         return redirect(url_for("main.account", user_id = user_id))
-    return render_template("account.html", data = zip(ids,data,maps), header_labels = header_labels, mp_header_labels = mp_header_labels, mp_data = zip(mp_ids,mp_names,mp_descriptions, mp_gms, mp_hosts), form = mp_form)
+    return render_template("account.html", data = zip(ids,data,maps), \
+            header_labels = header_labels, mp_header_labels = mp_header_labels, \
+            mp_data = zip(mp_ids,mp_names,mp_descriptions, mp_gms, mp_hosts), \
+            form = mp_form, user_id = user_id)
 
 @main.route("/delete_savegame/<int:sg_id>", methods = ["GET", "POST"])
 @login_required
@@ -247,12 +250,37 @@ def delete_savegame(sg_id):
         db.session.commit()
     return redirect(redirect_url())
 
+
+@main.route("/settings_mp/<int:user_id>/<int:mp_id>", methods = ["GET", "POST"])
+@login_required
+def settings_mp(user_id, mp_id):
+    form = MPForm()
+    mp = MP.query.get(mp_id)
+    if request.method == "GET":
+        form.mp_name.data = mp.name
+        form.mp_description.data = mp.description
+        form.gm.data = mp.gm
+        form.host.data = mp.host
+        form.checksum.data = mp.checksum
+        form.next_gameday.data = mp.next_gameday
+    if form.validate_on_submit():
+        mp.name = form.mp_name.data
+        mp.description = form.mp_description.data
+        mp.gm = form.gm.data
+        mp.host = form.host.data
+        mp.checksum = form.checksum.data
+        mp.next_gameday = form.next_gameday.data
+        db.session.commit()
+        flash(f'Successfully updated MP.', 'success')
+        return redirect(url_for("main.account", user_id = user_id))
+    return render_template("mp_settings.html", form = form)
+
 @main.route("/delete_mp/<int:mp_id>", methods = ["GET", "POST"])
 @login_required
 def delete_mp(mp_id):
-    savegame = MP.query.get(mp_id)
-    if savegame:
-        db.session.delete(savegame)
+    mp = MP.query.get(mp_id)
+    if mp:
+        db.session.delete(mp)
         db.session.commit()
     return redirect(redirect_url())
 
