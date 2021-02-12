@@ -55,19 +55,19 @@
       <h3><center>Organisation</center></h3>
       <ul class="list-group">
         {% if current_mp.gm %}
-          <li class="list-group-item list-group-item-light">Spielleiter: {{current_mp.gm}}</li>
+          <li class="list-group-item list-group-item-dark">Spielleiter: {{current_mp.gm}}</li>
         {% endif %}
 
         {% if current_mp.host %}
-          <li class="list-group-item list-group-item-light">Host: {{current_mp.host}}</li>
+          <li class="list-group-item list-group-item-dark">Host: {{current_mp.host}}</li>
         {% endif %}
 
         {% if current_mp.next_gameday %}
-          <li class="list-group-item list-group-item-light">Nächster Spieltag: {{current_mp.next_gameday}}</li>
+          <li class="list-group-item list-group-item-dark">Nächster Spieltag: {{current_mp.next_gameday}}</li>
         {% endif %}
 
         {% if current_mp.checksum %}
-          <li class="list-group-item list-group-item-light">Checksumme: {{current_mp.checksum}}</li>
+          <li class="list-group-item list-group-item-dark">Checksumme: {{current_mp.checksum}}</li>
         {% endif %}
       </ul>
     </div>
@@ -126,9 +126,22 @@
       <h3><center>Spieler</center></h3>
         <ul class="list-group">
           {% for nation in names_dict.keys()%}
-            <li class="list-group-item list-group-item-light">{{nation}}: {{names_dict[nation]}}</li>
+            <li class="list-group-item list-group-item-dark">{{nation}}: {{names_dict[nation]}}</li>
           {% endfor %}
         </ul>
+    </div>
+    <div class="content-section">
+      <h3><center>Siegpunkte - Regeln</center></h3>
+      Das Ziel des MP ist es 10 Siegpunkte zu erreichen. <br>
+      Jede Nation startet mit 2 Basispunkten und kann durch Aufbau der Nation
+      sowie kriegerische Unternehmungen sich Siegpunkte sichern. <br>
+      <center> <h4> Vergabe: </h4> </center>
+      <ul class="list-group">
+        <li class="list-group-item list-group-item-action" data-toggle="modal" data-target="#ModalS1"> Einmalig</li>
+        <li class="list-group-item list-group-item-action" data-toggle="modal" data-target="#ModalS2"> Zu jeder Institution</li>
+        <li class="list-group-item list-group-item-action" data-toggle="modal" data-target="#ModalS3"> Kontinuerlich</li>
+        <li class="list-group-item list-group-item-action" data-toggle="modal" data-target="#ModalS4"> Kriege</li>
+      </ul>
     </div>
   </div>
 </div>
@@ -483,6 +496,182 @@
             Insbesondere ist verboten als freigelassene Kolonialnation weiterzuspielen.
           </li>
         </ul>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="modal fade" id="ModalS1" tabindex="-1" role="dialog" aria-labelledby="ModalLabelS1" aria-hidden="true">
+  <div class="modal-dialog" role="document">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="ModalLabelS1">Einmalige Siegpunkte</h5>
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body">
+        Diese Siegpunkte werden einmalig zu einem festen Zeitpunkt vergeben und gelten für das ganze MP.
+        <ul class = "list-group">
+          <li class = "list-group-item">
+            1 Siegpunkt jeweils:
+            <ul class = "list-subgroup">
+              <li class="list-subgroup-item list-subgroup-item-light">
+                Erster gewonnener Spielerkrieg
+              </li>
+            </ul>
+          </li>
+          <li class = "list-group-item">
+            2 Siegpunkte jeweils:
+            <ul class = "list-subgroup">
+              <li class="list-subgroup-item list-subgroup-item-light">
+                Erster Spieler mit 100% Armee-Professionalität
+              </li>
+              <li class="list-subgroup-item list-subgroup-item-light">
+                Erste Weltumseglung
+              </li>
+              <li class="list-subgroup-item list-subgroup-item-light">
+                Globaler Handel - größte Handelsmacht im größten Handelsknoten
+              </li>
+              <li class="list-subgroup-item list-subgroup-item-light">
+                Manufakturen - Produktionsführer in meisten Kategorien; mindestens 3
+              </li>
+              <li class = "list-subgroup-item list-subgroup-item-light">
+                Aufklärung - höchste Innovativität; mindestens 50
+              </li>
+            </ul>
+          </li>
+        </ul>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="modal fade" id="ModalS2" tabindex="-1" role="dialog" aria-labelledby="ModalLabelS2" aria-hidden="true">
+  <div class="modal-dialog" role="document">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="ModalLabelS2">Siegpunkte zu jeder Institution</h5>
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body">
+        Ab dem Spawn von Kolonialismus (1500) wird zu jeder Institution in verschiedenen
+        Kategorien Siegpunkte vergeben:
+        <ul class = "list-group">
+          <li class = "list-group-item">
+            1 Siegpunkt jeweils:
+            <ul class = "list-subgroup">
+              <li class="list-subgroup-item list-subgroup-item-light">
+                höchst-entwickelte Provinz; mind. 50 Entwicklung, kann nur einmal pro Provinz erhalten werden
+              </li>
+              <li class="list-subgroup-item list-subgroup-item-light">
+                größtes stehendes Heer ; mind. 100K
+              </li>
+              <li class="list-subgroup-item list-subgroup-item-light">
+                größte Flotte (gemessen nach Anzahl Kanonen) ; mind. 2000 Kanonen
+              </li>
+              <li class="list-subgroup-item list-subgroup-item-light">
+                höchste Armeeverluste im Kampf seit dem letzten Institutionsspawn (i. d. R. 50 Jahre), mind. 500K
+              </li>
+            </ul>
+          </li>
+        </ul>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="modal fade" id="ModalS3" tabindex="-1" role="dialog" aria-labelledby="ModalLabelS3" aria-hidden="true">
+  <div class="modal-dialog" role="document">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="ModalLabelS3">Siegpunkte zu jeder Institution</h5>
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body">
+        Diese Siegpunkte wechseln kontinuerlich den Besitzer und gelten nur solange
+        wie die Bedingung für den Siegpunkt erfüllt ist.
+        <ul class = "list-group">
+          <li class = "list-group-item">
+            1 Siegpunkt jeweils:
+            <ul class = "list-subgroup">
+              <li class="list-subgroup-item list-subgroup-item-light">
+                Großmacht Nummer 1
+              </li>
+              <li class="list-subgroup-item list-subgroup-item-light">
+                beliebige Hegemonie bei 0%
+              </li>
+            </ul>
+          </li>
+          <li class = "list-group-item">
+            2 Siegpunkte jeweils:
+            <ul class = "list-subgroup">
+              <li class="list-subgroup-item list-subgroup-item-light">
+                beliebige Hegemonie bei 100%
+              </li>
+            </ul>
+          </li>
+        </ul>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="modal fade" id="ModalS4" tabindex="-1" role="dialog" aria-labelledby="ModalLabelS4" aria-hidden="true">
+  <div class="modal-dialog" role="document">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="ModalLabelS4">Siegpunkte durch Kriege</h5>
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body">
+        Damit das MP nicht nur zu einem SimCityContest verfällt,
+        gibt es natürlich auch die Möglichkeit sich Siegpunkte kriegerisch zu erkämpfen.
+        Dabei ist der Krieg um Siegpunkt ein Nullsummenspiel.
+        Pro Siegpunkt den der Sieger erhält, verliert der Verlierer einen.
+        Dabei gelten folgende Regeln:
+
+        <ul class = "list-subgroup">
+          <li class="list-subgroup-item list-subgroup-item-light">
+            In einem Krieg kann nur der Hauptangreifer vom Hauptverteidiger einen Siegpunkt fordern.
+          </li>
+          <li class="list-subgroup-item list-subgroup-item-light">
+            Ein Siegpunkt kostet 80% (fiktive) Warscore, also dürfen neben einem Siegpunkt maximal 20% zusätzliche Forderungen gestellt werden.
+          </li>
+          <li class="list-subgroup-item list-subgroup-item-light">
+            Ausnahme: Wenn die verlierende Partei bereits mindestens 8 Siegpunkte gesammelt hat, kann in einem Krieg für 80% 2 Siegpunkte oder für 40% 1 Siegpunkt gefordert werden.
+          </li>
+          <li class="list-subgroup-item list-subgroup-item-light">
+            Jeder Spieler kann pro Spieler und Spieltag nur 1 Siegpunkt erhalten (bzw. im Ausnahmefall 2), sehr wohl aber von mehreren Spielern an einem Spieltag.
+          </li>
+          <li class="list-subgroup-item list-subgroup-item-light">
+            Von einem Spieler mit 0 Siegpunkten können keine Siegpunkte gewonnen werden.
+          </li>
+        </ul>
+
+        <h5>Beispiel:</h5>
+        Nation A (6 Siegpunkte) greift Nation B (7 Siegpunkte) an und gewinnt.
+        Danach darf Nation A am selben Spieltag noch Nation C für einen Siegpunkt angreifen und Nation C darf auch noch einen Siegpunkt von Nation B erkämpfen.
+        Ebenso darf Nation B von Nation A den Siegpunkt zurückfordern, falls Nation B den Revanchekrieg jedoch verliert,
+        kann Nation A keinen zusätzlichen Siegpunkt gewinnen, sondern muss sich auf die Standard-EU4-Forderungen beschränken.
       </div>
       <div class="modal-footer">
         <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
