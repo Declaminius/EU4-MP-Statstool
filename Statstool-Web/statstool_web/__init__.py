@@ -1,16 +1,19 @@
 from flask import Flask
 from flask_sqlalchemy import SQLAlchemy
+from flask_migrate import Migrate
 from flask_bcrypt import Bcrypt
 from flask_login import LoginManager
 from statstool_web.config import Config
 from .util import ListConverter
 from flask_sqlalchemy import models_committed
 
+
 bcrypt = Bcrypt()
 login_manager = LoginManager()
 login_manager.login_view = "main.login"
 login_manager.login_message_category = "info"
 db = SQLAlchemy()
+migrate = Migrate()
 
 def create_app(config_class = Config):
     app = Flask(__name__)
@@ -20,6 +23,7 @@ def create_app(config_class = Config):
     db.init_app(app)
     bcrypt.init_app(app)
     login_manager.init_app(app)
+    migrate.init_app(app, db)
 
     app.url_map.converters['list'] = ListConverter
     with open("../parsed_paradox_files/tags.txt", "r", encoding = 'utf-8') as tags:

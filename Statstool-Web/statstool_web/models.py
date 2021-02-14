@@ -112,6 +112,8 @@ class Savegame(db.Model):
     file = db.Column(db.String(120), nullable = False)
     map_file = db.Column(db.String(120), nullable = True)
     parse_flag = db.Column(db.Boolean, default = False, nullable = False)
+    highest_dev_province_id = db.Column(db.Integer, db.ForeignKey('province.id'))
+
     nations = db.relationship("Nation", secondary = savegame_nations)
     player_nations = db.relationship("Nation", secondary = savegame_player_nations)
     army_battles = db.relationship("ArmyBattle", backref = "savegame", cascade = "all, delete")
@@ -214,6 +216,8 @@ class NationSavegameData(db.Model):
     navy_cannons = db.Column(db.Integer, default = 0)
     num_of_production_leaders = db.Column(db.Integer, default = 0)
     score = db.Column(db.Integer, default = 0)
+
+    highest_dev_province_id = db.Column(db.Integer, db.ForeignKey('province.id'))
 
 class NationSavegameGoodsProduced(db.Model):
     __tablename__ = "nation_savegame_goods_produced"
