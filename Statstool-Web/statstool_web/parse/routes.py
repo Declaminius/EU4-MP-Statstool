@@ -1,5 +1,5 @@
 from flask import render_template, url_for, request, redirect, flash, Blueprint, current_app
-from statstool_web.parse.forms import TagSetupForm, NewNationForm
+from statstool_web.parse.forms import *
 from statstool_web import db
 from statstool_web.models import Savegame, NationFormation, Nation, NationSavegameData
 from sqlalchemy.exc import IntegrityError
@@ -9,10 +9,13 @@ import os
 
 parse = Blueprint('parse', __name__)
 
-@parse.route("/setup/<int:sg_id1>/<int:sg_id2>", methods = ["GET", "POST"])
+@parse.route("/setup/<int:sg_id1>/<int:sg_id2>/<int:part>", methods = ["GET", "POST"])
 @login_required
-def setup(sg_id1,sg_id2):
-    form = TagSetupForm()
+def setup(sg_id1,sg_id2, part):
+    if part == 0:
+        form = TagSetupForm0()
+    elif part == 1:
+        form = TagSetupForm1()
     old_savegame = Savegame.query.get(sg_id1)
     new_savegame = Savegame.query.get(sg_id2)
     nations = set(old_savegame.player_nations + new_savegame.player_nations)
@@ -49,7 +52,7 @@ def setup(sg_id1,sg_id2):
                 db.session.rollback()
             else:
                 db.session.commit()
-        return redirect(url_for("show_stats.parse", sg_id1 = sg_id1, sg_id2 = sg_id2))
+        return redirect(url_for("show_stats.parse", sg_id1 = sg_id1, sg_id2 = sg_id2, part = part))
 
 @parse.route("/setup/new_nation/<int:sg_id1>/<int:sg_id2>", methods = ["GET", "POST"])
 @login_required
@@ -67,7 +70,7 @@ def new_nation(sg_id1,sg_id2):
         if form.select.data not in sg.player_nations:
             sg.player_nations.append(Nation.query.get(form.select.data))
         db.session.commit()
-        return redirect(url_for("parse.setup", sg_id1 = sg_id1, sg_id2 = sg_id2))
+        return redirect(url_for("parse.setup", sg_id1 = sg_id1, sg_id2 = sg_id2, part = 0))
     return render_template("new_nation.html", form = form)
 
 @parse.route("/setup/all_nations/<int:sg_id1>/<int:sg_id2>", methods = ["GET"])
@@ -79,7 +82,7 @@ def all_nations(sg_id1,sg_id2):
         if nation not in sg.player_nations:
             sg.player_nations.append(nation)
     db.session.commit()
-    return redirect(url_for("parse.setup", sg_id1 = sg_id1, sg_id2 = sg_id2))
+    return redirect(url_for("parse.setup", sg_id1 = sg_id1, sg_id2 = sg_id2, part = 0))
 
 @parse.route("/setup/remove_nation/<int:sg_id1>/<int:sg_id2>/<string:tag>", methods = ["GET", "POST"])
 @login_required
@@ -94,7 +97,7 @@ def remove_nation(sg_id1, tag, sg_id2):
         if tag in playertags:
             sg.player_nations.remove(Nation.query.get(tag))
             db.session.commit()
-    return redirect(url_for("parse.setup", sg_id1 = sg_id1, sg_id2 = sg_id2))
+    return redirect(url_for("parse.setup", sg_id1 = sg_id1, sg_id2 = sg_id2, part = 0))
 
 @parse.route("/setup/remove_all/<int:sg_id1>/<int:sg_id2>", methods = ["GET", "POST"])
 @login_required
@@ -104,4 +107,4 @@ def remove_all(sg_id1,sg_id2):
         sg = Savegame.query.get(id)
         sg.player_nations = []
         db.session.commit()
-    return redirect(url_for("parse.setup", sg_id1 = sg_id1, sg_id2 = sg_id2))
+    return redirect(url_for("parse.setup", sg_id1 = sg_id1, sg_id2 = sg_id2, part = 0))

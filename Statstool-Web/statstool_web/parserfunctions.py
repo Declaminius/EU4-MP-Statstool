@@ -6,7 +6,7 @@ from statstool_web.models import *
 from sqlalchemy.exc import IntegrityError
 import datetime
 from colour import Color
-from flask import current_app
+from flask import current_app, flash
 import os
 
 def edit_parse(filename):
@@ -546,9 +546,54 @@ def parse(savegame):
 			db.session.flush()
 
 			parse_provinces(provinces, savegame)
-			print("Provinzen Done")
+			flash("Provinzen Done", "success")
 			parse_wars(content, savegame)
-			print("Kriege Done")
+			flash("Kriege Done", "success")
+			parse_countries(content, savegame)
+			flash("Länder Done", "success")
+			parse_incomestat(content, savegame)
+			flash("Einkommen-Stats Done", "success")
+			parse_production_leader(content, savegame)
+			#parse_trade(content)
+			db.session.flush()
+		except IntegrityError:
+			db.session.rollback()
+		else:
+			savegame.parse_flag = True
+			db.session.commit()
+
+
+def parse_part0(savegame):
+	path = os.path.join(current_app.root_path, "static/savegames", savegame.file)
+	with open(path, 'r', encoding = 'cp1252') as sg:
+		content = sg.read()
+		provinces = content.split("\nprovinces={")[1].split("countries={")[0]
+		total_trade_goods = list(findall("tradegoods_total_produced={\n(.+)", content)[0].split())
+		i = 0
+
+		try:
+			for value in total_trade_goods:
+				tg = TotalGoodsProduced(savegame_id = savegame.id, trade_good_id = i, amount = value)
+				db.session.add(tg)
+				i += 1
+			db.session.flush()
+
+			parse_provinces(provinces, savegame)
+			flash("Provinzen Done", "success")
+			parse_wars(content, savegame)
+			flash("Kriege Done", "success")
+			db.session.flush()
+		except IntegrityError:
+			db.session.rollback()
+		else:
+			savegame.parse_flag0 = True
+			db.session.commit()
+
+def parse_part1(savegame):
+	path = os.path.join(current_app.root_path, "static/savegames", savegame.file)
+	with open(path, 'r', encoding = 'cp1252') as sg:
+		content = sg.read()
+		try:
 			parse_countries(content, savegame)
 			print("Länder Done")
 			parse_incomestat(content, savegame)
@@ -556,7 +601,8 @@ def parse(savegame):
 			parse_production_leader(content, savegame)
 			#parse_trade(content)
 			db.session.flush()
-		except IntegrityError:
+		except IntegrityError as e:
+			print(e)
 			db.session.rollback()
 		else:
 			savegame.parse_flag = True

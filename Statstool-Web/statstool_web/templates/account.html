@@ -13,7 +13,7 @@
           <tbody>
             {% for id, row, map in data%}
               <tr>
-                <td><a class="btn btn-outline-secondary btn-center mt-2 mb-2" href = "{{url_for('show_stats.parse', sg_id1 = id, sg_id2 = id)}}">{{id}}</a></td>
+                <td><a class="btn btn-outline-secondary btn-center mt-2 mb-2" href = "{{url_for('show_stats.parse', sg_id1 = id, sg_id2 = id, part = 0)}}">{{id}}</a></td>
                 {% for value in row %}
                   <td>{{value}}</td>
                 {% endfor %}

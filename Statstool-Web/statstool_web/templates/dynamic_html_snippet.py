@@ -24,7 +24,7 @@ def write_html_block(institution1,institution2,label1,label2,start_year = None):
             {{% if not savegame_dict["{0}"].map_file %}}
               <a class="btn btn-outline-primary btn-center mt-2 mb-2" href = "{{{{url_for('show_stats.upload_map', sg_id = savegame_dict['{2}'].id)}}}}">Add Map</a>
             {{% endif %}}
-            <a class="btn btn-outline-primary btn-center mt-2 mb-2" href = "{{{{url_for('show_stats.parse', sg_id1 = savegame_dict['{0}'].id, sg_id2 = savegame_dict['{2}'].id )}}}}">View</a>
+            <a class="btn btn-outline-primary btn-center mt-2 mb-2" href = "{{{{url_for('show_stats.parse', sg_id1 = savegame_dict['{0}'].id, sg_id2 = savegame_dict['{2}'].id, part = 0 )}}}}">View</a>
           {{% endif %}}
           {{% if not savegame_dict["{0}"] %}}
             <a class="btn btn-outline-primary btn-center mt-2 mb-2" href = "{{{{url_for('main.upload_one_savegame', institution = '{0}')}}}}">Add {1}-Savegame</a>

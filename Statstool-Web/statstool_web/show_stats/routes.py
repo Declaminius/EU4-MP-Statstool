@@ -18,17 +18,19 @@ show_stats = Blueprint('show_stats', __name__)
 
 matplotlib.use('Agg')
 
-@show_stats.route("/parse/<int:sg_id1>/<int:sg_id2>", methods = ["GET"])
-def parse(sg_id1,sg_id2):
+@show_stats.route("/parse/<int:sg_id1>/<int:sg_id2>/<int:part>", methods = ["GET"])
+def parse(sg_id1,sg_id2, part):
     for id in (sg_id1,sg_id2):
         savegame = Savegame.query.get(id)
-        if not savegame.parse_flag:
-            statstool_web.parserfunctions.parse(savegame)
-            if savegame.parse_flag:
-                try:
-                    os.remove(os.path.join(current_app.root_path, current_app.config["UPLOAD_FOLDER"], savegame.file))
-                except FileNotFoundError:
-                    pass
+        if part == 0 and not savegame.parse_flag0:
+            statstool_web.parserfunctions.parse_part0(savegame)
+        elif part == 1 and not savegame.parse_flag:
+            statstool_web.parserfunctions.parse_part1(savegame)
+        if savegame.parse_flag:
+            try:
+                os.remove(os.path.join(current_app.root_path, current_app.config["UPLOAD_FOLDER"], savegame.file))
+            except FileNotFoundError:
+                pass
 
     old_savegame = Savegame.query.get(sg_id1)
     new_savegame = Savegame.query.get(sg_id2)
@@ -42,10 +44,13 @@ def parse(sg_id1,sg_id2):
             formation = NationFormation(old_savegame_id = sg_id1, new_savegame_id = sg_id2, old_nation_tag = nation.tag, new_nation_tag = nation.tag)
             db.session.add(formation)
     db.session.commit()
-    if current_user.is_authenticated and sg_id1 != sg_id2:
-        return redirect(url_for("show_stats.configure", sg_id1 = sg_id1, sg_id2 = sg_id2))
-    else:
-        return redirect(url_for("show_stats.overview_table", sg_id1 = sg_id1, sg_id2 = sg_id2))
+    if part == 0:
+        return(redirect(url_for("parse.setup", sg_id1 = sg_id1, sg_id2 = sg_id2, part = 1)))
+    elif part == 1:
+        if current_user.is_authenticated and sg_id1 != sg_id2:
+            return redirect(url_for("show_stats.configure", sg_id1 = sg_id1, sg_id2 = sg_id2))
+        else:
+            return redirect(url_for("show_stats.overview_table", sg_id1 = sg_id1, sg_id2 = sg_id2))
 
 @show_stats.route("/map/<int:sg_id1>/<int:sg_id2>", methods = ["GET"])
 def map(sg_id1,sg_id2):
@@ -56,7 +61,7 @@ def remove_nation_formation(sg_id1,sg_id2,old,new):
     formation = NationFormation.query.get((sg_id1,sg_id2,old,new))
     db.session.delete(formation)
     db.session.commit()
-    return redirect(url_for("show_stats.parse", sg_id1 = sg_id1, sg_id2 = sg_id2))
+    return redirect(url_for("show_stats.parse", sg_id1 = sg_id1, sg_id2 = sg_id2, part = 0))
 
 @show_stats.route("/configure/<int:sg_id1>/<int:sg_id2>", methods = ["GET", "POST"])
 @login_required

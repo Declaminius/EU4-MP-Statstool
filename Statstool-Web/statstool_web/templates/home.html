@@ -17,7 +17,7 @@
     {% endif %}
     <div class="text-center">
       {% if savegame_dict[institution1] and savegame_dict[institution2] %}
-      <a class="btn btn-outline-primary btn-center mt-2 mb-2" href = "{{url_for('show_stats.parse', sg_id1 = savegame_dict[institution1].id, sg_id2 = savegame_dict[institution2].id )}}">View</a>
+      <a class="btn btn-outline-primary btn-center mt-2 mb-2" href = "{{url_for('show_stats.parse', sg_id1 = savegame_dict[institution1].id, sg_id2 = savegame_dict[institution2].id, part = 0 )}}">View</a>
       {% endif %}
       {% if current_user == current_mp.admin %}
         {% if savegame_dict[institution1] %}

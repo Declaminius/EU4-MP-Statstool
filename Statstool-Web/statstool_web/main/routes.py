@@ -125,7 +125,7 @@ def upload_savegames(mp_id = None):
             except (IndexError, UnicodeDecodeError) as e:
                 print(e)
 
-        return redirect(url_for("parse.setup", sg_id1 = sg_ids[0], sg_id2 = sg_ids[1]))
+        return redirect(url_for("parse.setup", sg_id1 = sg_ids[0], sg_id2 = sg_ids[1], part = 0))
     return render_template("upload_savegames.html", form = form)
 
 @main.route("/upload_one_savegame", methods = ["GET", "POST"], defaults={'mp_id': None, 'institution': None})
@@ -180,7 +180,7 @@ def upload_one_savegame(mp_id = None, institution = None):
             print(e)
         except (IndexError, UnicodeDecodeError) as e:
             print(e)
-        return redirect(url_for("parse.setup", sg_id1 = savegame.id, sg_id2 = savegame.id))
+        return redirect(url_for("parse.setup", sg_id1 = savegame.id, sg_id2 = savegame.id, part = 0))
     return render_template("upload_one_savegame.html", form = form)
 
 @main.route("/upload_map/<int:sg_id>", methods = ["GET", "POST"])
@@ -366,7 +366,7 @@ def latest_stats(mp_id):
     if len(savegames) > 1:
         sg_id1 = savegames[1].id
         sg_id2 = savegames[0].id
-        return redirect(url_for("show_stats.parse", sg_id1 = sg_id1, sg_id2 = sg_id2))
+        return redirect(url_for("show_stats.parse", sg_id1 = sg_id1, sg_id2 = sg_id2, part = 0))
     else:
         flash(f'Noch keine Statistik verfügbar.', 'danger')
         return redirect(url_for("main.home"))

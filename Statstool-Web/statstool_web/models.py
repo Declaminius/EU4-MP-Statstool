@@ -111,6 +111,7 @@ class Savegame(db.Model):
     year = db.Column(db.Integer, default = None)
     file = db.Column(db.String(120), nullable = False)
     map_file = db.Column(db.String(120), nullable = True)
+    parse_flag0 = db.Column(db.Boolean, default = False)
     parse_flag = db.Column(db.Boolean, default = False, nullable = False)
     highest_dev_province_id = db.Column(db.Integer, db.ForeignKey('province.id'))
 
