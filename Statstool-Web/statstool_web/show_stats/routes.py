@@ -308,20 +308,20 @@ def victory_points(sg_id1, sg_id2):
         if institution is Institutions.global_trade:
             header_labels.insert(1, "Globaler Handel")
 
-        if institution is Institutions.manufactories:
-            header_labels.insert(1, "Meister Produktionsführer")
-            columns.insert(0, "num_of_production_leaders")
-            min_values["num_of_production_leaders"] = 3
-
-        if institution is Institutions.enlightenment:
-             header_labels.insert(1, "Innovativität")
-             columns.insert(0, "innovativeness")
-             min_values["innovativeness"] = 50
-
         if institution is Institutions.industrialization:
             header_labels.insert(1, "InGame-Score")
             columns.insert(0, "score")
             min_values["score"] = 0
+
+    if institution is Institutions.manufactories:
+        header_labels.insert(1, "Meister Produktionsführer")
+        columns.insert(0, "num_of_production_leaders")
+        min_values["num_of_production_leaders"] = 3
+
+    if institution is Institutions.enlightenment:
+         header_labels.insert(1, "Innovativität")
+         columns.insert(0, "innovativeness")
+         min_values["innovativeness"] = 50
 
     nation_data = []
     nation_colors_hex = []
