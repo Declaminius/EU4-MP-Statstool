@@ -385,5 +385,6 @@ def victory_points(sg_id1, sg_id2):
             vp.victory_points = data["victory_points"]
     db.session.commit()
 
+    print([i for i in range(1,len(header_labels))], len(header_labels))
     return render_template("table.html", old_savegame = Savegame.query.get(sg_id1), new_savegame = Savegame.query.get(sg_id2), \
-        data = zip(nation_data,nation_names,nation_colors_hex,nation_colors_hsl), columns = columns, header_labels = header_labels, colorize_columns = [i for i in range(1,len(header_labels))], sort_by = len(header_labels))
+        data = zip(nation_data,nation_names,nation_colors_hex,nation_colors_hsl), columns = columns, header_labels = header_labels, colorize_columns = [i for i in range(1,len(header_labels))], sort_by = len(header_labels) - 1)
