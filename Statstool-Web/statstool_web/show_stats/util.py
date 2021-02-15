@@ -142,3 +142,69 @@ def income_plot(category, old_year, new_year, sg_id1, sg_id2):
         plot = SavegamePlots(filename = filename, type = category, old_savegame_id = sg_id1, new_savegame_id = sg_id2)
         db.session.add(plot)
         db.session.commit()
+
+
+def mana_spent_table_total(header_labels, sg_id2):
+    mana_data = []
+    nation_colors_hex = []
+    nation_colors_hsl = []
+    nation_names = []
+    for nation in Savegame.query.get(sg_id2).player_nations:
+        data = {}
+        mana = NationSavegamePointsSpent.query.filter_by(savegame_id = sg_id2, nation_tag = nation.tag).all()
+        if mana:
+            data["total"] = sum([x.amount for x in mana])
+            for category in ("adm", "dip", "mil"):
+                mana = NationSavegamePointsSpent.query.filter_by(savegame_id = sg_id2, nation_tag = nation.tag, points_spent_category = category).all()
+                if mana:
+                    data[category] = sum([x.amount for x in mana])
+                else:
+                    data[category] = 0
+        else:
+            for category in ("adm", "dip", "mil", "total"):
+                data[category] = 0
+        mana_data.append(data)
+        nation_colors_hex.append(NationSavegameData.query.filter_by(nation_tag = nation.tag, \
+                savegame_id = sg_id2).first().color)
+        nation_colors_hsl.append(NationSavegameData.query.filter_by(nation_tag = nation.tag, \
+                savegame_id = sg_id2).first().color.hsl)
+        nation_names.append(NationSavegameData.query.filter_by(savegame_id = sg_id2, nation_tag = nation.tag).first().nation_name)
+    map = Savegame.query.get(sg_id2).map_file
+    return zip(mana_data,nation_names,nation_colors_hex, nation_colors_hsl)
+
+
+def mana_spent_table(category, columns, header_labels, sg_id2):
+    mana_data = []
+    nation_colors_hex = []
+    nation_colors_hsl = []
+    nation_names = []
+    for nation in Savegame.query.get(sg_id2).player_nations:
+        data = {}
+        for id in columns:
+            data[id] = 0
+        mana = NationSavegamePointsSpent.query.filter_by(savegame_id = sg_id2, nation_tag = nation.tag, points_spent_category = category).all()
+        summe = 0
+        for entry in mana:
+            print(entry.points_spent_id)
+            if entry.points_spent_id in columns:
+                data[entry.points_spent_id] = entry.amount
+                summe += entry.amount
+        if mana:
+            data["total"] = sum([x.amount for x in mana])
+            data["rest"] = data["total"] - summe
+        else:
+            data["total"] = 0
+            data["rest"] = 0
+
+        print(data)
+        mana_data.append(data)
+        nation_colors_hex.append(NationSavegameData.query.filter_by(nation_tag = nation.tag, \
+                savegame_id = sg_id2).first().color)
+        nation_colors_hsl.append(NationSavegameData.query.filter_by(nation_tag = nation.tag, \
+                savegame_id = sg_id2).first().color.hsl)
+        nation_names.append(NationSavegameData.query.filter_by(savegame_id = sg_id2, nation_tag = nation.tag).first().nation_name)
+
+    columns += ["rest", "total"]
+
+    map = Savegame.query.get(sg_id2).map_file
+    return zip(mana_data,nation_names,nation_colors_hex, nation_colors_hsl), columns

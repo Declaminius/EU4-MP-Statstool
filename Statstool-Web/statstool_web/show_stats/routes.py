@@ -1,6 +1,6 @@
 from flask import render_template, url_for, request, redirect, flash, abort, Blueprint, current_app
 from statstool_web.show_stats.forms import NationFormationForm
-from statstool_web.show_stats.util import category_plot, table_data, get_images_and_table_data, income_plot
+from statstool_web.show_stats.util import *
 from statstool_web import db, bcrypt
 from statstool_web.models import *
 from statstool_web.util import redirect_url
@@ -223,37 +223,50 @@ def army_battles(sg_id1, sg_id2):
     return render_template("army_battles_table.html", old_savegame = Savegame.query.get(sg_id1), new_savegame = Savegame.query.get(sg_id2), \
         data = battle_data, columns = columns, header_labels = header_labels)
 
-@show_stats.route("/mana_spent/<int:sg_id1>/<int:sg_id2>", methods = ["GET"])
-def mana_spent(sg_id1, sg_id2):
+@show_stats.route("/mana_spent_total/<int:sg_id1>/<int:sg_id2>", methods = ["GET"])
+def mana_spent_total(sg_id1, sg_id2):
     columns = ["adm", "dip", "mil", "total"]
-    header_labels = ["Nation", "ADM", "DIP", "MIL", "Total"]
-    mana_data = []
-    nation_colors_hex = []
-    nation_colors_hsl = []
-    nation_names = []
-    for nation in Savegame.query.get(sg_id2).player_nations:
-        data = {}
-        mana = NationSavegamePointsSpent.query.filter_by(savegame_id = sg_id2, nation_tag = nation.tag).all()
-        if mana:
-            data["total"] = sum([x.amount for x in mana])
-            for category in ("adm", "dip", "mil"):
-                mana = NationSavegamePointsSpent.query.filter_by(savegame_id = sg_id2, nation_tag = nation.tag, points_spent_category = category).all()
-                if mana:
-                    data[category] = sum([x.amount for x in mana])
-                else:
-                    data[category] = 0
-        else:
-            for category in ("adm", "dip", "mil", "total"):
-                data[category] = 0
-        mana_data.append(data)
-        nation_colors_hex.append(NationSavegameData.query.filter_by(nation_tag = nation.tag, \
-                savegame_id = sg_id2).first().color)
-        nation_colors_hsl.append(NationSavegameData.query.filter_by(nation_tag = nation.tag, \
-                savegame_id = sg_id2).first().color.hsl)
-        nation_names.append(NationSavegameData.query.filter_by(savegame_id = sg_id2, nation_tag = nation.tag).first().nation_name)
-    map = Savegame.query.get(sg_id2).map_file
+    header_labels = ["Nation", "ADM", "DIP", "MIL", "Gesamt"]
+    data = mana_spent_table_total(header_labels, sg_id2)
     return render_template("table.html", old_savegame = Savegame.query.get(sg_id1), new_savegame = Savegame.query.get(sg_id2), \
-        data = zip(mana_data,nation_names,nation_colors_hex, nation_colors_hsl), columns = columns, header_labels = header_labels, colorize_columns = [1,2,3,4], sort_by = 4, map = map)
+        data = data, columns = columns, header_labels = header_labels, \
+                colorize_columns = [i for i in range(1,len(header_labels))], \
+                sort_by = len(header_labels) - 1, map = map, title = "Gesamt")
+
+@show_stats.route("/mana_spent_adm/<int:sg_id1>/<int:sg_id2>", methods = ["GET"])
+def mana_spent_adm(sg_id1, sg_id2):
+    columns = [0,1,2,7,15,17]
+    header_labels = ["Nation", "Ideas", "Tech", "Stability", "Development",\
+    "Reduce Inflation", "Cores", "Sonstiges", "Gesamt"]
+    data, columns = mana_spent_table("adm", columns, header_labels, sg_id2)
+    return render_template("table.html", old_savegame = Savegame.query.get(sg_id1), new_savegame = Savegame.query.get(sg_id2), \
+        data = data, columns = columns, header_labels = header_labels, \
+                colorize_columns = [i for i in range(1,len(header_labels))], \
+                sort_by = len(header_labels) - 1, map = map, title = "ADM")
+
+@show_stats.route("/mana_spent_dip/<int:sg_id1>/<int:sg_id2>", methods = ["GET"])
+def mana_spent_dip(sg_id1, sg_id2):
+    columns = [0,1,7,14,20,22,34,47]
+    header_labels = ["Country", "Ideas", "Tech","Development", "DipCost Peacedeal",\
+    "Culture Conversions", "Reduce War Exhaustion",\
+    "Promote Culture", "Admirals", "Sonstiges", "Gesamt"]
+    data, columns = mana_spent_table("dip", columns, header_labels, sg_id2)
+    return render_template("table.html", old_savegame = Savegame.query.get(sg_id1), new_savegame = Savegame.query.get(sg_id2), \
+        data = data, columns = columns, header_labels = header_labels, \
+                colorize_columns = [i for i in range(1,len(header_labels))], \
+                sort_by = len(header_labels) - 1, map = map, title = "DIP")
+
+@show_stats.route("/mana_spent_mil/<int:sg_id1>/<int:sg_id2>", methods = ["GET"])
+def mana_spent_mil(sg_id1, sg_id2):
+    columns = [0,1,7,21,36,39,45,46]
+    header_labels = ["Country", "Ideas", "Tech", "Development",\
+    "Suppress Rebels", "Strengthen Government", "Artillery Barrage",\
+    "Force March", "Generals", "Sonstiges", "Gesamt"]
+    data, columns = mana_spent_table("mil", columns, header_labels, sg_id2)
+    return render_template("table.html", old_savegame = Savegame.query.get(sg_id1), new_savegame = Savegame.query.get(sg_id2), \
+        data = data, columns = columns, header_labels = header_labels, \
+                colorize_columns = [i for i in range(1,len(header_labels))], \
+                sort_by = len(header_labels) - 1, map = map, title = "MIL")
 
 @show_stats.route("/reload_plot/<int:sg_id1>/<int:sg_id2>/<list:image_files>", methods = ["GET", "POST"])
 def reload_plot(sg_id1, sg_id2, image_files):

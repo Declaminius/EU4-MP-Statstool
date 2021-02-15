@@ -51,8 +51,18 @@
               href = "{{url_for('show_stats.provinces', sg_id1 = old_savegame.id, sg_id2 = new_savegame.id)}}">Provinces</a>
               <a class="nav-item nav-link"
               href = "{{url_for('show_stats.army_battles', sg_id1 = old_savegame.id, sg_id2 = new_savegame.id)}}">Army Battles</a>
-              <a class="nav-item nav-link"
-              href = "{{url_for('show_stats.mana_spent', sg_id1 = old_savegame.id, sg_id2 = new_savegame.id)}}">Mana Spent</a>
+              <li class="nav-item dropdown">
+                <a class="nav-link dropdown-toggle" href="#" id="navbarDropdown" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                  Mana Spent
+                </a>
+                <div class="dropdown-menu" aria-labelledby="navbarDropdown">
+                  <a class="dropdown-item" href="{{url_for('show_stats.mana_spent_adm', sg_id1 = old_savegame.id, sg_id2 = new_savegame.id)}}">Admin</a>
+                  <a class="dropdown-item" href="{{url_for('show_stats.mana_spent_dip', sg_id1 = old_savegame.id, sg_id2 = new_savegame.id)}}">Dip</a>
+                  <a class="dropdown-item" href="{{url_for('show_stats.mana_spent_mil', sg_id1 = old_savegame.id, sg_id2 = new_savegame.id)}}">Mil</a>
+                  <div class="dropdown-divider"></div>
+                  <a class="dropdown-item" href="{{url_for('show_stats.mana_spent_total', sg_id1 = old_savegame.id, sg_id2 = new_savegame.id)}}">Total</a>
+                </div>
+              </li>
               {% if new_savegame.institution %}
                 <a class="nav-item nav-link"
                 href = "{{url_for('show_stats.victory_points', sg_id1 = old_savegame.id, sg_id2 = new_savegame.id)}}">Victory Points</a>
