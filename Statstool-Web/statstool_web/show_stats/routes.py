@@ -143,11 +143,60 @@ def max_manpower(sg_id1, sg_id2):
     return render_template("plot.html", old_savegame = Savegame.query.get(sg_id1), new_savegame = Savegame.query.get(sg_id2), \
             content = content, ids = ids, header_labels = header_labels, columns = columns, map = map)
 
-@show_stats.route("/army_losses/<int:sg_id1>/<int:sg_id2>", methods = ["GET"])
-def army_losses(sg_id1, sg_id2):
-    categories = ("infantry", "cavalry", "artillery", "combat", "attrition", "total")
-    columns = ( NationSavegameArmyLosses.infantry,NationSavegameArmyLosses.cavalry,NationSavegameArmyLosses.artillery,\
-                NationSavegameArmyLosses.combat,NationSavegameArmyLosses.attrition,NationSavegameArmyLosses.total)
+@show_stats.route("/army_losses_total/<int:sg_id1>/<int:sg_id2>", methods = ["GET"])
+def army_losses_total(sg_id1, sg_id2):
+    categories = ["total"]
+    columns = [NationSavegameArmyLosses.total]
+
+    content, ids, header_labels, columns, flattened_image_files, map = get_images_and_table_data(categories, columns, NationSavegameArmyLosses, sg_id1, sg_id2)
+
+    return render_template("plot.html", old_savegame = Savegame.query.get(sg_id1), new_savegame = Savegame.query.get(sg_id2), \
+            content = content, ids = ids, header_labels = header_labels, columns = columns, map = map)
+
+@show_stats.route("/army_losses_infantry/<int:sg_id1>/<int:sg_id2>", methods = ["GET"])
+def army_losses_infantry(sg_id1, sg_id2):
+    categories = ["infantry"]
+    columns = [NationSavegameArmyLosses.infantry]
+
+    content, ids, header_labels, columns, flattened_image_files, map = get_images_and_table_data(categories, columns, NationSavegameArmyLosses, sg_id1, sg_id2)
+
+    return render_template("plot.html", old_savegame = Savegame.query.get(sg_id1), new_savegame = Savegame.query.get(sg_id2), \
+            content = content, ids = ids, header_labels = header_labels, columns = columns, map = map)
+
+@show_stats.route("/army_losses_cavalry/<int:sg_id1>/<int:sg_id2>", methods = ["GET"])
+def army_losses_cavalry(sg_id1, sg_id2):
+    categories = ["cavalry"]
+    columns = [NationSavegameArmyLosses.cavalry]
+
+    content, ids, header_labels, columns, flattened_image_files, map = get_images_and_table_data(categories, columns, NationSavegameArmyLosses, sg_id1, sg_id2)
+
+    return render_template("plot.html", old_savegame = Savegame.query.get(sg_id1), new_savegame = Savegame.query.get(sg_id2), \
+            content = content, ids = ids, header_labels = header_labels, columns = columns, map = map)
+
+@show_stats.route("/army_losses_artillery/<int:sg_id1>/<int:sg_id2>", methods = ["GET"])
+def army_losses_artillery(sg_id1, sg_id2):
+    categories = ["artillery"]
+    columns = [NationSavegameArmyLosses.artillery]
+
+    content, ids, header_labels, columns, flattened_image_files, map = get_images_and_table_data(categories, columns, NationSavegameArmyLosses, sg_id1, sg_id2)
+
+    return render_template("plot.html", old_savegame = Savegame.query.get(sg_id1), new_savegame = Savegame.query.get(sg_id2), \
+            content = content, ids = ids, header_labels = header_labels, columns = columns, map = map)
+
+@show_stats.route("/army_losses_combat/<int:sg_id1>/<int:sg_id2>", methods = ["GET"])
+def army_losses_combat(sg_id1, sg_id2):
+    categories = ["combat"]
+    columns = [NationSavegameArmyLosses.combat]
+
+    content, ids, header_labels, columns, flattened_image_files, map = get_images_and_table_data(categories, columns, NationSavegameArmyLosses, sg_id1, sg_id2)
+
+    return render_template("plot.html", old_savegame = Savegame.query.get(sg_id1), new_savegame = Savegame.query.get(sg_id2), \
+            content = content, ids = ids, header_labels = header_labels, columns = columns, map = map)
+
+@show_stats.route("/army_losses_attrition/<int:sg_id1>/<int:sg_id2>", methods = ["GET"])
+def army_losses_attrition(sg_id1, sg_id2):
+    categories = ["attrition"]
+    columns = [NationSavegameArmyLosses.attrition]
 
     content, ids, header_labels, columns, flattened_image_files, map = get_images_and_table_data(categories, columns, NationSavegameArmyLosses, sg_id1, sg_id2)
 
