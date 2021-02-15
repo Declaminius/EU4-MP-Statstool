@@ -317,13 +317,13 @@ def total_victory_points(mp_id):
                         data[tag][column] = result.victory_points
 
             #erster Spielerkrieg
-            data["D00"][8] = 1
+            #data["D00"][8] = 1
 
             #global_trade
             data["D05"][4] += 2
 
             #great_power
-            data["D02"][12] = 1
+            data["D02"][11] = 1
 
             #hegemony
             data["D02"][12] = 2
