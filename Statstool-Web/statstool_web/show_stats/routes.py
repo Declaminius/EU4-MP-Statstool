@@ -368,7 +368,10 @@ def victory_points(sg_id1, sg_id2):
         max_category = max([x[category] for x in nation_data])
         for data in nation_data[:-1]:
             if data[category] == max_category:
-                data["victory_points"] += 1
+                if category in ("highest_ae", "num_of_colonies", "num_converted_religion", "num_of_production_leaders", "innovativeness", "score"):
+                    data["victory_points"] += 2
+                else:
+                    data["victory_points"] += 1
                 if category == "highest_dev":
                     savegame = Savegame.query.get(sg_id2)
                     savegame.highest_dev_province_id = data["highest_dev_province_id"]
@@ -383,4 +386,4 @@ def victory_points(sg_id1, sg_id2):
     db.session.commit()
 
     return render_template("table.html", old_savegame = Savegame.query.get(sg_id1), new_savegame = Savegame.query.get(sg_id2), \
-        data = zip(nation_data,nation_names,nation_colors_hex,nation_colors_hsl), columns = columns, header_labels = header_labels, colorize_columns = [1,2,3,4,5], sort_by = 5)
+        data = zip(nation_data,nation_names,nation_colors_hex,nation_colors_hsl), columns = columns, header_labels = header_labels, colorize_columns = [i for i in range(1,len(header_labels))], sort_by = len(header_labels))
