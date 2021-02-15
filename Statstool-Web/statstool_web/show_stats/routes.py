@@ -122,8 +122,16 @@ def overview_table(sg_id1,sg_id2):
 @show_stats.route("/development/<int:sg_id1>/<int:sg_id2>", methods = ["GET"])
 def development(sg_id1, sg_id2):
 
-    content, ids, header_labels, columns, flattened_image_files, map = get_images_and_table_data(("development","effective_development"), \
-            (NationSavegameData.development,NationSavegameData.effective_development), NationSavegameData, sg_id1, sg_id2)
+    content, ids, header_labels, columns, flattened_image_files, map = get_images_and_table_data(["development"], \
+            [NationSavegameData.development], NationSavegameData, sg_id1, sg_id2)
+    return render_template("plot.html", old_savegame = Savegame.query.get(sg_id1), new_savegame = Savegame.query.get(sg_id2), \
+            flattened_image_files = flattened_image_files, content = content, ids = ids, header_labels = header_labels, columns = columns, map = map)
+
+@show_stats.route("/effective_development/<int:sg_id1>/<int:sg_id2>", methods = ["GET"])
+def effective_development(sg_id1, sg_id2):
+
+    content, ids, header_labels, columns, flattened_image_files, map = get_images_and_table_data(["effective_development"], \
+            [NationSavegameData.effective_development], NationSavegameData, sg_id1, sg_id2)
     return render_template("plot.html", old_savegame = Savegame.query.get(sg_id1), new_savegame = Savegame.query.get(sg_id2), \
             flattened_image_files = flattened_image_files, content = content, ids = ids, header_labels = header_labels, columns = columns, map = map)
 
@@ -133,7 +141,7 @@ def income(sg_id1, sg_id2):
     content, ids, header_labels, columns, flattened_image_files, map = get_images_and_table_data(["income"], [NationSavegameData.income], NationSavegameData, sg_id1, sg_id2)
 
     return render_template("plot.html", old_savegame = Savegame.query.get(sg_id1), new_savegame = Savegame.query.get(sg_id2), \
-            content = content, ids = ids, header_labels = header_labels, columns = columns, map = map)
+            flattened_image_files = flattened_image_files, content = content, ids = ids, header_labels = header_labels, columns = columns, map = map)
 
 @show_stats.route("/max_manpower/<int:sg_id1>/<int:sg_id2>", methods = ["GET"])
 def max_manpower(sg_id1, sg_id2):
@@ -141,7 +149,7 @@ def max_manpower(sg_id1, sg_id2):
     content, ids, header_labels, columns, flattened_image_files, map = get_images_and_table_data(["max_manpower"], [NationSavegameData.max_manpower], NationSavegameData, sg_id1, sg_id2)
 
     return render_template("plot.html", old_savegame = Savegame.query.get(sg_id1), new_savegame = Savegame.query.get(sg_id2), \
-            content = content, ids = ids, header_labels = header_labels, columns = columns, map = map)
+            flattened_image_files = flattened_image_files, content = content, ids = ids, header_labels = header_labels, columns = columns, map = map)
 
 @show_stats.route("/army_losses_total/<int:sg_id1>/<int:sg_id2>", methods = ["GET"])
 def army_losses_total(sg_id1, sg_id2):
@@ -151,7 +159,7 @@ def army_losses_total(sg_id1, sg_id2):
     content, ids, header_labels, columns, flattened_image_files, map = get_images_and_table_data(categories, columns, NationSavegameArmyLosses, sg_id1, sg_id2)
 
     return render_template("plot.html", old_savegame = Savegame.query.get(sg_id1), new_savegame = Savegame.query.get(sg_id2), \
-            content = content, ids = ids, header_labels = header_labels, columns = columns, map = map)
+            flattened_image_files = flattened_image_files, content = content, ids = ids, header_labels = header_labels, columns = columns, map = map)
 
 @show_stats.route("/army_losses_infantry/<int:sg_id1>/<int:sg_id2>", methods = ["GET"])
 def army_losses_infantry(sg_id1, sg_id2):
@@ -161,7 +169,7 @@ def army_losses_infantry(sg_id1, sg_id2):
     content, ids, header_labels, columns, flattened_image_files, map = get_images_and_table_data(categories, columns, NationSavegameArmyLosses, sg_id1, sg_id2)
 
     return render_template("plot.html", old_savegame = Savegame.query.get(sg_id1), new_savegame = Savegame.query.get(sg_id2), \
-            content = content, ids = ids, header_labels = header_labels, columns = columns, map = map)
+            flattened_image_files = flattened_image_files, content = content, ids = ids, header_labels = header_labels, columns = columns, map = map)
 
 @show_stats.route("/army_losses_cavalry/<int:sg_id1>/<int:sg_id2>", methods = ["GET"])
 def army_losses_cavalry(sg_id1, sg_id2):
@@ -171,7 +179,7 @@ def army_losses_cavalry(sg_id1, sg_id2):
     content, ids, header_labels, columns, flattened_image_files, map = get_images_and_table_data(categories, columns, NationSavegameArmyLosses, sg_id1, sg_id2)
 
     return render_template("plot.html", old_savegame = Savegame.query.get(sg_id1), new_savegame = Savegame.query.get(sg_id2), \
-            content = content, ids = ids, header_labels = header_labels, columns = columns, map = map)
+            flattened_image_files = flattened_image_files, content = content, ids = ids, header_labels = header_labels, columns = columns, map = map)
 
 @show_stats.route("/army_losses_artillery/<int:sg_id1>/<int:sg_id2>", methods = ["GET"])
 def army_losses_artillery(sg_id1, sg_id2):
@@ -181,7 +189,7 @@ def army_losses_artillery(sg_id1, sg_id2):
     content, ids, header_labels, columns, flattened_image_files, map = get_images_and_table_data(categories, columns, NationSavegameArmyLosses, sg_id1, sg_id2)
 
     return render_template("plot.html", old_savegame = Savegame.query.get(sg_id1), new_savegame = Savegame.query.get(sg_id2), \
-            content = content, ids = ids, header_labels = header_labels, columns = columns, map = map)
+            flattened_image_files = flattened_image_files, content = content, ids = ids, header_labels = header_labels, columns = columns, map = map)
 
 @show_stats.route("/army_losses_combat/<int:sg_id1>/<int:sg_id2>", methods = ["GET"])
 def army_losses_combat(sg_id1, sg_id2):
@@ -191,7 +199,7 @@ def army_losses_combat(sg_id1, sg_id2):
     content, ids, header_labels, columns, flattened_image_files, map = get_images_and_table_data(categories, columns, NationSavegameArmyLosses, sg_id1, sg_id2)
 
     return render_template("plot.html", old_savegame = Savegame.query.get(sg_id1), new_savegame = Savegame.query.get(sg_id2), \
-            content = content, ids = ids, header_labels = header_labels, columns = columns, map = map)
+            flattened_image_files = flattened_image_files, content = content, ids = ids, header_labels = header_labels, columns = columns, map = map)
 
 @show_stats.route("/army_losses_attrition/<int:sg_id1>/<int:sg_id2>", methods = ["GET"])
 def army_losses_attrition(sg_id1, sg_id2):
@@ -201,7 +209,7 @@ def army_losses_attrition(sg_id1, sg_id2):
     content, ids, header_labels, columns, flattened_image_files, map = get_images_and_table_data(categories, columns, NationSavegameArmyLosses, sg_id1, sg_id2)
 
     return render_template("plot.html", old_savegame = Savegame.query.get(sg_id1), new_savegame = Savegame.query.get(sg_id2), \
-            content = content, ids = ids, header_labels = header_labels, columns = columns, map = map)
+            flattened_image_files = flattened_image_files, content = content, ids = ids, header_labels = header_labels, columns = columns, map = map)
 
 @show_stats.route("/income_over_time/<int:sg_id1>/<int:sg_id2>", methods = ["GET"])
 def income_over_time(sg_id1, sg_id2):

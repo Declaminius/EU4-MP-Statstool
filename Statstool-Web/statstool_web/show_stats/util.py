@@ -56,11 +56,11 @@ def get_images_and_table_data(categories, columns, model, sg_id1, sg_id2):
     for category, column in zip(categories,columns):
         data_list = model.query.filter(model.nation_tag.in_(tag_list),\
                 model.savegame_id == sg_id1).order_by(desc(column))
-        image_file1 = category_plot(sg_id1, sg_id1, category, tag_list, data_list, model, "{0}: {1}".format(category.capitalize(),old_year))
+        image_file1 = category_plot(sg_id1, sg_id1, category, tag_list, data_list, model, "{0}: {1}".format(category.replace("_"," ").title(),old_year))
 
         data_list = model.query.filter(model.nation_tag.in_(tag_list),\
                 model.savegame_id == sg_id2).order_by(desc(column))
-        image_file2 = category_plot(sg_id1, sg_id2, category, tag_list, data_list, model, "{0}: {1}-{2}".format(category.capitalize(),old_year, new_year))
+        image_file2 = category_plot(sg_id1, sg_id2, category, tag_list, data_list, model, "{0}: {1}-{2}".format(category.replace("_"," ").title(),old_year, new_year))
 
         image_files.append([image_file1, image_file2])
 
