@@ -44,9 +44,9 @@ def parse(sg_id1,sg_id2, part):
             formation = NationFormation(old_savegame_id = sg_id1, new_savegame_id = sg_id2, old_nation_tag = nation.tag, new_nation_tag = nation.tag)
             db.session.add(formation)
     db.session.commit()
-    if part == 0:
+    if not savegame.parse_flag:
         return(redirect(url_for("parse.setup", sg_id1 = sg_id1, sg_id2 = sg_id2, part = 1)))
-    elif part == 1:
+    else:
         if current_user.is_authenticated and sg_id1 != sg_id2:
             return redirect(url_for("show_stats.configure", sg_id1 = sg_id1, sg_id2 = sg_id2))
         else:
