@@ -344,7 +344,6 @@ def victory_points(sg_id1, sg_id2):
             data["highest_dev_province_id"] = nation_savegame_data.highest_dev_province_id
         else:
             forbidden_ids = [sg.highest_dev_province_id for sg in mp.savegames if sg.year < Savegame.query.get(sg_id2).year and sg.highest_dev_province_id]
-            print(forbidden_ids)
             highest_dev_province = NationSavegameProvinces.query.filter(NationSavegameProvinces.province_id.notin_(forbidden_ids)).filter_by( \
                     nation_tag = nation.tag, savegame_id = sg_id2).order_by(NationSavegameProvinces.development.desc()).first()
             nation_savegame_data.highest_dev_province_id = highest_dev_province.province_id
@@ -373,6 +372,9 @@ def victory_points(sg_id1, sg_id2):
         if not VictoryPoints.query.filter_by(mp_id = Savegame.query.get(sg_id2).mp_id, institution = institution, nation_tag = tag).first():
             vp = VictoryPoints(mp_id = Savegame.query.get(sg_id2).mp_id, institution = institution, nation_tag = tag, victory_points = data["victory_points"])
             db.session.add(vp)
+        else:
+            vp = VictoryPoints.query.filter_by(mp_id = Savegame.query.get(sg_id2).mp_id, institution = institution, nation_tag = tag).first()
+            vp.victory_points = data["victory_points"]
     db.session.commit()
 
     return render_template("table.html", old_savegame = Savegame.query.get(sg_id1), new_savegame = Savegame.query.get(sg_id2), \

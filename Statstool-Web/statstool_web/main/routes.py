@@ -325,6 +325,9 @@ def total_victory_points(mp_id):
             #great_power
             data["D08"][11] = 1
 
+            #hegemony
+            data["D02"][12] = 2
+
             for tag in data.keys():
                 data[tag].append(sum(data[tag]))
 

@@ -36010,3 +36010,73 @@ sqlalchemy.orm.exc.UnmappedInstanceError: Class 'builtins.NoneType' is not mappe
 [2021-02-10 21:21:09 +0000] [2995] [INFO] Booting worker with pid: 2995
 [2021-02-10 21:22:25 +0000] [3012] [INFO] Booting worker with pid: 3012
 [2021-02-10 21:22:30 +0000] [3013] [INFO] Booting worker with pid: 3013
+[2021-02-10 21:32:15 +0000] [3195] [INFO] Booting worker with pid: 3195
+[2021-02-10 21:32:26 +0000] [3197] [INFO] Booting worker with pid: 3197
+[2021-02-10 21:41:51 +0000] [3197] [INFO] Worker exiting (pid: 3197)
+[2021-02-10 21:41:51 +0000] [3195] [INFO] Worker exiting (pid: 3195)
+[2021-02-10 21:41:51 +0000] [2995] [INFO] Worker exiting (pid: 2995)
+[2021-02-10 21:41:51 +0000] [2612] [INFO] Handling signal: term
+[2021-02-10 21:41:51 +0000] [2612] [INFO] Shutting down: Master
+[2021-02-10 21:41:53 +0000] [3390] [INFO] Starting gunicorn 20.0.4
+[2021-02-10 21:41:53 +0000] [3390] [INFO] Listening at: http://127.0.0.1:8000 (3390)
+[2021-02-10 21:41:53 +0000] [3390] [INFO] Using worker: sync
+[2021-02-10 21:41:53 +0000] [3392] [INFO] Booting worker with pid: 3392
+[2021-02-10 21:41:53 +0000] [3393] [INFO] Booting worker with pid: 3393
+[2021-02-10 21:41:53 +0000] [3394] [INFO] Booting worker with pid: 3394
+[2021-02-11 23:45:40 +0000] [22947] [INFO] Booting worker with pid: 22947
+[2021-02-12 06:24:54 +0000] [26155] [INFO] Booting worker with pid: 26155
+[2021-02-12 23:56:58 +0000] [22947] [INFO] Worker exiting (pid: 22947)
+/home/declaminius/EU4-MP-Statstool/Statstool-Web/statstool_web/show_stats/util.py:11: RuntimeWarning: More than 20 figures have been opened. Figures created through the pyplot interface (`matplotlib.pyplot.figure`) are retained until explicitly closed and may consume too much memory. (To control this warning, see the rcParam `figure.max_open_warning`).
+  figure = plt.figure(title)
+[2021-02-12 23:56:58 +0000] [3392] [INFO] Worker exiting (pid: 3392)
+[2021-02-12 23:56:58 +0000] [26155] [INFO] Worker exiting (pid: 26155)
+[2021-02-12 23:56:58 +0000] [3390] [INFO] Handling signal: term
+[2021-02-12 23:56:59 +0000] [3390] [INFO] Shutting down: Master
+[2021-02-12 23:57:01 +0000] [39698] [INFO] Starting gunicorn 20.0.4
+[2021-02-12 23:57:01 +0000] [39698] [INFO] Listening at: http://127.0.0.1:8000 (39698)
+[2021-02-12 23:57:01 +0000] [39698] [INFO] Using worker: sync
+[2021-02-12 23:57:01 +0000] [39700] [INFO] Booting worker with pid: 39700
+[2021-02-12 23:57:02 +0000] [39701] [INFO] Booting worker with pid: 39701
+[2021-02-12 23:57:02 +0000] [39702] [INFO] Booting worker with pid: 39702
+[2021-02-13 04:41:13,748] ERROR in app: Exception on /reload_plot/5/6/88bef88f9f2bbca6.png [GET]
+Traceback (most recent call last):
+  File "/home/declaminius/EU4-MP-Statstool/Statstool-Web/venv/lib/python3.8/site-packages/sqlalchemy/orm/session.py", line 2050, in delete
+    state = attributes.instance_state(instance)
+AttributeError: 'NoneType' object has no attribute '_sa_instance_state'
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "/home/declaminius/EU4-MP-Statstool/Statstool-Web/venv/lib/python3.8/site-packages/flask/app.py", line 2447, in wsgi_app
+    response = self.full_dispatch_request()
+  File "/home/declaminius/EU4-MP-Statstool/Statstool-Web/venv/lib/python3.8/site-packages/flask/app.py", line 1952, in full_dispatch_request
+    rv = self.handle_user_exception(e)
+  File "/home/declaminius/EU4-MP-Statstool/Statstool-Web/venv/lib/python3.8/site-packages/flask/app.py", line 1821, in handle_user_exception
+    reraise(exc_type, exc_value, tb)
+  File "/home/declaminius/EU4-MP-Statstool/Statstool-Web/venv/lib/python3.8/site-packages/flask/_compat.py", line 39, in reraise
+    raise value
+  File "/home/declaminius/EU4-MP-Statstool/Statstool-Web/venv/lib/python3.8/site-packages/flask/app.py", line 1950, in full_dispatch_request
+    rv = self.dispatch_request()
+  File "/home/declaminius/EU4-MP-Statstool/Statstool-Web/venv/lib/python3.8/site-packages/flask/app.py", line 1936, in dispatch_request
+    return self.view_functions[rule.endpoint](**req.view_args)
+  File "/home/declaminius/EU4-MP-Statstool/Statstool-Web/statstool_web/show_stats/routes.py", line 257, in reload_plot
+    db.session.delete(plot)
+  File "/home/declaminius/EU4-MP-Statstool/Statstool-Web/venv/lib/python3.8/site-packages/sqlalchemy/orm/scoping.py", line 163, in do
+    return getattr(self.registry(), name)(*args, **kwargs)
+  File "/home/declaminius/EU4-MP-Statstool/Statstool-Web/venv/lib/python3.8/site-packages/sqlalchemy/orm/session.py", line 2052, in delete
+    util.raise_(
+  File "/home/declaminius/EU4-MP-Statstool/Statstool-Web/venv/lib/python3.8/site-packages/sqlalchemy/util/compat.py", line 182, in raise_
+    raise exception
+sqlalchemy.orm.exc.UnmappedInstanceError: Class 'builtins.NoneType' is not mapped
+[2021-02-14 23:24:06 +0000] [39702] [INFO] Worker exiting (pid: 39702)
+[2021-02-14 23:24:06 +0000] [39701] [INFO] Worker exiting (pid: 39701)
+[2021-02-14 23:24:06 +0000] [39700] [INFO] Worker exiting (pid: 39700)
+[2021-02-14 23:24:06 +0000] [39698] [INFO] Handling signal: term
+[2021-02-14 23:24:07 +0000] [39698] [INFO] Shutting down: Master
+[2021-02-14 23:24:09 +0000] [76596] [INFO] Starting gunicorn 20.0.4
+[2021-02-14 23:24:09 +0000] [76596] [INFO] Listening at: http://127.0.0.1:8000 (76596)
+[2021-02-14 23:24:09 +0000] [76596] [INFO] Using worker: sync
+[2021-02-14 23:24:09 +0000] [76598] [INFO] Booting worker with pid: 76598
+[2021-02-14 23:24:09 +0000] [76599] [INFO] Booting worker with pid: 76599
+[2021-02-14 23:24:09 +0000] [76600] [INFO] Booting worker with pid: 76600
+[2021-02-14 23:31:52 +0000] [76662] [INFO] Booting worker with pid: 76662
