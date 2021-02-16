@@ -3,6 +3,14 @@ from statstool_web.models import *
 import secrets
 from sqlalchemy import desc
 
+def get_colors_hex_hsl(sg_id, tag_list, model):
+    nation_colors_hex = [model.query.filter_by(nation_tag = tag, \
+            savegame_id = sg_id).first().color for tag in tag_list]
+    nation_colors_hsl = [color.hsl for color in nation_colors_hex]
+
+    return nation_colors_hex, nation_colors_hsl
+
+
 def category_plot(sg_id1, sg_id2, category, tag_list, data_list, model, title):
     plot = SavegamePlots.query.filter_by(old_savegame_id = sg_id1, new_savegame_id = sg_id2, type = category).first()
     if plot:
@@ -76,8 +84,6 @@ def get_images_and_table_data(categories, columns, model, sg_id1, sg_id2):
 def table_data(category, old_year, new_year, tag_list, sg_id1, sg_id2, data_type, model):
     nation_data = []
     nation_names = []
-    nation_colors_hex = []
-    nation_colors_hsl = []
     for new_tag in tag_list:
         data = []
         if NationFormation.query.filter_by(old_savegame_id = sg_id1, new_savegame_id = sg_id2, new_nation_tag = new_tag).first():
@@ -98,11 +104,8 @@ def table_data(category, old_year, new_year, tag_list, sg_id1, sg_id2, data_type
             data.append(delta)
             data.append(percent)
             nation_data.append(data)
-            nation_colors_hex.append(model.query.filter_by(nation_tag = new_tag, \
-                    savegame_id = sg_id2).first().color)
-            nation_colors_hsl.append(model.query.filter_by(nation_tag = new_tag, \
-                    savegame_id = sg_id2).first().color.hsl)
             nation_names.append(NationSavegameData.query.filter_by(savegame_id = sg_id2, nation_tag = new_tag).first().nation_name)
+    nation_colors_hex, nation_colors_hsl = get_colors_hex_hsl(sg_id2, tag_list, model)
     return zip(nation_data,nation_names,nation_colors_hex, nation_colors_hsl)
 
 def income_plot(category, old_year, new_year, sg_id1, sg_id2):
@@ -146,10 +149,10 @@ def income_plot(category, old_year, new_year, sg_id1, sg_id2):
 
 def mana_spent_table_total(header_labels, sg_id2):
     mana_data = []
-    nation_colors_hex = []
-    nation_colors_hsl = []
     nation_names = []
+    tag_list = []
     for nation in Savegame.query.get(sg_id2).player_nations:
+        tag_list.append(nation.tag)
         data = {}
         mana = NationSavegamePointsSpent.query.filter_by(savegame_id = sg_id2, nation_tag = nation.tag).all()
         if mana:
@@ -164,28 +167,24 @@ def mana_spent_table_total(header_labels, sg_id2):
             for category in ("adm", "dip", "mil", "total"):
                 data[category] = 0
         mana_data.append(data)
-        nation_colors_hex.append(NationSavegameData.query.filter_by(nation_tag = nation.tag, \
-                savegame_id = sg_id2).first().color)
-        nation_colors_hsl.append(NationSavegameData.query.filter_by(nation_tag = nation.tag, \
-                savegame_id = sg_id2).first().color.hsl)
         nation_names.append(NationSavegameData.query.filter_by(savegame_id = sg_id2, nation_tag = nation.tag).first().nation_name)
     map = Savegame.query.get(sg_id2).map_file
+    nation_colors_hex, nation_colors_hsl = get_colors_hex_hsl(sg_id2, tag_list, NationSavegameData)
     return zip(mana_data,nation_names,nation_colors_hex, nation_colors_hsl)
 
 
 def mana_spent_table(category, columns, header_labels, sg_id2):
     mana_data = []
-    nation_colors_hex = []
-    nation_colors_hsl = []
     nation_names = []
+    tag_list = []
     for nation in Savegame.query.get(sg_id2).player_nations:
+        tag_list.append(nation.tag)
         data = {}
         for id in columns:
             data[id] = 0
         mana = NationSavegamePointsSpent.query.filter_by(savegame_id = sg_id2, nation_tag = nation.tag, points_spent_category = category).all()
         summe = 0
         for entry in mana:
-            print(entry.points_spent_id)
             if entry.points_spent_id in columns:
                 data[entry.points_spent_id] = entry.amount
                 summe += entry.amount
@@ -196,15 +195,11 @@ def mana_spent_table(category, columns, header_labels, sg_id2):
             data["total"] = 0
             data["rest"] = 0
 
-        print(data)
         mana_data.append(data)
-        nation_colors_hex.append(NationSavegameData.query.filter_by(nation_tag = nation.tag, \
-                savegame_id = sg_id2).first().color)
-        nation_colors_hsl.append(NationSavegameData.query.filter_by(nation_tag = nation.tag, \
-                savegame_id = sg_id2).first().color.hsl)
         nation_names.append(NationSavegameData.query.filter_by(savegame_id = sg_id2, nation_tag = nation.tag).first().nation_name)
 
     columns += ["rest", "total"]
 
+    nation_colors_hex, nation_colors_hsl = get_colors_hex_hsl(sg_id2, tag_list, NationSavegameData)
     map = Savegame.query.get(sg_id2).map_file
     return zip(mana_data,nation_names,nation_colors_hex, nation_colors_hsl), columns

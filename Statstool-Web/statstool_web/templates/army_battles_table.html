@@ -13,7 +13,11 @@
     {% for row in data%}
     <tr>
       {% for name in columns %}
-      <td bgcolor = "{{row[name][1]}}">{{row[name][0]}}</td>
+      {% if row[name][1].hsl[2] > 0.5 %}
+        <td bgcolor = "{{row[name][1]}}" style="color:black">{{row[name][0]}}</td>
+      {% else %}
+        <td bgcolor = "{{row[name][1]}}" style="color:white">{{row[name][0]}}</td>
+      {% endif %}
       {% endfor %}
     </tr>
     {% endfor %}

@@ -8,6 +8,7 @@ from sqlalchemy import desc
 from sqlalchemy.exc import IntegrityError
 from flask_login import current_user, login_required
 import statstool_web.parserfunctions
+from colour import Color
 
 import os
 import secrets
@@ -235,9 +236,9 @@ def provinces(sg_id1, sg_id2):
         owner = NationSavegameData.query.filter_by(nation_tag = province["nation_tag"], \
                 savegame_id = sg_id2).first()
         if owner:
-            nation_colors.append(str(owner.color))
+            nation_colors.append(owner.color)
         else:
-            nation_colors.append("#ffffff")
+            nation_colors.append(Color("#ffffff"))
         nation_tags.append(province["nation_tag"])
         trade_good_name = TradeGood.query.filter_by(id = province["trade_good_id"]).first().name
         data["trade_good_name"] = trade_good_name
@@ -259,22 +260,21 @@ def army_battles(sg_id1, sg_id2):
     header_labels = ["Datum", "Angreifer", "Inf", "Kav", "Art", "Gesamt", "Verluste", "General", \
         "Verteidiger", "Inf", "Kav", "Art", "Gesamt", "Verluste", "General", "Truppen", "Verluste"]
     battle_data = []
-    nation_colors = []
     nation_tags = []
     for battle in ArmyBattle.query.filter_by(savegame_id = sg_id2).all():
         battle = battle.__dict__
-        data = {x: [battle[x],"#ffffff"] for x in columns}
+        data = {x: [battle[x],Color("#ffffff")] for x in columns}
         for column in ("attacker_country","defender_country"):
             nation = NationSavegameData.query.filter_by(nation_tag = data[column][0], savegame_id = sg_id2).first()
             if nation:
-                data[column][1] = str(nation.color)
+                data[column][1] = nation.color
         result = battle["result"]
         if result == "yes":
-            data["attacker_commander"][1] = "00ff00"
-            data["defender_commander"][1] = "ff0000"
+            data["attacker_commander"][1] = Color("green")
+            data["defender_commander"][1] = Color("red")
         if result == "no":
-            data["attacker_commander"][1] = "ff0000"
-            data["defender_commander"][1] = "00ff00"
+            data["attacker_commander"][1] = Color("red")
+            data["defender_commander"][1] = Color("green")
         battle_data.append(data)
 
     return render_template("army_battles_table.html", old_savegame = Savegame.query.get(sg_id1), new_savegame = Savegame.query.get(sg_id2), \
