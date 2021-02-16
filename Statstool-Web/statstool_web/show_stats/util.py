@@ -52,6 +52,7 @@ def category_plot(sg_id1, sg_id2, category, tag_list, data_list, model, title):
         db.session.commit()
         return filename
 
+
 def get_images_and_table_data(categories, columns, model, sg_id1, sg_id2):
     old_year = Savegame.query.get(sg_id1).year
     new_year = Savegame.query.get(sg_id2).year
@@ -107,6 +108,7 @@ def table_data(category, old_year, new_year, tag_list, sg_id1, sg_id2, data_type
             nation_names.append(NationSavegameData.query.filter_by(savegame_id = sg_id2, nation_tag = new_tag).first().nation_name)
     nation_colors_hex, nation_colors_hsl = get_colors_hex_hsl(sg_id2, tag_list, model)
     return zip(nation_data,nation_names,nation_colors_hex, nation_colors_hsl)
+
 
 def income_plot(category, old_year, new_year, sg_id1, sg_id2):
     plot = SavegamePlots.query.filter_by(old_savegame_id = sg_id1, new_savegame_id = sg_id2, type = category).first()
