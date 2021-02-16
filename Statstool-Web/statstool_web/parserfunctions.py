@@ -17,10 +17,10 @@ def edit_parse(filename):
 	with open(filename, 'r', encoding = 'cp1252', errors = 'ignore') as sg:
 		content = sg.read()
 		compile_player = compile("was_player=yes")
-		compile_real_nations = compile("\n\t\tdevelopment")  # Dead nations don't have development
+		#compile_real_nations = compile("\n\t\tdevelopment")  # Dead nations don't have development
 		countries = split("\n\t([A-Z0-9]{3})", content.split("\ncountries={")[1].split('active_advisors')[0])
 		tag_list, info_list = countries[1:-1:2], countries[2:-1:2]
-		real_nations_list = []
+		nations_list = []
 
 
 		player_names_and_tags = compile("players_countries={([^}].+?)}", DOTALL).search(content).group(1).split('"')[1::2]
@@ -32,16 +32,14 @@ def edit_parse(filename):
 		year = int(search("date=(?P<year>\d{4})", content).group(1))
 
 		for info, tag in zip(info_list, tag_list):
-			result = compile_real_nations.search(info)
+			#result = compile_real_nations.search(info)
+			result = compile_player.search(info)
 			if result:
-				real_nations_list.append(tag)
-				result = compile_player.search(info)
-				if result:
-					if not tag in player_names_dict.keys():
-						player_names_dict[tag] = None
+				if not tag in player_names_dict.keys():
+					player_names_dict[tag] = None
 
 
-	return player_names_dict, sorted(real_nations_list), year
+	return player_names_dict, sorted(tag_list), year
 
 
 def parse_provinces(provinces, savegame):
@@ -120,41 +118,54 @@ def parse_provinces(provinces, savegame):
 
 def parse_wars(content, savegame):
 	""" Second part of the main parser. Reads all relevant information about wars
-	from the savegame. Returns a list of all wars, as well as a dictionary about
-	the participants in each war."""
+	from the savegame. """
 
 	active_wars, *previous_wars = content.split("previous_war={")
 	active_wars = active_wars.split("active_war={")[1:]
-	total_wars = active_wars + previous_wars
 
-	war_name = compile("name=\"(?P<name>.+?)\"", DOTALL)
+	compile_war_details = compile("name=\"(?P<name>.+?)\".+?(?P<start_date>[0-9]{4}.[0-9]{1,2}.[0-9]{2}).+?add_attacker=\"(?P<attacker>[A-Z0-9]{3})\".+?add_defender=\"(?P<defender>[A-Z0-9]{3})\"", DOTALL)
 	compile_participants = compile("value=(?P<participation_score>.+?)\n\t\ttag=\"(?P<nation_tag>.+?)\".+?members={\n\t\t\t\t(?P<losses>[^\n]+)", DOTALL)
 	battle_regex = compile("name=\"(?P<province>.+?)\".+?result=(?P<result>[^\n]+).+?"\
 				"attacker=[{](?P<attacker>[^}]+).+?defender=[{](?P<defender>[^}]+).+?", DOTALL)
 
-	for war in total_wars:
-		result = war_name.search(war)
-		if result:
-			w = War(name = result.group(1), infantry = 0, cavalry = 0, artillery = 0, combat = 0, attrition = 0, total = 0)
-			savegame.wars.append(w)
-			if war in active_wars:
-				w.ongoing = True
-			else:
-				w.ongoing = False
+	for war in active_wars:
+		parse_war(war, compile_war_details, battle_regex, compile_participants, True, savegame)
 
-			battle_list = war.split("battle={")
+	for war in previous_wars:
+		parse_war(war, compile_war_details, battle_regex, compile_participants, False, savegame)
 
-			if len(battle_list) > 1:
-				date_list = [datetime.date(*[int(x) for x in battle_list[0].split("\n")[-2].split("={")[0].split(".")])]
 
-				for battle in battle_list[1:]:
-					parse_battle(battle, w, date_list, battle_regex, savegame)
+def parse_war(war, compile_war_details, battle_regex, compile_participants, is_active, savegame):
+	result = compile_war_details.search(war)
+	if result:
+		war_dict = result.groupdict()
+		w = War(name = war_dict["name"], start_date = war_dict["start_date"], infantry = 0, cavalry = 0, artillery = 0, combat = 0, attrition = 0, total = 0)
+		attacker = Nation.query.get(war_dict["attacker"])
+		if attacker:
+			w.attacker.append(attacker)
+		else:
+			print(war_dict["attacker"])
+		defender = Nation.query.get(war_dict["defender"])
+		if defender:
+			w.defender.append(Nation.query.get(war_dict["defender"]))
+		else:
+			print(war_dict["defender"])
+		savegame.wars.append(w)
+		w.ongoing = is_active
 
-				participants = war.split("participants={")[1:]
-				for p in participants:
-					parse_war_participants(p, compile_participants, w)
+		battle_list = war.split("battle={")
 
-			db.session.add(w)
+		if len(battle_list) > 1:
+			date_list = [datetime.date(*[int(x) for x in battle_list[0].split("\n")[-2].split("={")[0].split(".")])]
+
+			for battle in battle_list[1:]:
+				parse_battle(battle, w, date_list, battle_regex, savegame)
+
+			participants = war.split("participants={")[1:]
+			for p in participants:
+				parse_war_participants(p, compile_participants, w)
+
+		db.session.add(w)
 
 
 def parse_battle(battle, war, date_list, battle_regex, savegame):

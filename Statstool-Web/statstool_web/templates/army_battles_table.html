@@ -60,12 +60,14 @@
     ).draw();
   }
   $(document).ready(function() {
-    $('.mydatatable').DataTable({"lengthMenu":  [10, 25, 50, -1], "pageLength": -1, "order": [[ 16, "desc" ]], "dom": 'lf<"toolbar">rtip'});
-    $("div.toolbar").html('<center><h3 style="color:black">Army Battles</h3></center>');
+    let order_by = {{order_by|tojson}};
+    let title = {{title|tojson}};
+    $('.mydatatable').DataTable({"lengthMenu":  [10, 25, 50, -1], "pageLength": -1, "order": [[ order_by, "desc" ]], "dom": 'lf<"toolbar">rtip'});
+    $("div.toolbar").html('<center><h3 style="color:black">'+ title + '</h3></center>');
     // Table Heat Map
     console.log($('#player_filter').prop('checked'))
-    let arr = [3,4,5,6,10,11,12,13,16]
-    let reverse_arr = [7,14,17]
+    let arr = {{colorize_columns|tojson}};
+    let reverse_arr = {{colorize_columns_rev|tojson}};
     for (let i of arr) {
       $('table tbody td:nth-child(' + i + ')').colorize();
     }

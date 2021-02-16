@@ -392,6 +392,11 @@ class War(db.Model):
     savegame_id = db.Column(db.Integer, db.ForeignKey('savegame.id'))
     name = db.Column(db.String, default = False)
     ongoing = db.Column(db.Boolean)
+    start_date = db.Column(db.String(11))
+
+    attacker = db.relationship("Nation", secondary = war_attacker)
+    defender = db.relationship("Nation", secondary = war_defender)
+
 
     infantry = db.Column(db.Integer, default = 0)
     cavalry = db.Column(db.Integer, default = 0)

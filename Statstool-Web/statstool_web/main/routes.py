@@ -159,9 +159,9 @@ def upload_one_savegame(mp_id = None, institution = None):
                 savegame = Savegame(file = random, mp_id = mp_id, institution = institution, owner = current_user, year = year, name = form.savegame_name.data)
             for tag in tag_list:
                 if not Nation.query.get(tag):
+                    print(tag)
                     nation = Nation(tag = tag)
                     db.session.add(nation)
-                    db.session.commit()
 
                 savegame.nations.append(Nation.query.get(tag))
                 if tag in player_names_dict.keys():
@@ -180,7 +180,8 @@ def upload_one_savegame(mp_id = None, institution = None):
             print(e)
         except (IndexError, UnicodeDecodeError) as e:
             print(e)
-        return redirect(url_for("parse.setup", sg_id1 = savegame.id, sg_id2 = savegame.id, part = 0))
+        else:
+            return redirect(url_for("parse.setup", sg_id1 = savegame.id, sg_id2 = savegame.id, part = 0))
     return render_template("upload_one_savegame.html", form = form)
 
 @main.route("/upload_map/<int:sg_id>", methods = ["GET", "POST"])

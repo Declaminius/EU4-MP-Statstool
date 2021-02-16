@@ -101,6 +101,8 @@ def configure(sg_id1,sg_id2):
 
 @show_stats.route("/overview_table/<int:sg_id1>/<int:sg_id2>", methods = ["GET"])
 def overview_table(sg_id1,sg_id2):
+    mp = Savegame.query.get(sg_id2).mp
+
     columns = ["great_power_score", "development", "effective_development", "navy_strength", "max_manpower", "income"]
     header_labels = ["Nation", "Great Power Score", "Development", "Effective Development", "Navy Strength", "Maximum Manpower", "Monthly Income"]
     nation_data = []
@@ -118,7 +120,7 @@ def overview_table(sg_id1,sg_id2):
         nation_names.append(NationSavegameData.query.filter_by(savegame_id = sg_id2, nation_tag = nation.tag).first().nation_name)
     return render_template("table.html", old_savegame = Savegame.query.get(sg_id1), \
             new_savegame = Savegame.query.get(sg_id2), data = zip(nation_data,nation_names,nation_colors_hex, nation_colors_hsl), \
-            columns = columns, header_labels = header_labels, colorize_columns = [1,2,3,4,5,6], sort_by = 1, map = map)
+            columns = columns, header_labels = header_labels, colorize_columns = [1,2,3,4,5,6], sort_by = 1, map = map, mp = mp)
 
 @show_stats.route("/development/<int:sg_id1>/<int:sg_id2>", methods = ["GET"])
 def development(sg_id1, sg_id2):
@@ -277,8 +279,48 @@ def army_battles(sg_id1, sg_id2):
             data["defender_commander"][1] = Color("green")
         battle_data.append(data)
 
+    colorize_columns = [3,4,5,6,10,11,12,13,16]
+    colorize_columns_rev = [7,14,17]
     return render_template("army_battles_table.html", old_savegame = Savegame.query.get(sg_id1), new_savegame = Savegame.query.get(sg_id2), \
-        data = battle_data, columns = columns, header_labels = header_labels)
+        data = battle_data, columns = columns, header_labels = header_labels, \
+        colorize_columns = colorize_columns, colorize_columns_rev = colorize_columns_rev, order_by = len(columns) - 1)
+
+
+@show_stats.route("/wars/<int:sg_id1>/<int:sg_id2>", methods = ["GET"])
+def wars(sg_id1, sg_id2):
+    columns = ["name", "start_date", "infantry", "cavalry", "artillery", "combat", "attrition", "total", "ongoing"]
+    header_labels = ["Name", "Startdatum", "Angreifer", "Verteidiger", "Infanterie", "Kavallerie", "Artillerie", "Kampf", "Zermürbung", "Gesamt", "Laufend"]
+    war_data = []
+    for war in War.query.filter_by(savegame_id = sg_id2).all():
+        war_dict = war.__dict__
+        data = {x: [war_dict[x],Color("#ffffff")] for x in columns}
+        if war.attacker:
+            if (nation_data := NationSavegameData.query.filter_by(nation_tag = war.attacker[0].tag, savegame_id = sg_id2).first()):
+                if nation_data.nation_name:
+                    data["attacker"] = [nation_data.nation_name, nation_data.color]
+                else:
+                    data["attacker"] = [war.attacker[0].tag, nation_data.color]
+            else:
+                data["attacker"] = [war.attacker[0].tag, Color("#ffffff")]
+        else:
+            data["attacker"] = ["", Color("#ffffff")]
+        if war.defender:
+            if (nation_data := NationSavegameData.query.filter_by(nation_tag = war.defender[0].tag, savegame_id = sg_id2).first()):
+                if nation_data.nation_name:
+                    data["defender"] = [nation_data.nation_name, nation_data.color]
+                else:
+                    data["defender"] = [war.defender[0].tag, nation_data.color]
+            else:
+                data["defender"] = [war.defender[0].tag, Color("#ffffff")]
+        else:
+            data["defender"] = ["", Color("#ffffff")]
+        war_data.append(data)
+    columns.insert(2, "attacker")
+    columns.insert(3, "defender")
+    return render_template("army_battles_table.html", old_savegame = Savegame.query.get(sg_id1), \
+        new_savegame = Savegame.query.get(sg_id2), data = war_data, columns = columns, \
+        header_labels = header_labels, title = "Kriegsverluste", \
+        colorize_columns = [], colorize_columns_rev = [i for i in range(5,len(header_labels))], order_by = len(header_labels)-2)
 
 @show_stats.route("/mana_spent_total/<int:sg_id1>/<int:sg_id2>", methods = ["GET"])
 def mana_spent_total(sg_id1, sg_id2):
@@ -290,10 +332,10 @@ def mana_spent_total(sg_id1, sg_id2):
                 colorize_columns = [i for i in range(1,len(header_labels))], \
                 sort_by = len(header_labels) - 1, map = map, title = "Gesamt")
 
-@show_stats.route("/mana_spent_total2/<int:sg_id1>/<int:sg_id2>", methods = ["GET"])
-def mana_spent_total2(sg_id1, sg_id2):
+@show_stats.route("/mana_spent_ideas_tech_dev/<int:sg_id1>/<int:sg_id2>", methods = ["GET"])
+def mana_spent_ideas_tech_dev(sg_id1, sg_id2):
     columns = [0, 1, 7]
-    header_labels = ["Nation", "Ideas", "Technology", "Development", "Rest", "Gesamt"]
+    header_labels = ["Nation", "Ideas", "%", "Technology", "%", "Development", "%", "Rest", "%", "Gesamt"]
     mana_data = []
     nation_names = []
     tag_list = []
@@ -308,8 +350,9 @@ def mana_spent_total2(sg_id1, sg_id2):
             for id in columns:
                 if (points_spent := NationSavegamePointsSpent.query.filter_by(savegame_id = sg_id2, nation_tag = nation.tag, points_spent_id = id).all()):
                     data[id] += sum([points.amount for points in points_spent])
+                    data[str(id)] = round(data[id]/data["total"],2)
             data["rest"] = data["total"] - sum([data[id] for id in columns])
-            print(data["rest"])
+            data["p_rest"] = round(data["rest"]/data["total"],2)
         else:
             data["total"] = 0
 
@@ -317,50 +360,12 @@ def mana_spent_total2(sg_id1, sg_id2):
         nation_names.append(NationSavegameData.query.filter_by(savegame_id = sg_id2, nation_tag = nation.tag).first().nation_name)
 
     map = Savegame.query.get(sg_id2).map_file
-    columns += ["rest", "total"]
+    columns = [0,"0",1,"1",7,"7","rest","p_rest","total"]
     nation_colors_hex, nation_colors_hsl = get_colors_hex_hsl(sg_id2, tag_list, NationSavegameData)
     return render_template("table.html", old_savegame = Savegame.query.get(sg_id1), new_savegame = Savegame.query.get(sg_id2), \
         data = zip(mana_data,nation_names,nation_colors_hex, nation_colors_hsl), columns = columns, header_labels = header_labels, \
                 colorize_columns = [i for i in range(1,len(header_labels))], \
-                sort_by = len(header_labels) - 1, map = map, title = "Absolute")
-
-@show_stats.route("/mana_spent_percentages/<int:sg_id1>/<int:sg_id2>", methods = ["GET"])
-def mana_spent_percentages(sg_id1, sg_id2):
-    columns = [0, 1, 7]
-    header_labels = ["Nation", "Ideas", "Technology", "Development", "Rest"]
-    mana_data = []
-    nation_names = []
-    tag_list = []
-    for nation in Savegame.query.get(sg_id2).player_nations:
-        tag_list.append(nation.tag)
-        data = {}
-        for id in columns:
-            data[id] = 0
-        mana = NationSavegamePointsSpent.query.filter_by(savegame_id = sg_id2, nation_tag = nation.tag).all()
-        if mana:
-            data["total"] = sum([x.amount for x in mana])
-            for id in columns:
-                if (points_spent := NationSavegamePointsSpent.query.filter_by(savegame_id = sg_id2, nation_tag = nation.tag, points_spent_id = id).all()):
-                    data[id] += sum([points.amount for points in points_spent])
-            data["rest"] = data["total"] - sum([data[id] for id in columns])
-            print(data["rest"])
-        else:
-            data["total"] = 0
-
-        for id in columns:
-            data[id] = round(data[id]/data["total"],2)
-
-        data["rest"] = round(data["rest"]/data["total"],2)
-        mana_data.append(data)
-        nation_names.append(NationSavegameData.query.filter_by(savegame_id = sg_id2, nation_tag = nation.tag).first().nation_name)
-
-    map = Savegame.query.get(sg_id2).map_file
-    columns += ["rest"]
-    nation_colors_hex, nation_colors_hsl = get_colors_hex_hsl(sg_id2, tag_list, NationSavegameData)
-    return render_template("table.html", old_savegame = Savegame.query.get(sg_id1), new_savegame = Savegame.query.get(sg_id2), \
-        data = zip(mana_data,nation_names,nation_colors_hex, nation_colors_hsl), columns = columns, header_labels = header_labels, \
-                colorize_columns = [i for i in range(1,len(header_labels))], \
-                sort_by = len(header_labels) - 1, map = map, title = "Percentages")
+                sort_by = len(header_labels) - 1, map = map)
 
 @show_stats.route("/mana_spent_adm/<int:sg_id1>/<int:sg_id2>", methods = ["GET"])
 def mana_spent_adm(sg_id1, sg_id2):
