@@ -8,6 +8,7 @@ import datetime
 from colour import Color
 from flask import current_app, flash
 import os
+import time
 
 def edit_parse(filename):
 	""" Pre-Parser: Parsing player nations and real (not 0 dev) nations
@@ -123,7 +124,7 @@ def parse_wars(content, savegame):
 	active_wars, *previous_wars = content.split("previous_war={")
 	active_wars = active_wars.split("active_war={")[1:]
 
-	compile_war_details = compile("name=\"(?P<name>.+?)\".+?(?P<start_date>[0-9]{4}.[0-9]{1,2}.[0-9]{2}).+?add_attacker=\"(?P<attacker>[A-Z0-9]{3})\".+?add_defender=\"(?P<defender>[A-Z0-9]{3})\"", DOTALL)
+	compile_war_details = compile("name=\"(?P<name>.+?)\".+?(?P<start_date>[0-9]{4}.[0-9]{1,2}.[0-9]{1,2}).+?add_attacker=\"(?P<attacker>[A-Z0-9]{3})\".+?add_defender=\"(?P<defender>[A-Z0-9]{3})\"", DOTALL)
 	compile_participants = compile("value=(?P<participation_score>.+?)\n\t\ttag=\"(?P<nation_tag>.+?)\".+?members={\n\t\t\t\t(?P<losses>[^\n]+)", DOTALL)
 	battle_regex = compile("name=\"(?P<province>.+?)\".+?result=(?P<result>[^\n]+).+?"\
 				"attacker=[{](?P<attacker>[^}]+).+?defender=[{](?P<defender>[^}]+).+?", DOTALL)
@@ -583,16 +584,26 @@ def parse_part0(savegame):
 		i = 0
 
 		try:
+			start = time.time()
 			for value in total_trade_goods:
 				tg = TotalGoodsProduced(savegame_id = savegame.id, trade_good_id = i, amount = value)
 				db.session.add(tg)
 				i += 1
 			db.session.flush()
 
+			end = time.time()
+			print("TradeGoods Done: {} Sekunden".format(end - start))
+
+			start = time.time()
 			parse_provinces(provinces, savegame)
-			flash("Provinzen Done", "success")
+			end = time.time()
+
+			print("Provinzen Done: {} Sekunden".format(end - start))
+
+			start = time.time()
 			parse_wars(content, savegame)
-			flash("Kriege Done", "success")
+			end = time.time()
+			print("Kriege Done: {} Sekunden".format(end - start))
 			db.session.flush()
 		except IntegrityError:
 			db.session.rollback()

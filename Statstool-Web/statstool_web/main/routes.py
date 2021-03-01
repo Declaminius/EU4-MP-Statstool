@@ -329,6 +329,8 @@ def total_victory_points(mp_id):
             #hegemony
             data["D02"][12] = 2
 
+            data["D08"][12] = 2
+
             for tag in data.keys():
                 data[tag].append(sum(data[tag]))
 
