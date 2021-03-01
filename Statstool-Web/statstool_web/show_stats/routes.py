@@ -311,7 +311,8 @@ def army_battles(sg_id1, sg_id2):
     colorize_columns_rev = [7,14,17]
     return render_template("army_battles_table.html", old_savegame = Savegame.query.get(sg_id1), new_savegame = Savegame.query.get(sg_id2), \
         data = battle_data, columns = columns, header_labels = header_labels, \
-        colorize_columns = colorize_columns, colorize_columns_rev = colorize_columns_rev, order_by = len(columns) - 1, mp = mp)
+        colorize_columns = colorize_columns, colorize_columns_rev = colorize_columns_rev, \
+        order_by = len(columns) - 1, mp = mp, title = "Schlachten")
 
 
 @show_stats.route("/wars/<int:sg_id1>/<int:sg_id2>", methods = ["GET"])
