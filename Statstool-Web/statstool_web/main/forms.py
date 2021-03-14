@@ -59,4 +59,6 @@ class MPForm(FlaskForm):
     host = StringField("Host")
     checksum = StringField("Checksumme", validators = [Length(min = 4, max = 4)])
     next_gameday = StringField("Nächster Spieltag")
+    institutions = BooleanField("Institutionen")
+    victory_points = BooleanField("Siegpunkte")
     submit = SubmitField("Save Changes")

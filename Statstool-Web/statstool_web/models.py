@@ -99,6 +99,8 @@ class MP(db.Model):
     host = db.Column(db.String)
     checksum = db.Column(db.String(4))
     next_gameday = db.Column(db.String)
+    institutions = db.Column(db.Boolean)
+    victory_points = db.Column(db.Boolean)
 
 
 class Savegame(db.Model):
@@ -396,7 +398,6 @@ class War(db.Model):
 
     attacker = db.relationship("Nation", secondary = war_attacker)
     defender = db.relationship("Nation", secondary = war_defender)
-
 
     infantry = db.Column(db.Integer, default = 0)
     cavalry = db.Column(db.Integer, default = 0)

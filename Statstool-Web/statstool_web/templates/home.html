@@ -4,7 +4,7 @@
     <div class="card-body">
       {% if savegame_dict[institution1] and savegame_dict[institution2] %}
         <h4 class="card-text">{{label2}}: {{savegame_dict[institution1].year}}-{{savegame_dict[institution2].year}}</h4>
-      {% elif savegame_dict["renaissance"] %}
+      {% elif savegame_dict[institution1] %}
         <h4 class="card-text">{{label2}}: {{savegame_dict[institution1].year}}-???</h4>
       {% else %}
         <h4 class="card-text">{{label2}}: ???-???</h4>
@@ -44,7 +44,53 @@
 </div>
 {%- endmacro %}
 
-
+{% macro savegame_block(index) -%}
+<div class="col-md-4">
+  <div class="card mb-4 shadow-sm">
+    <div class="card-body">
+      {% if savegames[index] and savegames[index + 1] %}
+        <h4 class="card-text">Spieltag {{index + 1}}: {{savegames[index].year}}-{{savegames[index + 1].year}}</h4>
+      {% elif savegames[index] %}
+        <h4 class="card-text">Spieltag {{index + 1}}: {{savegames[index].year}}-???</h4>
+      {% else %}
+        <h4 class="card-text">Spieltag {{index + 1}}: ???-???</h4>
+      {% endif %}
+    </div>
+    {% if savegames[index] %}
+      {% if savegames[index].map_file %}
+        <div class="media">
+          <img src="/static/maps/{{savegames[index].map_file}}" class="img-responsive fit-image">
+        </div>
+      {% endif %}
+    {% endif %}
+    <div class="text-center">
+      {% if savegames[index] and savegames[index + 1] %}
+      <a class="btn btn-outline-primary btn-center mt-2 mb-2" href = "{{url_for('show_stats.parse', sg_id1 = savegames[index].id, sg_id2 = savegames[index + 1].id, part = 0 )}}">View</a>
+      {% endif %}
+      {% if current_user == current_mp.admin %}
+        {% if savegames[index] %}
+          {% if savegames[index + 1] %}
+            {% if not savegames[index + 1].map_file %}
+              <a class="btn btn-outline-primary btn-center mt-2 mb-2" href = "{{url_for('main.upload_map', sg_id = savegames[index + 1].id)}}">Add Map</a>
+            {% endif %}
+            <a class="btn btn-outline-danger btn-center mt-2 mb-2" href = "{{url_for('main.delete_savegame', sg_id = savegames[index + 1].id)}}">Delete Session {{index + 1}}</a>
+            <a class="btn btn-outline-danger btn-center mt-2 mb-2" href = "{{url_for('main.delete_savegame', sg_id = savegames[index].id)}}">Delete Session {{index}}</a>
+        {% else %}
+          <a class="btn btn-outline-danger btn-center mt-2 mb-2" href = "{{url_for('main.delete_savegame', sg_id = savegames[index].id)}}">Delete Session {{index}}</a>
+          <a class="btn btn-outline-primary btn-center mt-2 mb-2" href = "{{url_for('main.upload_one_savegame', mp_id = current_mp.id)}}">Add Session {{index + 1}}</a>
+        {% endif %}
+      {% elif savegames[index + 1] %}
+        <a class="btn btn-outline-primary btn-center mt-2 mb-2" href = "{{url_for('main.upload_one_savegame', mp_id = current_mp.id)}}">Add Session {{index}}</a>
+        <a class="btn btn-outline-danger btn-center mt-2 mb-2" href = "{{url_for('main.delete_savegame', sg_id = savegames[index + 1].id)}}">Delete Session {{index + 1}}</a>
+      {% else %}
+        <a class="btn btn-outline-primary btn-center mt-2 mb-2" href = "{{url_for('main.upload_one_savegame', mp_id = current_mp.id)}}">Add Session {{index}}</a>
+        <a class="btn btn-outline-primary btn-center mt-2 mb-2" href = "{{url_for('main.upload_one_savegame', mp_id = current_mp.id)}}">Add Session {{index + 1}}</a>
+      {% endif %}
+    {% endif %}
+    </div>
+  </div>
+</div>
+{%- endmacro %}
 
 
 {% extends "home_layout.html" %}
@@ -100,9 +146,9 @@
           </p>
         </div>
       </section>
+      {% if current_mp.institutions %}
       <div class="album py-5 bg-light">
         <div class="container">
-
           <div class="row">
             {{ institution_block("basesave", "renaissance", "1444", "Renaissance") }}
             {{ institution_block("renaissance", "colonialism", "Renaissance", "Kolonialismus") }}
@@ -119,6 +165,19 @@
           </div>
         </div>
       </div>
+      {% else %}
+      <div class="album py-5 bg-light">
+        <div class="container">
+          {% for i in range(counter//3+1) %}
+          <div class="row">
+            {% for j in range(3*i,counter + 1) %}
+              {{ savegame_block(j) }}
+            {% endfor %}
+          </div>
+          {% endfor %}
+        </div>
+      </div>
+      {% endif %}
     </div>
   </div>
   <div class="col-md-2">
@@ -130,19 +189,21 @@
           {% endfor %}
         </ul>
     </div>
-    <div class="content-section">
-      <h3><center>Siegpunkte - Regeln</center></h3>
-      Das Ziel des MP ist es 10 Siegpunkte zu erreichen. <br>
-      Jede Nation startet mit 2 Basispunkten und kann durch Aufbau der Nation
-      sowie kriegerische Unternehmungen sich Siegpunkte sichern. <br>
-      <center> <h4> Vergabe: </h4> </center>
-      <ul class="list-group">
-        <li class="list-group-item list-group-item-action" data-toggle="modal" data-target="#ModalS1"> Einmalig</li>
-        <li class="list-group-item list-group-item-action" data-toggle="modal" data-target="#ModalS2"> Zu jeder Institution</li>
-        <li class="list-group-item list-group-item-action" data-toggle="modal" data-target="#ModalS3"> Kontinuerlich</li>
-        <li class="list-group-item list-group-item-action" data-toggle="modal" data-target="#ModalS4"> Kriege</li>
-      </ul>
-    </div>
+    {% if current_mp.victory_points %}
+      <div class="content-section">
+        <h3><center>Siegpunkte - Regeln</center></h3>
+        Das Ziel des MP ist es 10 Siegpunkte zu erreichen. <br>
+        Jede Nation startet mit 2 Basispunkten und kann durch Aufbau der Nation
+        sowie kriegerische Unternehmungen sich Siegpunkte sichern. <br>
+        <center> <h4> Vergabe: </h4> </center>
+        <ul class="list-group">
+          <li class="list-group-item list-group-item-action" data-toggle="modal" data-target="#ModalS1"> Einmalig</li>
+          <li class="list-group-item list-group-item-action" data-toggle="modal" data-target="#ModalS2"> Zu jeder Institution</li>
+          <li class="list-group-item list-group-item-action" data-toggle="modal" data-target="#ModalS3"> Kontinuerlich</li>
+          <li class="list-group-item list-group-item-action" data-toggle="modal" data-target="#ModalS4"> Kriege</li>
+        </ul>
+      </div>
+    {% endif %}
   </div>
 </div>
 

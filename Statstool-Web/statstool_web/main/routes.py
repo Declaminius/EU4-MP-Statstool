@@ -22,7 +22,9 @@ def home(mp_id = 2):
         savegame_dict[inst] = Savegame.query.filter_by(mp_id=mp_id, institution=inst).first()
     mps = MP.query.all()
     current_mp = MP.query.get(mp_id)
-    current_save = Savegame.query.filter_by(mp_id = mp_id).order_by(desc(Savegame.year)).first()
+    savegames = Savegame.query.filter_by(mp_id = mp_id).order_by(desc(Savegame.year))
+    current_save = savegames.first()
+    savegames = list(savegames)
 
     names_dict = {}
     if current_save:
@@ -32,7 +34,7 @@ def home(mp_id = 2):
                 names_dict[nation_data.nation_name] = nation_data.player_name
             else:
                 names_dict[nation_data.nation_name] = "???"
-    return render_template("home.html", savegame_dict = savegame_dict, mps = mps, current_mp = current_mp, current_save = current_save, names_dict = names_dict)
+    return render_template("home.html", savegames = savegames, counter = len(savegames), savegame_dict = savegame_dict, mps = mps, current_mp = current_mp, current_save = current_save, names_dict = names_dict)
 
 @main.route("/login", methods = ["GET", "POST"])
 def login():
@@ -129,6 +131,7 @@ def upload_savegames(mp_id = None):
     return render_template("upload_savegames.html", form = form)
 
 @main.route("/upload_one_savegame", methods = ["GET", "POST"], defaults={'mp_id': None, 'institution': None})
+@main.route("/upload_one_savegame/<int:mp_id>", methods = ["GET", "POST"], defaults={'institution': None})
 @main.route("/upload_one_savegame/<int:mp_id>/<string:institution>", methods = ["GET", "POST"])
 @login_required
 def upload_one_savegame(mp_id = None, institution = None):
@@ -264,6 +267,8 @@ def settings_mp(user_id, mp_id):
         form.host.data = mp.host
         form.checksum.data = mp.checksum
         form.next_gameday.data = mp.next_gameday
+        form.institutions.data = mp.institutions
+        form.victory_points.data = mp.victory_points
     if form.validate_on_submit():
         mp.name = form.mp_name.data
         mp.description = form.mp_description.data
@@ -271,6 +276,8 @@ def settings_mp(user_id, mp_id):
         mp.host = form.host.data
         mp.checksum = form.checksum.data
         mp.next_gameday = form.next_gameday.data
+        mp.institutions = form.institutions.data
+        mp.victory_points = form.victory_points.data
         db.session.commit()
         flash(f'Successfully updated MP.', 'success')
         return redirect(url_for("main.account", user_id = user_id))
@@ -337,8 +344,10 @@ def total_victory_points(mp_id):
             #wars
 
             data["D03"][1] = 1
+            data["MPK"][1] = 1
 
             data["D02"][1] = -1
+            data["D05"][1] = -1
 
             for tag in data.keys():
                 data[tag].append(sum(data[tag]))
