@@ -339,6 +339,8 @@ def total_victory_points(mp_id):
 
             #hegemony
 
+            data["MPK"][12] = 2
+            data["D05"][12] = 2
             data["D08"][12] = 1
 
             #wars
