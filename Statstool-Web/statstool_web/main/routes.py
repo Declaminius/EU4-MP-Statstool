@@ -349,7 +349,7 @@ def total_victory_points(mp_id):
             data["MPK"][1] = 1
 
             data["D02"][1] = -1
-            data["D05"][1] = -1
+            data["D07"][1] = -1
 
             for tag in data.keys():
                 data[tag].append(sum(data[tag]))
