@@ -61,4 +61,5 @@ class MPForm(FlaskForm):
     next_gameday = StringField("Nächster Spieltag")
     institutions = BooleanField("Institutionen")
     victory_points = BooleanField("Siegpunkte")
+    teams_setting = BooleanField("Teams")
     submit = SubmitField("Save Changes")

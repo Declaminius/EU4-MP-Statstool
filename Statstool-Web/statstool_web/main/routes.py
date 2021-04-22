@@ -13,9 +13,9 @@ import secrets
 
 main = Blueprint('main', __name__)
 
-@main.route("/", methods = ["GET"], defaults = {'mp_id': 2})
+@main.route("/", methods = ["GET"], defaults = {'mp_id': 3})
 @main.route("/home/<int:mp_id>", methods = ["GET"])
-def home(mp_id = 2):
+def home(mp_id):
     institutions = ["basesave", "renaissance", "colonialism", "printing_press", "global_trade", "manufactories", "enlightenment", "industrialization", "endsave"]
     savegame_dict = {}
     for inst in institutions:
@@ -134,7 +134,7 @@ def upload_savegames(mp_id = None):
 @main.route("/upload_one_savegame/<int:mp_id>", methods = ["GET", "POST"], defaults={'institution': None})
 @main.route("/upload_one_savegame/<int:mp_id>/<string:institution>", methods = ["GET", "POST"])
 @login_required
-def upload_one_savegame(mp_id = None, institution = None):
+def upload_one_savegame(mp_id, institution):
     mp = MP.query.get(mp_id)
     if (mp_id and mp.admin != current_user):
         abort(403)
@@ -269,6 +269,7 @@ def settings_mp(user_id, mp_id):
         form.next_gameday.data = mp.next_gameday
         form.institutions.data = mp.institutions
         form.victory_points.data = mp.victory_points
+        form.teams_setting.data = mp.teams_setting
     if form.validate_on_submit():
         mp.name = form.mp_name.data
         mp.description = form.mp_description.data
@@ -278,6 +279,7 @@ def settings_mp(user_id, mp_id):
         mp.next_gameday = form.next_gameday.data
         mp.institutions = form.institutions.data
         mp.victory_points = form.victory_points.data
+        mp.teams_setting = form.teams_setting.data
         db.session.commit()
         flash(f'Successfully updated MP.', 'success')
         return redirect(url_for("main.account", user_id = user_id))
@@ -304,7 +306,11 @@ def total_victory_points(mp_id):
                     savegame_id = savegame.id).first().color for tag in nation_tags]
         nation_colors_hsl = [NationSavegameData.query.filter_by(nation_tag = tag, \
                     savegame_id = savegame.id).first().color.hsl for tag in nation_tags]
-        if mp_id == 2:
+
+
+        if mp_id == 3:
+            pass
+        elif mp_id == 2:
             header_labels = ["Nation", "Basis", "Kriege", "Kolonialismus", "Druckerpresse", \
             "Globaler Handel", "Manufakturen", "Aufklärung", "Industrialisierung", \
             "erster Spielerkrieg-Sieger", "erste Weltumseglung", "Armee-Professionalität", \

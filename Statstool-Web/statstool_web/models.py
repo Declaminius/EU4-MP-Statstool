@@ -95,12 +95,22 @@ class MP(db.Model):
     name = db.Column(db.String, nullable = False)
     description = db.Column(db.String)
     savegames = db.relationship("Savegame", backref = "mp", lazy = True, cascade = "all, delete")
+    teams = db.relationship("Team", backref = "mp", lazy = True, cascade = "all, delete")
     gm = db.Column(db.String)
     host = db.Column(db.String)
     checksum = db.Column(db.String(4))
     next_gameday = db.Column(db.String)
     institutions = db.Column(db.Boolean)
     victory_points = db.Column(db.Boolean)
+    teams_setting = db.Column(db.Boolean)
+
+
+class Team(db.Model):
+    __tablename__ = 'team'
+    id = db.Column(db.Integer, primary_key = True)
+    mp_id = db.Column(db.Integer, db.ForeignKey('mp.id'), primary_key = True)
+    team_tag1 = db.Column(db.String(3))
+    team_tag2 = db.Column(db.String(3))
 
 
 class Savegame(db.Model):

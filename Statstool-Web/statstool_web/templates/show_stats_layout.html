@@ -49,6 +49,8 @@
               <a class="nav-item nav-link"
               href = "{{url_for('show_stats.income', sg_id1 = old_savegame.id, sg_id2 = new_savegame.id)}}">Income</a>
               <a class="nav-item nav-link"
+              href = "{{url_for('show_stats.income_over_time', sg_id1 = old_savegame.id, sg_id2 = new_savegame.id)}}">Income Over Time</a>
+              <a class="nav-item nav-link"
               href = "{{url_for('show_stats.max_manpower', sg_id1 = old_savegame.id, sg_id2 = new_savegame.id)}}">Max. Manpower</a>
               <li class="nav-item dropdown">
                 <a class="nav-link dropdown-toggle" href="#" id="navbarDropdown" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
@@ -64,8 +66,6 @@
                   <a class="dropdown-item" href="{{url_for('show_stats.army_losses_total', sg_id1 = old_savegame.id, sg_id2 = new_savegame.id)}}">Total</a>
                 </div>
               </li>
-              <a class="nav-item nav-link"
-              href = "{{url_for('show_stats.income_over_time', sg_id1 = old_savegame.id, sg_id2 = new_savegame.id)}}">Income Over Time</a>
               <a class="nav-item nav-link"
               href = "{{url_for('show_stats.provinces', sg_id1 = old_savegame.id, sg_id2 = new_savegame.id)}}">Provinces</a>
               <a class="nav-item nav-link"

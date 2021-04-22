@@ -144,24 +144,41 @@
             <a href="{{url_for('main.latest_stats', mp_id = current_mp.id)}}" class="btn btn-primary my-2">Aktuellste Statistik</a>
             <a href="{{url_for('main.total_victory_points', mp_id = current_mp.id)}}" class="btn btn-secondary my-2">Siegpunkte</a>
           </p>
+          <p>
+            {% if current_user == current_mp.admin %}
+              <a href="{{url_for('main.upload_one_savegame', mp_id = current_mp.id)}}" class="btn btn-secondary my-2">Aktuelle Statistik hochladen</a>
+            {% endif %}
+          </p>
         </div>
+
       </section>
       {% if current_mp.institutions %}
       <div class="album py-5 bg-light">
         <div class="container">
           <div class="row">
-            {{ institution_block("basesave", "renaissance", "1444", "Renaissance") }}
-            {{ institution_block("renaissance", "colonialism", "Renaissance", "Kolonialismus") }}
-            {{ institution_block("colonialism", "printing_press", "Kolonialismus", "Druckerpresse") }}
+            {{ institution_block("basesave", "colonialism", "Start-Save", "Kolonialismus") }}
+            {% if savegame_dict["colonialism"] %}
+              {{ institution_block("colonialism", "printing_press", "Kolonialismus", "Druckerpresse") }}
+            {% endif %}
+            {% if savegame_dict["printing_press"] %}
+              {{ institution_block("printing_press", "global_trade", "Druckerpresse", "Globaler Handel") }}
+            {% endif %}
           </div>
           <div class="row">
-            {{ institution_block("printing_press", "global_trade", "Druckerpresse", "Globaler Handel") }}
-            {{ institution_block("global_trade", "manufactories", "Globaler Handel", "Manufakturen") }}
-            {{ institution_block("manufactories", "enlightenment", "Manufakturen", "Aufklärung") }}
+            {% if savegame_dict["global_trade"] %}
+              {{ institution_block("global_trade", "manufactories", "Globaler Handel", "Manufakturen") }}
+            {% endif %}
+            {% if savegame_dict["manufactories"] %}
+              {{ institution_block("manufactories", "enlightenment", "Manufakturen", "Aufklärung") }}
+            {% endif %}
+            {% if savegame_dict["enlightenment"] %}
+              {{ institution_block("enlightenment", "industrialization", "Aufklärung", "Industrialisierung") }}
+            {% endif %}
           </div>
           <div class="row">
-            {{ institution_block("enlightenment", "industrialization", "Aufklärung", "Industrialisierung") }}
-            {{ institution_block("industrialization", "endsave", "Industrialisierung", "MP-Ende") }}
+            {% if savegame_dict["industrialization"] %}
+              {{ institution_block("industrialization", "endsave", "Industrialisierung", "MP-Ende") }}
+            {% endif %}
           </div>
         </div>
       </div>
@@ -189,7 +206,33 @@
           {% endfor %}
         </ul>
     </div>
+    {% if current_mp.teams_setting %}
+      <div class="content-section">
+        <h3><center>Teams</center></h3>
+        <ul class="list-group">
+          {% for nation in names_dict.keys()%}
+            <li class="list-group-item list-group-item-dark">{{nation}}: {{names_dict[nation]}}</li>
+          {% endfor %}
+        </ul>
+      </div>
+    {% endif %}
     {% if current_mp.victory_points %}
+      {% if current_mp.teams_setting %}
+      <div class="content-section">
+        <h3><center>Siegpunkte - Regeln</center></h3>
+        Das Ziel des MP ist es 10 Siegpunkte zu erreichen. <br>
+        Siegpunkte können durch Provinzen erobert werden, zusätzlich werden
+        zu jeder Institution ab 1500 zwei Siegpunkte vergeben. <br>
+        Außerdem gibt es jeweils einen Siegpunkt für den ersten gewonnenen Spielerkrieg,
+        sowie für den Spawn von Global Trade. <br>
+        <center> <h4> Vergabe: </h4> </center>
+        <ul class="list-group">
+          <li class="list-group-item list-group-item-action" data-toggle="modal" data-target="#ModalS5"> Provinzen</li>
+          <li class="list-group-item list-group-item-action" data-toggle="modal" data-target="#ModalS6"> Zu jeder Institution</li>
+          <li class="list-group-item list-group-item-action" data-toggle="modal" data-target="#ModalS7"> Rest</li>
+        </ul>
+      </div>
+      {% else %}
       <div class="content-section">
         <h3><center>Siegpunkte - Regeln</center></h3>
         Das Ziel des MP ist es 10 Siegpunkte zu erreichen. <br>
@@ -203,6 +246,7 @@
           <li class="list-group-item list-group-item-action" data-toggle="modal" data-target="#ModalS4"> Kriege</li>
         </ul>
       </div>
+      {% endif %}
     {% endif %}
   </div>
 </div>
@@ -733,6 +777,157 @@
         Danach darf Nation A am selben Spieltag noch Nation C für einen Siegpunkt angreifen und Nation C darf auch noch einen Siegpunkt von Nation B erkämpfen.
         Ebenso darf Nation B von Nation A den Siegpunkt zurückfordern, falls Nation B den Revanchekrieg jedoch verliert,
         kann Nation A keinen zusätzlichen Siegpunkt gewinnen, sondern muss sich auf die Standard-EU4-Forderungen beschränken.
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="modal fade" id="ModalS5" tabindex="-1" role="dialog" aria-labelledby="ModalLabelS5" aria-hidden="true">
+  <div class="modal-dialog" role="document">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="ModalLabelS5">Siegpunkte durch Provinzen</h5>
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body">
+        <ul class = "list-group">
+          <li class="list-group-item list-group-item-light">2 Siegpunkte</li>
+          <ul class = "list-subgroup">
+            <li class="list-subgroup-item list-subgroup-item-light">
+              Damaskus
+            </li>
+            <li class="list-subgroup-item list-subgroup-item-light">
+              Lissabon
+            </li>
+            <li class="list-subgroup-item list-subgroup-item-light">
+              Majorca
+            </li>
+            <li class="list-subgroup-item list-subgroup-item-light">
+              Sofia
+            </li>
+            <li class="list-subgroup-item list-subgroup-item-light">
+              Maine
+            </li>
+            <li class="list-subgroup-item list-subgroup-item-light">
+              Lübeck
+            </li>
+            <li class="list-subgroup-item list-subgroup-item-light">
+              Warschau
+            </li>
+            <li class="list-subgroup-item list-subgroup-item-light">
+              Moskau
+            </li>
+          </ul>
+          <li class="list-group-item list-group-item-light">1 Siegpunkte</li>
+          <ul class = "list-subgroup">
+            <li class="list-subgroup-item list-subgroup-item-light">
+              Kairo
+            </li>
+            <li class="list-subgroup-item list-subgroup-item-light">
+              Granada
+            </li>
+            <li class="list-subgroup-item list-subgroup-item-light">
+              Konstantinopel
+            </li>
+            <li class="list-subgroup-item list-subgroup-item-light">
+              Tunis
+            </li>
+            <li class="list-subgroup-item list-subgroup-item-light">
+              Porto
+            </li>
+            <li class="list-subgroup-item list-subgroup-item-light">
+              Finistère
+            </li>
+            <li class="list-subgroup-item list-subgroup-item-light">
+              Paris
+            </li>
+            <li class="list-subgroup-item list-subgroup-item-light">
+              Berlin
+            </li>
+            <li class="list-subgroup-item list-subgroup-item-light">
+              Pest
+            </li>
+            <li class="list-subgroup-item list-subgroup-item-light">
+              Bessarabien
+            </li>
+            <li class="list-subgroup-item list-subgroup-item-light">
+              Ostjylland
+            </li>
+            <li class="list-subgroup-item list-subgroup-item-light">
+              Königsberg
+            </li>
+          </ul>
+        </ul>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+
+<div class="modal fade" id="ModalS6" tabindex="-1" role="dialog" aria-labelledby="ModalLabelS6" aria-hidden="true">
+  <div class="modal-dialog" role="document">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="ModalLabelS6">Siegpunkte zu jeder Institution</h5>
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body">
+        Ab dem Spawn von Kolonialismus (1500) wird zu jeder Institution in verschiedenen
+        Kategorien Siegpunkte vergeben:
+        <ul class = "list-group">
+          <li class = "list-group-item">
+            1 Siegpunkt jeweils:
+            <ul class = "list-subgroup">
+              <li class="list-subgroup-item list-subgroup-item-light">
+                höchst-entwickelte Provinz, kann nur einmal pro Provinz erhalten werden
+              </li>
+              <li class="list-subgroup-item list-subgroup-item-light">
+                höchste Armeeverluste im Kampf (im Team zusammen) seit dem letzten Institutionsspawn (i. d. R. 50 Jahre)
+              </li>
+            </ul>
+          </li>
+        </ul>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="modal fade" id="ModalS7" tabindex="-1" role="dialog" aria-labelledby="ModalLabelS7" aria-hidden="true">
+  <div class="modal-dialog" role="document">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="ModalLabelS7">Rest</h5>
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body">
+        <ul class = "list-group">
+          <li class = "list-group-item">
+            1 Siegpunkt jeweils:
+            <ul class = "list-subgroup">
+              <li class="list-subgroup-item list-subgroup-item-light">
+                Erster Spielerkrieg-Sieg
+              </li>
+              <li class="list-subgroup-item list-subgroup-item-light">
+                Spawn von Global Trade
+              </li>
+            </ul>
+          </li>
+        </ul>
       </div>
       <div class="modal-footer">
         <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
