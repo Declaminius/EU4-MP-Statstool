@@ -237,7 +237,11 @@ def account(user_id):
         mp_gms.append(mp.gm)
         mp_hosts.append(mp.host)
     if mp_form.validate_on_submit():
-        so_mp = MP(name = mp_form.mp_name.data, description = mp_form.mp_description.data, admin = current_user)
+        so_mp = MP(name = mp_form.mp_name.data, description = mp_form.mp_description.data,\
+                gm = form.gm.data, host = form.host.data, checksum = form.checksum.data,\
+                next_gameday = form.next_gameday.data, institutions = form.institutions.data,\
+                victory_points = form.victory_points.data, teams_setting = form.teams_setting.data,\
+                admin = current_user)
         db.session.add(so_mp)
         db.session.commit()
         mp_form.mp_name.data = ""
