@@ -1,8 +1,8 @@
 from flask import render_template, url_for, request, redirect, flash, abort, Blueprint, current_app
-from statstool_web.main.forms import SavegameSelectForm, OneSavegameSelectForm, MapSelectForm, LoginForm, RegistrationForm, MPForm
+from statstool_web.main.forms import *
 from statstool_web import db, bcrypt
 from statstool_web.parserfunctions import edit_parse
-from statstool_web.models import User, MP, Savegame, Nation, NationSavegameData, VictoryPoints
+from statstool_web.models import User, MP, Savegame, Nation, NationSavegameData, VictoryPoints, Team
 from statstool_web.util import redirect_url
 from pathlib import Path
 from sqlalchemy import desc
@@ -27,14 +27,18 @@ def home(mp_id):
     savegames = list(savegames)
 
     names_dict = {}
+    nation_names_dict = {}
     if current_save:
         for nation in current_save.player_nations:
             nation_data = NationSavegameData.query.filter_by(savegame_id = current_save.id, nation_tag = nation.tag).first()
+            nation_names_dict[nation.tag] = nation_data.nation_name
             if nation_data.player_name:
                 names_dict[nation_data.nation_name] = nation_data.player_name
             else:
                 names_dict[nation_data.nation_name] = "???"
-    return render_template("home.html", savegames = savegames, counter = len(savegames), savegame_dict = savegame_dict, mps = mps, current_mp = current_mp, current_save = current_save, names_dict = names_dict)
+    return render_template("home.html", savegames = savegames, counter = len(savegames), \
+            savegame_dict = savegame_dict, mps = mps, current_mp = current_mp, \
+            current_save = current_save, names_dict = names_dict, nation_names_dict = nation_names_dict)
 
 @main.route("/login", methods = ["GET", "POST"])
 def login():
@@ -399,6 +403,32 @@ def latest_stats(mp_id):
     else:
         flash(f'Noch keine Statistik verfügbar.', 'danger')
         return redirect(url_for("main.home"))
+
+@main.route("/configure_teams/<int:mp_id>", methods = ["GET", "POST"])
+def configure_teams(mp_id):
+    form = ConfigureTeamsForm()
+    mp = MP.query.get(mp_id)
+    if request.method == "POST":
+        return redirect(url_for("main.home"))
+    return render_template("configure_teams.html", form = form, mp = mp)
+
+@main.route("/add_team/<int:mp_id>", methods = ["GET", "POST"])
+def add_team(mp_id):
+    form = NewTeamForm()
+    if request.method == "POST":
+        team = Team(id = form.id.data, mp_id = mp_id, team_tag1 = form.select1.data, team_tag2 = form.select2.data)
+        db.session.add(team)
+        db.session.commit()
+        return redirect(url_for("main.configure_teams", mp_id = mp_id))
+    return render_template("new_team.html", form = form)
+
+@main.route("/delete_team/<int:mp_id>/<int:team_id>", methods = ["GET"])
+def delete_team(mp_id, team_id):
+    team = Team.query.get((team_id, mp_id))
+    if team:
+        db.session.delete(team)
+        db.session.commit()
+    return redirect(redirect_url())
 
 @main.route('/colorize.js')
 def colorize():

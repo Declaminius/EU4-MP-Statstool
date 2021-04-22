@@ -148,6 +148,9 @@
             {% if current_user == current_mp.admin %}
               <a href="{{url_for('main.upload_one_savegame', mp_id = current_mp.id)}}" class="btn btn-secondary my-2">Aktuelle Statistik hochladen</a>
             {% endif %}
+            {% if current_mp.teams_setting %}
+              <a href="{{url_for('main.configure_teams', mp_id = current_mp.id)}}" class="btn btn-secondary my-2">Teams konfigurieren</a>
+            {% endif %}
           </p>
         </div>
 
@@ -198,24 +201,35 @@
     </div>
   </div>
   <div class="col-md-2">
-    <div class="content-section">
-      <h3><center>Spieler</center></h3>
-        <ul class="list-group">
-          {% for nation in names_dict.keys()%}
-            <li class="list-group-item list-group-item-dark">{{nation}}: {{names_dict[nation]}}</li>
-          {% endfor %}
-        </ul>
-    </div>
     {% if current_mp.teams_setting %}
       <div class="content-section">
         <h3><center>Teams</center></h3>
         <ul class="list-group">
-          {% for nation in names_dict.keys()%}
-            <li class="list-group-item list-group-item-dark">{{nation}}: {{names_dict[nation]}}</li>
+          {% for team in current_mp.teams %}
+            <li class="list-group-item list-group-item-dark">Team {{team.id}}</li>
+            <ul class = "list-group">
+              <li class="list-group-item list-group-item-light">
+                {{nation_names_dict[team.team_tag1]}}: {{names_dict[nation_names_dict[team.team_tag1]]}}
+              </li>
+              <li class="list-group-item list-group-item-light">
+                {{nation_names_dict[team.team_tag2]}}: {{names_dict[nation_names_dict[team.team_tag2]]}}
+              </li>
+            </ul>
+
           {% endfor %}
         </ul>
       </div>
+    {% else %}
+    <div class="content-section">
+      <h3><center>Spieler</center></h3>
+        <ul class="list-group">
+          {% for nation in names_dict.keys() %}
+            <li class="list-group-item list-group-item-dark">{{nation}}: {{names_dict[nation]}}</li>
+          {% endfor %}
+        </ul>
+    </div>
     {% endif %}
+
     {% if current_mp.victory_points %}
       {% if current_mp.teams_setting %}
       <div class="content-section">

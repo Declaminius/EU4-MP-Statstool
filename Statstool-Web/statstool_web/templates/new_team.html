@@ -1,0 +1,25 @@
+{% extends "base_layout.html" %}
+{% block content %}
+<div class = "content-section">
+  <form method = "POST" action = "" enctype="multipart/form-data">
+    {{ form.hidden_tag() }}
+    <fieldset class = "form-group">
+      <div class = "form-group">
+        {{ form.id.label}}
+        {{ form.id}}
+      </div>
+      <div class = "form-group">
+        {{ form.select1.label}}
+        {{ form.select1}}
+      </div>
+      <div class = "form-group">
+        {{ form.select2.label}}
+        {{ form.select2}}
+      </div>
+    </fieldset>
+  <div class = "form-group">
+    {{ form.submit(class = "btn btn-outline-info")}}
+  </div>
+  </form>
+</div>
+{% endblock content %}

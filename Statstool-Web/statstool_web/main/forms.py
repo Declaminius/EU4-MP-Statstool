@@ -1,6 +1,6 @@
 from flask_wtf import FlaskForm
 from flask_wtf.file import FileAllowed
-from wtforms import FileField, SubmitField, StringField, PasswordField, BooleanField, TextField
+from wtforms import FileField, SubmitField, StringField, PasswordField, BooleanField, TextField, IntegerField
 from wtforms.validators import DataRequired, Length, Email, EqualTo
 from statstool_web.models import User
 
@@ -63,3 +63,13 @@ class MPForm(FlaskForm):
     victory_points = BooleanField("Siegpunkte")
     teams_setting = BooleanField("Teams")
     submit = SubmitField("Save Changes")
+
+
+class ConfigureTeamsForm(FlaskForm):
+    submit = SubmitField("Confirm")
+
+class NewTeamForm(FlaskForm):
+    id = IntegerField("Team-ID")
+    select1 = StringField("Add First Nation")
+    select2 = StringField("Add Second Nation")
+    submit = SubmitField("Confirm")

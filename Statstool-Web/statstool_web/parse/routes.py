@@ -76,7 +76,6 @@ def new_nation(sg_id1,sg_id2):
 @parse.route("/setup/all_nations/<int:sg_id1>/<int:sg_id2>", methods = ["GET"])
 @login_required
 def all_nations(sg_id1,sg_id2):
-
     sg = Savegame.query.get(sg_id2)
     for nation in sg.nations:
         if nation not in sg.player_nations:
