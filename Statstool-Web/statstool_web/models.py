@@ -162,6 +162,14 @@ class VictoryPoints(db.Model):
     nation_tag = db.Column(db.String(3), db.ForeignKey('nation.tag'), primary_key = True)
     victory_points = db.Column(db.Integer)
 
+class VictoryPoint(db.Model):
+    __tablename__ = 'victory_point'
+    id = db.Column(db.Integer, primary_key = True)
+    team_id = db.Column(db.Integer, db.ForeignKey('team.id'), nullable = True)
+    nation_tag = db.Column(db.String(3), db.ForeignKey('nation.tag'), nullable = True)
+
+    category = db.Column(db.String)
+    points = db.Column(db.Integer)
 
 
 class NationFormation(db.Model):

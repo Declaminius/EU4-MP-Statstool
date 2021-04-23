@@ -1,5 +1,6 @@
 from flask import render_template, url_for, request, redirect, flash, abort, Blueprint, current_app
 from statstool_web.main.forms import *
+from statstool_web.main.outsource import *
 from statstool_web import db, bcrypt
 from statstool_web.parserfunctions import edit_parse
 from statstool_web.models import User, MP, Savegame, Nation, NationSavegameData, VictoryPoints, Team
@@ -7,6 +8,7 @@ from statstool_web.util import redirect_url
 from pathlib import Path
 from sqlalchemy import desc
 from flask_login import login_user, logout_user, current_user, login_required
+
 
 import os
 import secrets
@@ -317,85 +319,32 @@ def total_victory_points(mp_id):
 
 
         if mp_id == 3:
-            pass
-        elif mp_id == 2:
-            header_labels = ["Nation", "Basis", "Kriege", "Kolonialismus", "Druckerpresse", \
+            header_labels = ["Nation", "Provinzen", "Kolonialismus", "Druckerpresse", \
             "Globaler Handel", "Manufakturen", "Aufklärung", "Industrialisierung", \
-            "erster Spielerkrieg-Sieger", "erste Weltumseglung", "Armee-Professionalität", \
-            "Großmacht", "Hegemonie", "Gesamt"]
-
-            num_columns = len(header_labels)
-
-
+            "erster Spielerkrieg-Sieger", "Globaler Handel-Sieger"]
             data = {}
             for tag in nation_tags:
-                data[tag] = [2] + [0]*(len(header_labels)-3)
+                data[tag] = [0]*(len(header_labels)-1)
+            return render_template("victory_points.html", header_labels = header_labels,\
+                    num_columns = len(header_labels),\
+                    nation_info = zip(nation_names,nation_tags,nation_colors_hex,nation_colors_hsl), data = data)
+        elif mp_id == 2:
+            header_labels, data = mp2_data(nation_tags, mp_id)
 
-            institutions = ("colonialism", "printing_press", "global_trade", "manufactories", "enlightenment","industrialization")
-
-            for institution, column in zip(institutions, range(2,8)):
-                for tag in nation_tags:
-                    if (result := VictoryPoints.query.filter_by(mp_id = mp_id, institution = institution, nation_tag = tag).first()):
-                        data[tag][column] = result.victory_points
-
-            #erster Spielerkrieg
-            #data["D00"][8] = 1
-
-            #global_trade
-            data["D05"][4] += 2
-
-            #great_power
-            data["MPK"][11] = 1
-
-            #army_prof
-
-            data["D03"][10] = 2
-
-            #hegemony
-
-            data["MPK"][12] = 2
-            data["D05"][12] = 2
-            data["D08"][12] = 1
-
-            #wars
-
-            data["D03"][1] = 1
-            data["MPK"][1] = 1
-
-            data["D02"][1] = -1
-            data["D07"][1] = -1
-
-            for tag in data.keys():
-                data[tag].append(sum(data[tag]))
-
-            return render_template("victory_points.html", header_labels = header_labels, num_columns = num_columns, nation_info = zip(nation_names,nation_tags,nation_colors_hex,nation_colors_hsl), data = data)
+            return render_template("victory_points.html", header_labels = header_labels,\
+                    num_columns = len(header_labels),\
+                    nation_info = zip(nation_names,nation_tags,nation_colors_hex,nation_colors_hsl), data = data)
 
         elif mp_id == 1:
+            header_labels, data = mp1_data()
 
-            header_labels = ["Nation", "Basis", "Kriege", "Renaissance", "Kolonialismus", "Druckerpresse", "Globaler Handel", "Manufakturen", "Aufklärung", "Industrialisierung", "Gesamt"]
-
-            num_columns = len(header_labels)
-
-            data = {}
-
-            data["SPA"] = [2,0,0,0,0,0,0,0,0]
-            data["FRA"] = [2,-2,0,0,0,0,0,0,0]
-            data["GBR"] = [2,-2,0,2,3,2,0,0,0]
-            data["NED"] = [2,2,0,0,0,1,1,3,0]
-            data["HAB"] = [2,4,0,0,0,0,3,1,0]
-            data["SWE"] = [2,-2,0,0,0,0,0,0,0]
-            data["PLC"] = [2,-1,0,0,0,0,0,1,0]
-            data["TUR"] = [1,-3,2,1,1,2,2,0,0]
-            data["RUS"] = [1,4,0,0,1,1,0,1,0]
-
-            for tag in data.keys():
-                data[tag].append(sum(data[tag]))
-
-            return render_template("victory_points.html", header_labels = header_labels, num_columns = num_columns, nation_info = zip(nation_names,nation_tags,nation_colors_hex,nation_colors_hsl), data = data)
+            return render_template("victory_points.html", header_labels = header_labels,\
+                    num_columns = len(header_labels),\
+                    nation_info = zip(nation_names,nation_tags,nation_colors_hex,nation_colors_hsl), data = data)
 
     else:
         flash(f'Noch keine Siegpunkte vergeben.', 'danger')
-        return redirect(url_for("main.home"))
+        return redirect(url_for("main.home", mp_id = mp_id))
 
 @main.route("/latest_stats/<int:mp_id>", methods = ["GET"])
 def latest_stats(mp_id):
@@ -406,14 +355,14 @@ def latest_stats(mp_id):
         return redirect(url_for("show_stats.parse", sg_id1 = sg_id1, sg_id2 = sg_id2, part = 0))
     else:
         flash(f'Noch keine Statistik verfügbar.', 'danger')
-        return redirect(url_for("main.home"))
+        return redirect(url_for("main.home", mp_id = mp_id))
 
 @main.route("/configure_teams/<int:mp_id>", methods = ["GET", "POST"])
 def configure_teams(mp_id):
     form = ConfigureTeamsForm()
     mp = MP.query.get(mp_id)
     if request.method == "POST":
-        return redirect(url_for("main.home"))
+        return redirect(url_for("main.home", mp_id = mp_id))
     return render_template("configure_teams.html", form = form, mp = mp)
 
 @main.route("/add_team/<int:mp_id>", methods = ["GET", "POST"])

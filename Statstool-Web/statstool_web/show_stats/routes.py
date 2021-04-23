@@ -1,6 +1,7 @@
 from flask import render_template, url_for, request, redirect, flash, abort, Blueprint, current_app
 from statstool_web.show_stats.forms import NationFormationForm
 from statstool_web.show_stats.util import *
+from statstool_web.show_stats.outsource import *
 from statstool_web import db, bcrypt
 from statstool_web.models import *
 from statstool_web.util import redirect_url
@@ -472,110 +473,19 @@ def reload_all_plots(sg_id1, sg_id2):
 def victory_points(sg_id1, sg_id2):
     mp = Savegame.query.get(sg_id2).mp
     institution = Savegame.query.get(sg_id2).institution
-    columns = ["standing_army", "navy_cannons"]
-    header_labels = ["Nation", "Stehendes Heer", "Flotte: Gesamtanzahl Kanonen", "Armeeverluste im Kampf", "höchstentwickelte Provinz", "Siegpunkte"]
-    min_values = {"standing_army": 100000, "navy_cannons": 2000, "losses": 500000, "highest_dev": 50}
 
-    if mp.id == 0:
+    if mp.id == 3:
+        data, columns, header_labels = mp3_data(institution, mp, sg_id1, sg_id2)
 
-        if institution is Institutions.renaissance:
-            header_labels.insert(1,"Höchste AE")
-            columns.insert(0, "highest_ae")
-            min_values["highest_ae"] = 50
+    elif mp.id == 2:
+        data, columns, header_labels = mp2_data(institution, mp, sg_id1, sg_id2)
 
-        if institution is Institutions.colonialism:
-            header_labels.insert(1, "Meiste laufende Kolonien")
-            columns.insert(0, "num_of_colonies")
-            min_values["num_of_colonies"] = 5
-
-        if institution is Institutions.printing_press:
-            header_labels.insert(1, "Meiste konvertierte Provinzen")
-            columns.insert(0, "num_converted_religion")
-            min_values["num_converted_religion"] = 0
-
-        if institution is Institutions.global_trade:
-            header_labels.insert(1, "Globaler Handel")
-
-        if institution is Institutions.industrialization:
-            header_labels.insert(1, "InGame-Score")
-            columns.insert(0, "score")
-            min_values["score"] = 0
-
-    if institution is Institutions.manufactories:
-        header_labels.insert(1, "Meister Produktionsführer")
-        columns.insert(0, "num_of_production_leaders")
-        min_values["num_of_production_leaders"] = 3
-
-    if institution is Institutions.enlightenment:
-         header_labels.insert(1, "Innovativität")
-         columns.insert(0, "innovativeness")
-         min_values["innovativeness"] = 50
-
-    nation_data = []
-    nation_colors_hex = []
-    nation_colors_hsl = []
-    nation_names = []
-    nation_tags = []
-    for nation in Savegame.query.get(sg_id2).player_nations:
-        data = NationSavegameData.query.filter_by(nation_tag = nation.tag, \
-                savegame_id = sg_id2).with_entities(*columns).first()._asdict()
-        nation_colors_hex.append(NationSavegameData.query.filter_by(nation_tag = nation.tag, \
-                savegame_id = sg_id2).first().color)
-        nation_colors_hsl.append(NationSavegameData.query.filter_by(nation_tag = nation.tag, \
-                savegame_id = sg_id2).first().color.hsl)
-        nation_names.append(NationSavegameData.query.filter_by(savegame_id = sg_id2, nation_tag = nation.tag).first().nation_name)
-        nation_tags.append(nation.tag)
-
-        losses = NationSavegameArmyLosses.query.filter_by(nation_tag = nation.tag, savegame_id = sg_id2).first().combat - NationSavegameArmyLosses.query.filter_by(nation_tag = nation.tag, savegame_id = sg_id1).first().combat
-        data["losses"] = losses
-
-        nation_savegame_data = NationSavegameData.query.filter_by(nation_tag = nation.tag, \
-                savegame_id = sg_id2).first()
-        if nation_savegame_data.highest_dev_province_id:
-            result = NationSavegameProvinces.query.get((sg_id2, nation_savegame_data.highest_dev_province_id))
-            data["highest_dev"] = result.development
-            data["highest_dev_province_id"] = nation_savegame_data.highest_dev_province_id
-        else:
-            forbidden_ids = [sg.highest_dev_province_id for sg in mp.savegames if sg.year < Savegame.query.get(sg_id2).year and sg.highest_dev_province_id]
-            highest_dev_province = NationSavegameProvinces.query.filter(NationSavegameProvinces.province_id.notin_(forbidden_ids)).filter_by( \
-                    nation_tag = nation.tag, savegame_id = sg_id2).order_by(NationSavegameProvinces.development.desc()).first()
-            nation_savegame_data.highest_dev_province_id = highest_dev_province.province_id
-            data["highest_dev"] = highest_dev_province.development
-            data["highest_dev_province_id"] = highest_dev_province.province_id
-
-        data["victory_points"] = 0
-        nation_data.append(data)
-
-    columns += ["losses", "highest_dev", "victory_points"]
-    nation_names.append("Minimalwert")
-    nation_colors_hex.append("ffffff")
-    nation_colors_hsl.append([0,0,1])
-    nation_data.append(min_values)
-
-    for category in min_values.keys():
-        max_category = max([x[category] for x in nation_data])
-        for data in nation_data[:-1]:
-            if data[category] == max_category:
-                if category in ("highest_ae", "num_of_colonies", "num_converted_religion", "num_of_production_leaders", "innovativeness", "score"):
-                    data["victory_points"] += 2
-                else:
-                    data["victory_points"] += 1
-                if category == "highest_dev":
-                    savegame = Savegame.query.get(sg_id2)
-                    savegame.highest_dev_province_id = data["highest_dev_province_id"]
-
-    for data, tag in zip(nation_data[:-1], nation_tags):
-        if not VictoryPoints.query.filter_by(mp_id = Savegame.query.get(sg_id2).mp_id, institution = institution, nation_tag = tag).first():
-            vp = VictoryPoints(mp_id = Savegame.query.get(sg_id2).mp_id, institution = institution, nation_tag = tag, victory_points = data["victory_points"])
-            db.session.add(vp)
-        else:
-            vp = VictoryPoints.query.filter_by(mp_id = Savegame.query.get(sg_id2).mp_id, institution = institution, nation_tag = tag).first()
-            vp.victory_points = data["victory_points"]
-    db.session.commit()
+    elif mp.id == 1:
+        data, columns, header_labels = mp1_data(institution, mp, sg_id1, sg_id2)
 
     return render_template("table.html", old_savegame = Savegame.query.get(sg_id1), \
             new_savegame = Savegame.query.get(sg_id2), \
-            data = zip(nation_data,nation_names,nation_colors_hex,nation_colors_hsl), \
+            data = data, \
             columns = columns, header_labels = header_labels, \
             colorize_columns = [i for i in range(1,len(header_labels))], \
             sort_by = len(header_labels) - 1, mp = mp)
