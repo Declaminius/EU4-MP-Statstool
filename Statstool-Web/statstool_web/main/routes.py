@@ -424,7 +424,7 @@ def add_team(mp_id):
         db.session.add(team)
         db.session.commit()
         return redirect(url_for("main.configure_teams", mp_id = mp_id))
-    return render_template("new_team.html", form = form)
+    return render_template("new_team.html", form = form, mp_id = mp_id)
 
 @main.route("/delete_team/<int:mp_id>/<int:team_id>", methods = ["GET"])
 def delete_team(mp_id, team_id):

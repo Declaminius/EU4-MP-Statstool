@@ -66,7 +66,7 @@ class MPForm(FlaskForm):
 
 
 class ConfigureTeamsForm(FlaskForm):
-    submit = SubmitField("Confirm")
+    submit = SubmitField("Back")
 
 class NewTeamForm(FlaskForm):
     id = IntegerField("Team-ID")
