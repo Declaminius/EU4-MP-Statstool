@@ -147,9 +147,9 @@
           <p>
             {% if current_user == current_mp.admin %}
               <a href="{{url_for('main.upload_one_savegame', mp_id = current_mp.id)}}" class="btn btn-secondary my-2">Aktuelle Statistik hochladen</a>
-            {% endif %}
-            {% if current_mp.teams_setting %}
-              <a href="{{url_for('main.configure_teams', mp_id = current_mp.id)}}" class="btn btn-secondary my-2">Teams konfigurieren</a>
+              {% if current_mp.teams_setting %}
+                <a href="{{url_for('main.configure_teams', mp_id = current_mp.id)}}" class="btn btn-secondary my-2">Teams konfigurieren</a>
+              {% endif %}
             {% endif %}
           </p>
         </div>
