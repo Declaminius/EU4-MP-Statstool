@@ -36,15 +36,16 @@ def parse(sg_id1,sg_id2, part):
 
     old_savegame = Savegame.query.get(sg_id1)
     new_savegame = Savegame.query.get(sg_id2)
-    for nation in new_savegame.player_nations:
-        if nation not in old_savegame.player_nations:
-            if nation in old_savegame.nations:
-                old_savegame.player_nations.append(nation)
-            else:
-                continue
-        if NationFormation.query.get((sg_id1,sg_id2,nation.tag,nation.tag)) is None:
-            formation = NationFormation(old_savegame_id = sg_id1, new_savegame_id = sg_id2, old_nation_tag = nation.tag, new_nation_tag = nation.tag)
-            db.session.add(formation)
+    if sg_id1 != sg_id2:
+        for nation in new_savegame.player_nations:
+            if nation not in old_savegame.player_nations:
+                if nation in old_savegame.nations:
+                    old_savegame.player_nations.append(nation)
+                else:
+                    continue
+            if NationFormation.query.get((sg_id1,sg_id2,nation.tag,nation.tag)) is None:
+                formation = NationFormation(old_savegame_id = sg_id1, new_savegame_id = sg_id2, old_nation_tag = nation.tag, new_nation_tag = nation.tag)
+                db.session.add(formation)
     db.session.commit()
     if not savegame.parse_flag:
         return(redirect(url_for("parse.setup", sg_id1 = sg_id1, sg_id2 = sg_id2, part = 1)))
@@ -96,8 +97,17 @@ def configure(sg_id1,sg_id2):
 
     nation_formations = []
     for x in NationFormation.query.filter_by(old_savegame_id = sg_id1, new_savegame_id = sg_id2).all():
-        old_nation = NationSavegameData.query.filter_by(savegame_id = sg_id1, nation_tag = x.old_nation_tag).first().nation_name
-        new_nation = NationSavegameData.query.filter_by(savegame_id = sg_id2, nation_tag = x.new_nation_tag).first().nation_name
+        old_nation_data = NationSavegameData.query.filter_by(savegame_id = sg_id1, nation_tag = x.old_nation_tag).first()
+        if old_nation_data:
+            if (name := old_nation_data.nation_name):
+                old_nation = name
+        else:
+            old_nation = x.old_nation_tag
+        new_nation_data = NationSavegameData.query.filter_by(savegame_id = sg_id2, nation_tag = x.new_nation_tag).first()
+        if (name := new_nation_data.nation_name):
+            new_nation = name
+        else:
+            new_nation = new_nation_data.nation_tag
         nation_formations.append((old_nation, new_nation))
     return render_template("show_stats/configure.html", old_savegame = old_savegame, new_savegame = new_savegame, \
             form = form, nation_formations = nation_formations, mp = mp)
@@ -420,7 +430,7 @@ def mana_spent_adm(sg_id1, sg_id2):
 @show_stats.route("/mana_spent_dip/<int:sg_id1>/<int:sg_id2>", methods = ["GET"])
 def mana_spent_dip(sg_id1, sg_id2):
     mp = Savegame.query.get(sg_id2).mp
-    columns = [0,1,7,14,20,22,34,47]
+    columns = [0,1,7,14,20,22,34,46]
     header_labels = ["Country", "Ideas", "Tech","Development", "DipCost Peacedeal",\
     "Culture Conversions", "Reduce War Exhaustion",\
     "Promote Culture", "Admirals", "Sonstiges", "Gesamt"]

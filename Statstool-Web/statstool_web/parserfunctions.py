@@ -474,6 +474,11 @@ def parse_countries(content, savegame):
 			parse_ships(info, tag, nation_data)
 			nd = NationSavegameData.query.filter_by(savegame_id = savegame.id, nation_tag = tag)
 			nd.update(nation_data)
+		else:
+			nd = NationSavegameData.query.filter_by(savegame_id = savegame.id, nation_tag = tag).first()
+			db.session.delete(nd)
+			savegame.nations.remove(Nation.query.get(tag))
+
 
 	for tag in tag_list:
 		nation = NationSavegameData.query.filter_by(nation_tag = tag, savegame_id = savegame.id).first()

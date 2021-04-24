@@ -45,6 +45,7 @@ def mp1_data(institution, mp, sg_id1, sg_id2):
     nation_names = []
     nation_tags = []
     for nation in Savegame.query.get(sg_id2).player_nations:
+        old_tag = NationFormation.query.filter_by(old_savegame_id = sg_id1, new_savegame_id = sg_id2, new_nation_tag = nation.tag).first().old_nation_tag
         data = NationSavegameData.query.filter_by(nation_tag = nation.tag, \
                 savegame_id = sg_id2).with_entities(*columns).first()._asdict()
         nation_colors_hex.append(NationSavegameData.query.filter_by(nation_tag = nation.tag, \
@@ -54,9 +55,9 @@ def mp1_data(institution, mp, sg_id1, sg_id2):
         nation_names.append(NationSavegameData.query.filter_by(savegame_id = sg_id2, nation_tag = nation.tag).first().nation_name)
         nation_tags.append(nation.tag)
 
-        losses = NationSavegameArmyLosses.query.filter_by(nation_tag = nation.tag, savegame_id = sg_id2).first().combat - NationSavegameArmyLosses.query.filter_by(nation_tag = nation.tag, savegame_id = sg_id1).first().combat
-        data["losses"] = losses
 
+        losses = NationSavegameArmyLosses.query.filter_by(nation_tag = nation.tag, savegame_id = sg_id2).first().combat - NationSavegameArmyLosses.query.filter_by(nation_tag = old_tag, savegame_id = sg_id1).first().combat
+        data["losses"] = losses
         nation_savegame_data = NationSavegameData.query.filter_by(nation_tag = nation.tag, \
                 savegame_id = sg_id2).first()
         if nation_savegame_data.highest_dev_province_id:

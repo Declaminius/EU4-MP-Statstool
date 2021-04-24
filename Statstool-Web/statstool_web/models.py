@@ -143,6 +143,9 @@ class Savegame(db.Model):
     new_plots = db.relationship("SavegamePlots", backref = "new_savegame", foreign_keys = 'SavegamePlots.new_savegame_id', cascade = "all, delete")
     old_plots = db.relationship("SavegamePlots", backref = "old_savegame", foreign_keys = 'SavegamePlots.old_savegame_id', cascade = "all, delete")
 
+    new_nation_formations = db.relationship("NationFormation", backref = "new_savegame", foreign_keys = 'NationFormation.new_savegame_id', cascade = "all, delete")
+    old_nation_formations = db.relationship("NationFormation", backref = "old_savegame", foreign_keys = 'NationFormation.old_savegame_id', cascade = "all, delete")
+
     def __commit_delete__(self):
         try:
             os.remove(os.path.join(current_app.root_path, 'static/savegames', self.file))

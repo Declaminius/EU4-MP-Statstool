@@ -33,11 +33,14 @@ def home(mp_id):
     if current_save:
         for nation in current_save.player_nations:
             nation_data = NationSavegameData.query.filter_by(savegame_id = current_save.id, nation_tag = nation.tag).first()
-            nation_names_dict[nation.tag] = nation_data.nation_name
-            if nation_data.player_name:
-                names_dict[nation_data.nation_name] = nation_data.player_name
+            if nation_data:
+                nation_names_dict[nation.tag] = nation_data.nation_name
+                if nation_data.player_name:
+                    names_dict[nation_data.nation_name] = nation_data.player_name
+                else:
+                    names_dict[nation_data.nation_name] = "???"
             else:
-                names_dict[nation_data.nation_name] = "???"
+                print(nation.tag)
     return render_template("main/home.html", savegames = savegames, counter = len(savegames), \
             savegame_dict = savegame_dict, mps = mps, current_mp = current_mp, \
             current_save = current_save, names_dict = names_dict, nation_names_dict = nation_names_dict)
@@ -168,7 +171,6 @@ def upload_one_savegame(mp_id, institution):
                 savegame = Savegame(file = random, mp_id = mp_id, institution = institution, owner = current_user, year = year, name = form.savegame_name.data)
             for tag in tag_list:
                 if not Nation.query.get(tag):
-                    print(tag)
                     nation = Nation(tag = tag)
                     db.session.add(nation)
 
@@ -240,9 +242,9 @@ def account(user_id):
         mp_hosts.append(mp.host)
     if mp_form.validate_on_submit():
         so_mp = MP(name = mp_form.mp_name.data, description = mp_form.mp_description.data,\
-                gm = form.gm.data, host = form.host.data, checksum = form.checksum.data,\
-                next_gameday = form.next_gameday.data, institutions = form.institutions.data,\
-                victory_points = form.victory_points.data, teams_setting = form.teams_setting.data,\
+                gm = mp_form.gm.data, host = mp_form.host.data, checksum = mp_form.checksum.data,\
+                next_gameday = mp_form.next_gameday.data, institutions = mp_form.institutions.data,\
+                victory_points = mp_form.victory_points.data, teams_setting = mp_form.teams_setting.data,\
                 admin = current_user)
         db.session.add(so_mp)
         db.session.commit()
