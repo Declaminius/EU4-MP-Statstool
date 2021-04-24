@@ -415,6 +415,17 @@ def add_current_mp_map(mp_id):
         return redirect(url_for("main.home", mp_id = mp_id))
     return render_template("main/upload_map.html", form = form)
 
+@main.route("/delete_mp_map/<int:mp_id>", methods = ["GET"])
+def delete_mp_map(mp_id):
+    mp = MP.query.get(mp_id)
+    try:
+        os.remove(os.path.join(current_app.root_path, 'static/maps', mp.map_file))
+    except FileNotFoundError:
+        pass
+    mp.map_file = None
+    db.session.commit()
+    return redirect(redirect_url())
+
 @main.route("/delete_current_mp_map/<int:mp_id>", methods = ["GET"])
 def delete_current_mp_map(mp_id):
     mp = MP.query.get(mp_id)
