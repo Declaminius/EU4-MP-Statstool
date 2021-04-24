@@ -3,7 +3,7 @@ from statstool_web.main.forms import *
 from statstool_web.main.outsource import *
 from statstool_web import db, bcrypt
 from statstool_web.parserfunctions import edit_parse
-from statstool_web.models import User, MP, Savegame, Nation, NationSavegameData, VictoryPoints, Team
+from statstool_web.models import *
 from statstool_web.util import redirect_url
 from pathlib import Path
 from sqlalchemy import desc
@@ -323,13 +323,28 @@ def total_victory_points(mp_id):
         if mp_id == 3:
             header_labels = ["Nation", "Provinzen", "Kolonialismus", "Druckerpresse", \
             "Globaler Handel", "Manufakturen", "Aufklärung", "Industrialisierung", \
-            "erster Spielerkrieg-Sieger", "Globaler Handel-Sieger"]
+            "erster Spielerkrieg-Sieger", "Globaler Handel-Sieger", "Gesamt"]
+            institutions = ("colonialism", "printing_press", "global_trade", "manufactories", "enlightenment", "industrialization")
+            teams = MP.query.get(mp_id).teams
+            team_names = ["Team {}".format(i) for i in range(1,len(teams)+1)]
+            team_ids = [i for i in range(1,len(teams)+1)]
+            team_colors_hex = ["#ffffff"]*len(teams)
+            team_colors_hsl = [(0,0,100)]*len(teams)
             data = {}
-            for tag in nation_tags:
-                data[tag] = [0]*(len(header_labels)-1)
+            for team in teams:
+                data[team.id] = [0]*(len(header_labels)-2)
+
+            for institution, column in zip(institutions, range(1,7)):
+                for id in team_ids:
+                    if (result := VictoryPoint.query.filter_by(mp_id = mp_id, category = institution, team_id = id).first()):
+                        data[id][column] = result.points
+            for team in teams:
+                data[team.id].append(sum(data[team.id]))
             return render_template("main/victory_points.html", header_labels = header_labels,\
                     num_columns = len(header_labels),\
-                    nation_info = zip(nation_names,nation_tags,nation_colors_hex,nation_colors_hsl), data = data, mp_id = mp_id)
+                    nation_info = zip(team_names,team_ids,team_colors_hex,team_colors_hsl), data = data, mp_id = mp_id)
+
+
         elif mp_id == 2:
             header_labels, data = mp2_data(nation_tags, mp_id)
 

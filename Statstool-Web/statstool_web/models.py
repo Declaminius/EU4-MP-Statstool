@@ -169,6 +169,7 @@ class VictoryPoints(db.Model):
 class VictoryPoint(db.Model):
     __tablename__ = 'victory_point'
     id = db.Column(db.Integer, primary_key = True)
+    mp_id = db.Column(db.Integer, db.ForeignKey('mp.id'))
     team_id = db.Column(db.Integer, db.ForeignKey('team.id'), nullable = True)
     nation_tag = db.Column(db.String(3), db.ForeignKey('nation.tag'), nullable = True)
 

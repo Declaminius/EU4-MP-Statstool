@@ -28,13 +28,24 @@ def category_plot(sg_id1, sg_id2, category, tag_list, data_list, model, title):
         delta_list = []
         for data in data_list:
             data = data.__dict__
-            if NationFormation.query.filter_by(old_savegame_id = sg_id1, new_savegame_id = sg_id2, new_nation_tag = data["nation_tag"]).first():
+            if sg_id1 != sg_id2:
+                if NationFormation.query.filter_by(old_savegame_id = sg_id1, new_savegame_id = sg_id2, new_nation_tag = data["nation_tag"]).first():
+                    plt.bar(NationSavegameData.query.filter_by(savegame_id = sg_id2, nation_tag = data["nation_tag"]).first().nation_name, data[category], color = str(data["color"]), edgecolor = "grey", linewidth = 1)
+                    old_tag = NationFormation.query.filter_by(old_savegame_id = sg_id1, new_savegame_id = sg_id2, new_nation_tag = data["nation_tag"]).first().old_nation_tag
+                    try:
+                        delta_list.append([NationSavegameData.query.filter_by(\
+                            savegame_id = sg_id2, nation_tag = data["nation_tag"]).first().nation_name,data[category] - \
+                            model.query.filter_by(nation_tag = old_tag, savegame_id = sg_id1).first().__dict__[category]])
+                    except:
+                        print(model,sg_id1,old_tag)
+            else:
                 plt.bar(NationSavegameData.query.filter_by(savegame_id = sg_id2, nation_tag = data["nation_tag"]).first().nation_name, data[category], color = str(data["color"]), edgecolor = "grey", linewidth = 1)
-                old_tag = NationFormation.query.filter_by(old_savegame_id = sg_id1, new_savegame_id = sg_id2, new_nation_tag = data["nation_tag"]).first().old_nation_tag
                 try:
-                    delta_list.append([NationSavegameData.query.filter_by(savegame_id = sg_id2, nation_tag = data["nation_tag"]).first().nation_name,data[category] - model.query.filter_by(nation_tag = old_tag, savegame_id = sg_id1).first().__dict__[category]])
+                    delta_list.append([NationSavegameData.query.filter_by(\
+                        savegame_id = sg_id2, nation_tag = data["nation_tag"]).first().nation_name,data[category] - \
+                        model.query.filter_by(nation_tag = data["nation_tag"], savegame_id = sg_id1).first().__dict__[category]])
                 except:
-                    print(model,sg_id1,old_tag)
+                    print(model,sg_id1,data["nation_tag"])
 
         delta_values = [x[1] for x in delta_list]
         norm = plt.Normalize(min(delta_values), max(delta_values))

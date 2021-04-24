@@ -192,11 +192,13 @@ def mp3_data(institution, mp, sg_id1, sg_id2):
     team_colors_hex = []
     team_colors_hsl = []
     team_names = []
+    team_ids = []
     for team in mp.teams:
         data = {}
         team_colors_hex.append("#ffffff")
         team_colors_hsl.append((0,0,100))
         team_names.append("Team {}".format(team.id))
+        team_ids.append(team.id)
         team_tags = (team.team_tag1, team.team_tag2)
 
         losses = 0
@@ -209,10 +211,10 @@ def mp3_data(institution, mp, sg_id1, sg_id2):
             nation_savegame_data = NationSavegameData.query.filter_by(nation_tag = tag, \
                 savegame_id = sg_id2).first()
             if nation_savegame_data.highest_dev_province_id:
-                result = NationSavegameProvinces.query.get((sg_id2, nation_savegame_data.highest_dev_province_id))
-                if result.development > highest_dev:
+                highest_dev_province = NationSavegameProvinces.query.get((sg_id2, nation_savegame_data.highest_dev_province_id))
+                if highest_dev_province.development > highest_dev:
                     highest_dev_province_id = nation_savegame_data.highest_dev_province_id
-                    highest_dev = result.development
+                    highest_dev = highest_dev_province.development
             else:
                 forbidden_ids = [sg.highest_dev_province_id for sg in mp.savegames\
                                 if sg.year < Savegame.query.get(sg_id2).year and sg.highest_dev_province_id]
@@ -221,9 +223,9 @@ def mp3_data(institution, mp, sg_id1, sg_id2):
                         nation_tag = tag, savegame_id = sg_id2).order_by(NationSavegameProvinces.development.desc()).first()
 
                 nation_savegame_data.highest_dev_province_id = highest_dev_province.province_id
-                if result.development > highest_dev:
+                if highest_dev_province.development > highest_dev:
                     highest_dev_province_id = nation_savegame_data.highest_dev_province_id
-                    highest_dev = result.development
+                    highest_dev = highest_dev_province.development
 
         data["losses"] = losses
         data["highest_dev"] = highest_dev
@@ -243,13 +245,13 @@ def mp3_data(institution, mp, sg_id1, sg_id2):
                     savegame.highest_dev_province_id = data["highest_dev_province_id"]
 
     columns += ["victory_points"]
-    # for data, tag in zip(team_data[:-1], nation_tags):
-    #     if not VictoryPoints.query.filter_by(mp_id = Savegame.query.get(sg_id2).mp_id, institution = institution, nation_tag = tag).first():
-    #         vp = VictoryPoints(mp_id = Savegame.query.get(sg_id2).mp_id, institution = institution, nation_tag = tag, victory_points = data["victory_points"])
-    #         db.session.add(vp)
-    #     else:
-    #         vp = VictoryPoints.query.filter_by(mp_id = Savegame.query.get(sg_id2).mp_id, institution = institution, nation_tag = tag).first()
-    #         vp.victory_points = data["victory_points"]
-    # db.session.commit()
+    for data, id in zip(team_data[:-1], team_ids):
+        if not VictoryPoint.query.filter_by(mp_id = mp.id, team_id = id, category = institution.value).first():
+            vp = VictoryPoint(mp_id = mp.id, team_id = id, category = institution.value, points = data["victory_points"])
+            db.session.add(vp)
+        else:
+            vp = VictoryPoint.query.filter_by(mp_id = mp.id, team_id = id, category = institution.value).first()
+            vp.points = data["victory_points"]
+    db.session.commit()
 
     return zip(team_data,team_names,team_colors_hex,team_colors_hsl), columns, header_labels
