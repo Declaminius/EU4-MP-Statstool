@@ -205,11 +205,13 @@
             <img src="/static/maps/{{current_mp.map_file}}" class="img-responsive fit-image">
           </div>
           {% if current_user == current_mp.admin %}
-            <center><a class="btn btn-outline-danger btn-center mt-2 mb-2 " href = "{{url_for('main.delete_mp_map', mp_id = current_mp.id)}}">Delete</a></center>
+            <center><a class="btn btn-outline-danger btn-center mt-2 mb-2"\
+                        href = "{{url_for('main.delete_mp_map', mp_id = current_mp.id)}}">Delete</a></center>
           {% endif %}
         {% else %}
           {% if current_user == current_mp.admin %}
-            <center><a class="btn btn-outline-secondary btn-center mt-2 mb-2 " href = "{{url_for('main.add_mp_map', mp_id = current_mp.id)}}">Add Map</a></center>
+            <center><a class="btn btn-outline-secondary btn-center mt-2 mb-2"\
+                        href = "{{url_for('main.add_mp_map', mp_id = current_mp.id)}}">Add Map</a></center>
           {% endif %}
         {% endif %}
       </div>

@@ -24,6 +24,30 @@ def mp2_data(nation_tags, mp_id):
     #global_trade
     data["D05"][4] += 2
 
+    #great_power
+    data["MPK"][11] = 1
+
+    #army_prof
+
+    data["D03"][10] = 2
+
+    #hegemony
+
+    data["MPK"][12] = 2
+    data["D05"][12] = 2
+    data["D08"][12] = 1
+
+    #wars
+
+    data["D03"][1] = 1
+    data["MPK"][1] = 1
+
+    data["D02"][1] = -1
+    data["D07"][1] = -1
+
+    for tag in data.keys():
+        data[tag].append(sum(data[tag]))
+
     return header_labels, data
 
 
