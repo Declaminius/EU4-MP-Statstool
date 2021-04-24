@@ -42,35 +42,37 @@ def mp1_data(institution, mp, sg_id1, sg_id2):
     nation_names = []
     nation_tags = []
     for nation in Savegame.query.get(sg_id2).player_nations:
-        old_tag = NationFormation.query.filter_by(old_savegame_id = sg_id1, new_savegame_id = sg_id2, new_nation_tag = nation.tag).first().old_nation_tag
-        data = NationSavegameData.query.filter_by(nation_tag = nation.tag, \
-                savegame_id = sg_id2).with_entities(*columns).first()._asdict()
-        nation_colors_hex.append(NationSavegameData.query.filter_by(nation_tag = nation.tag, \
-                savegame_id = sg_id2).first().color)
-        nation_colors_hsl.append(NationSavegameData.query.filter_by(nation_tag = nation.tag, \
-                savegame_id = sg_id2).first().color.hsl)
-        nation_names.append(NationSavegameData.query.filter_by(savegame_id = sg_id2, nation_tag = nation.tag).first().nation_name)
-        nation_tags.append(nation.tag)
+        old_nation = NationFormation.query.filter_by(old_savegame_id = sg_id1, new_savegame_id = sg_id2, new_nation_tag = nation.tag).first()
+        if old_nation:
+            old_tag = old_nation.old_nation_tag
+            data = NationSavegameData.query.filter_by(nation_tag = nation.tag, \
+                    savegame_id = sg_id2).with_entities(*columns).first()._asdict()
+            nation_colors_hex.append(NationSavegameData.query.filter_by(nation_tag = nation.tag, \
+                    savegame_id = sg_id2).first().color)
+            nation_colors_hsl.append(NationSavegameData.query.filter_by(nation_tag = nation.tag, \
+                    savegame_id = sg_id2).first().color.hsl)
+            nation_names.append(NationSavegameData.query.filter_by(savegame_id = sg_id2, nation_tag = nation.tag).first().nation_name)
+            nation_tags.append(nation.tag)
 
 
-        losses = NationSavegameArmyLosses.query.filter_by(nation_tag = nation.tag, savegame_id = sg_id2).first().combat - NationSavegameArmyLosses.query.filter_by(nation_tag = old_tag, savegame_id = sg_id1).first().combat
-        data["losses"] = losses
-        nation_savegame_data = NationSavegameData.query.filter_by(nation_tag = nation.tag, \
-                savegame_id = sg_id2).first()
-        if nation_savegame_data.highest_dev_province_id:
-            result = NationSavegameProvinces.query.get((sg_id2, nation_savegame_data.highest_dev_province_id))
-            data["highest_dev"] = result.development
-            data["highest_dev_province_id"] = nation_savegame_data.highest_dev_province_id
-        else:
-            forbidden_ids = [sg.highest_dev_province_id for sg in mp.savegames if sg.year < Savegame.query.get(sg_id2).year and sg.highest_dev_province_id]
-            highest_dev_province = NationSavegameProvinces.query.filter(NationSavegameProvinces.province_id.notin_(forbidden_ids)).filter_by( \
-                    nation_tag = nation.tag, savegame_id = sg_id2).order_by(NationSavegameProvinces.development.desc()).first()
-            nation_savegame_data.highest_dev_province_id = highest_dev_province.province_id
-            data["highest_dev"] = highest_dev_province.development
-            data["highest_dev_province_id"] = highest_dev_province.province_id
+            losses = NationSavegameArmyLosses.query.filter_by(nation_tag = nation.tag, savegame_id = sg_id2).first().combat - NationSavegameArmyLosses.query.filter_by(nation_tag = old_tag, savegame_id = sg_id1).first().combat
+            data["losses"] = losses
+            nation_savegame_data = NationSavegameData.query.filter_by(nation_tag = nation.tag, \
+                    savegame_id = sg_id2).first()
+            if nation_savegame_data.highest_dev_province_id:
+                result = NationSavegameProvinces.query.get((sg_id2, nation_savegame_data.highest_dev_province_id))
+                data["highest_dev"] = result.development
+                data["highest_dev_province_id"] = nation_savegame_data.highest_dev_province_id
+            else:
+                forbidden_ids = [sg.highest_dev_province_id for sg in mp.savegames if sg.year < Savegame.query.get(sg_id2).year and sg.highest_dev_province_id]
+                highest_dev_province = NationSavegameProvinces.query.filter(NationSavegameProvinces.province_id.notin_(forbidden_ids)).filter_by( \
+                        nation_tag = nation.tag, savegame_id = sg_id2).order_by(NationSavegameProvinces.development.desc()).first()
+                nation_savegame_data.highest_dev_province_id = highest_dev_province.province_id
+                data["highest_dev"] = highest_dev_province.development
+                data["highest_dev_province_id"] = highest_dev_province.province_id
 
-        data["victory_points"] = 0
-        nation_data.append(data)
+            data["victory_points"] = 0
+            nation_data.append(data)
 
     columns += ["losses", "highest_dev", "victory_points"]
     nation_names.append("Minimalwert")

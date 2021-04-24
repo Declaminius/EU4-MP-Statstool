@@ -38,14 +38,10 @@ def parse(sg_id1,sg_id2, part):
     new_savegame = Savegame.query.get(sg_id2)
     if sg_id1 != sg_id2:
         for nation in new_savegame.player_nations:
-            if nation not in old_savegame.player_nations:
-                if nation in old_savegame.nations:
-                    old_savegame.player_nations.append(nation)
-                else:
-                    continue
-            if NationFormation.query.get((sg_id1,sg_id2,nation.tag,nation.tag)) is None:
-                formation = NationFormation(old_savegame_id = sg_id1, new_savegame_id = sg_id2, old_nation_tag = nation.tag, new_nation_tag = nation.tag)
-                db.session.add(formation)
+            if nation in old_savegame.player_nations:
+                if NationFormation.query.get((sg_id1,sg_id2,nation.tag,nation.tag)) is None:
+                    formation = NationFormation(old_savegame_id = sg_id1, new_savegame_id = sg_id2, old_nation_tag = nation.tag, new_nation_tag = nation.tag)
+                    db.session.add(formation)
     db.session.commit()
     if not savegame.parse_flag:
         return(redirect(url_for("parse.setup", sg_id1 = sg_id1, sg_id2 = sg_id2, part = 1)))
@@ -57,7 +53,8 @@ def parse(sg_id1,sg_id2, part):
 
 @show_stats.route("/map/<int:sg_id1>/<int:sg_id2>", methods = ["GET"])
 def map(sg_id1,sg_id2):
-    return render_template("show_stats/show_stats_layout.html", old_savegame = Savegame.query.get(sg_id1), new_savegame = Savegame.query.get(sg_id2))
+    mp = Savegame.query.get(sg_id2).mp
+    return render_template("show_stats/show_stats_layout.html", old_savegame = Savegame.query.get(sg_id1), new_savegame = Savegame.query.get(sg_id2), mp = mp)
 
 @show_stats.route("/remove_nation_formation/<int:sg_id1>/<int:sg_id2>/<string:old>/<string:new>", methods = ["GET", "POST"])
 def remove_nation_formation(sg_id1,sg_id2,old,new):
