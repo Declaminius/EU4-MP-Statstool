@@ -383,6 +383,32 @@ def delete_team(mp_id, team_id):
         db.session.commit()
     return redirect(redirect_url())
 
+@main.route("/add_mp_map/<int:mp_id>", methods = ["GET", "POST"])
+def add_mp_map(mp_id):
+    form = MapSelectForm()
+    if form.validate_on_submit():
+        Path(os.path.join(current_app.root_path, current_app.config['UPLOAD_FOLDER'])).mkdir(parents=True, exist_ok=True)
+        map_file = request.files[form.map.name]
+        map_random = secrets.token_hex(8) + ".png"
+        map_path = os.path.join(current_app.root_path, "static/maps", map_random)
+        map_file.save(map_path)
+        mp = MP.query.get(mp_id)
+        mp.map_file = map_random
+        db.session.commit()
+        return redirect(url_for("main.home", mp_id = mp_id))
+    return render_template("main/upload_map.html", form = form)
+
+@main.route("/delete_mp_map/<int:mp_id>", methods = ["GET"])
+def delete_mp_map(mp_id):
+    mp = MP.query.get(mp_id)
+    try:
+        os.remove(os.path.join(current_app.root_path, 'static/maps', mp.map_file))
+    except FileNotFoundError:
+        pass
+    mp.map_file = None
+    db.session.commit()
+    return redirect(redirect_url())
+
 @main.route('/colorize.js')
 def colorize():
     return render_template('jquery-colorize.js')
