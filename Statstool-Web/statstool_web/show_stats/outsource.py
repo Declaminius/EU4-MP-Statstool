@@ -21,9 +21,6 @@ def mp1_data(institution, mp, sg_id1, sg_id2):
         columns.insert(0, "num_converted_religion")
         min_values["num_converted_religion"] = 0
 
-    if institution is Institutions.global_trade:
-        header_labels.insert(1, "Globaler Handel")
-
     if institution is Institutions.industrialization:
         header_labels.insert(1, "InGame-Score")
         columns.insert(0, "score")
