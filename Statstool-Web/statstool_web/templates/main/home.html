@@ -93,7 +93,7 @@
 {%- endmacro %}
 
 
-{% extends "home_layout.html" %}
+{% extends "main/home_layout.html" %}
 {% block content %}
 <div class = "row" >
   <div class="col-md-2">
@@ -198,6 +198,14 @@
         </div>
       </div>
       {% endif %}
+      <div class="album py-5 bg-light mt-4">
+        {% if current_mp.map_file}
+          <h4 class="card-text mb-4"><center> Siegpunkte - Provinzenübersicht </center></h4>
+          <div class="media">
+            <img src="/static/maps/1450.png" class="img-responsive fit-image">
+          </div>
+        {% endif %}
+      </div>
     </div>
   </div>
   <div class="col-md-2">

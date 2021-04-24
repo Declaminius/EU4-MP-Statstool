@@ -32,7 +32,7 @@ def setup(sg_id1,sg_id2, part):
         if nation.tag in current_app.config["LOCALISATION_DICT"].keys() else (nation.tag,nation.tag, names_dict[nation.tag]) \
         for nation in nations], key = lambda x: x[1])
     if request.method == "GET":
-        return render_template("setup.html", form = form, playertags = playertags,\
+        return render_template("parse/setup.html", form = form, playertags = playertags,\
                 sg_id1 = sg_id1, sg_id2 = sg_id2)
     if request.method == "POST":
         if sg_id1 != sg_id2:
@@ -71,7 +71,7 @@ def new_nation(sg_id1,sg_id2):
             sg.player_nations.append(Nation.query.get(form.select.data))
         db.session.commit()
         return redirect(url_for("parse.setup", sg_id1 = sg_id1, sg_id2 = sg_id2, part = 0))
-    return render_template("new_nation.html", form = form)
+    return render_template("parse/new_nation.html", form = form)
 
 @parse.route("/setup/all_nations/<int:sg_id1>/<int:sg_id2>", methods = ["GET"])
 @login_required

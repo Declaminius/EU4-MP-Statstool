@@ -1,0 +1,60 @@
+{% extends "show_stats/show_stats_layout.html" %}
+{% block content %}
+
+{% for images, data, id in content %}
+  <div class="container mt-3">
+    <div class = "row">
+    {% for image_file in images %}
+      <div class="col-md">
+        <img class="img-fluid" src="{{ url_for('static', filename='plots/' + image_file) }}">
+      </div>
+    {% endfor %}
+    </div>
+  </div>
+  <div class = "container mb-3">
+      <table class = "table table-striped table-bordered mydatatable" style = "width: 100%" id = {{id}}>
+          <thead>
+            <tr>
+              {% for label in header_labels%}
+                <th bgcolor = "white">{{label}}</th>
+              {% endfor %}
+            </tr>
+          </thead>
+          <tbody>
+            {% for row,tag,color_hex,color_hsl in data%}
+              <tr>
+                {% if color_hsl[2] > 0.5 %}
+                  <td bgcolor = "{{color_hex}}" style="color:black">{{tag}}</td>
+                {% else %}
+                  <td bgcolor = "{{color_hex}}" style="color:white">{{tag}}</td>
+                {% endif %}
+                {% for name in columns %}
+                  <td>{{row[name]}}</td>
+                {% endfor %}
+              </tr>
+            {% endfor %}
+          </tbody>
+      </table>
+  </div>
+{% endfor %}
+  <div class = "col text-center">
+    <a class="btn btn-secondary btn mt-1 mb-1"
+    href = "{{url_for('show_stats.reload_plot', sg_id1 = old_savegame.id, sg_id2 = new_savegame.id, image_files = flattened_image_files)}}">Reload Plot</a>
+  </div>
+  <script src="https://code.jquery.com/jquery-3.3.1.slim.min.js" integrity="sha384-q8i/X+965DzO0rT7abK41JStQIAqVgRVzpbzo5smXKp4YfRvH+8abtTE1Pi6jizo" crossorigin="anonymous"></script>
+  <script src="https://cdn.datatables.net/1.10.19/js/jquery.dataTables.min.js"></script>
+  <script src="https://cdn.datatables.net/1.10.19/js/dataTables.bootstrap4.min.js"></script>
+  <script type="text/javascript">
+  $(document).ready(function() {
+    // Table Heat Map
+  var ids = {{ids|tojson}};
+  for (let i of ids) {
+      $("table#" + i + " tbody td:nth-child(2)").colorize();
+      $("table#" + i + " tbody td:nth-child(3)").colorize();
+      $("table#" + i + " tbody td:nth-child(4)").colorize();
+      $("table#" + i + " tbody td:nth-child(5)").colorize();
+    }
+  });
+  $('.mydatatable').DataTable({paging: false, searching: false, "order": [[ 2, "desc" ]]});
+  </script>
+{% endblock content %}

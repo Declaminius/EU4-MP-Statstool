@@ -38,7 +38,7 @@ def home(mp_id):
                 names_dict[nation_data.nation_name] = nation_data.player_name
             else:
                 names_dict[nation_data.nation_name] = "???"
-    return render_template("home.html", savegames = savegames, counter = len(savegames), \
+    return render_template("main/home.html", savegames = savegames, counter = len(savegames), \
             savegame_dict = savegame_dict, mps = mps, current_mp = current_mp, \
             current_save = current_save, names_dict = names_dict, nation_names_dict = nation_names_dict)
 
@@ -57,7 +57,7 @@ def login():
             return redirect(url_for("main.home"))
         else:
             flash("Login Unsuccessful. Please check username and password.", "danger")
-    return render_template("login.html", title = "Log In", form = form)
+    return render_template("main/login.html", title = "Log In", form = form)
 
 @main.route("/logout", methods = ["GET", "POST"])
 def logout():
@@ -77,7 +77,7 @@ def register():
         db.session.commit()
         flash(f'Your account has been created! You can now log in.', 'success')
         return redirect(url_for("main.login"))
-    return render_template("register.html", title = "Register", form = form)
+    return render_template("main/register.html", title = "Register", form = form)
 
 
 @main.route("/upload_savegames", methods = ["GET", "POST"], defaults = {'mp_id': None})
@@ -134,7 +134,7 @@ def upload_savegames(mp_id = None):
                 print(e)
 
         return redirect(url_for("parse.setup", sg_id1 = sg_ids[0], sg_id2 = sg_ids[1], part = 0))
-    return render_template("upload_savegames.html", form = form)
+    return render_template("main/upload_savegames.html", form = form)
 
 @main.route("/upload_one_savegame", methods = ["GET", "POST"], defaults={'mp_id': None, 'institution': None})
 @main.route("/upload_one_savegame/<int:mp_id>", methods = ["GET", "POST"], defaults={'institution': None})
@@ -191,7 +191,7 @@ def upload_one_savegame(mp_id, institution):
             print(e)
         else:
             return redirect(url_for("parse.setup", sg_id1 = savegame.id, sg_id2 = savegame.id, part = 0))
-    return render_template("upload_one_savegame.html", form = form)
+    return render_template("main/upload_one_savegame.html", form = form)
 
 @main.route("/upload_map/<int:sg_id>", methods = ["GET", "POST"])
 @login_required
@@ -207,7 +207,7 @@ def upload_map(sg_id):
         savegame.map_file = map_random
         db.session.commit()
         return redirect(url_for("main.home"))
-    return render_template("upload_map.html", form = form)
+    return render_template("main/upload_map.html", form = form)
 
 @main.route("/account/<int:user_id>", methods = ["GET", "POST"])
 @login_required
@@ -250,7 +250,7 @@ def account(user_id):
         mp_form.mp_description.data = ""
         flash(f'Successfully created MP.', 'success')
         return redirect(url_for("main.account", user_id = user_id))
-    return render_template("account.html", data = zip(ids,data,maps), \
+    return render_template("main/account.html", data = zip(ids,data,maps), \
             header_labels = header_labels, mp_header_labels = mp_header_labels, \
             mp_data = zip(mp_ids,mp_names,mp_descriptions, mp_gms, mp_hosts), \
             form = mp_form, user_id = user_id)
@@ -293,7 +293,7 @@ def settings_mp(user_id, mp_id):
         db.session.commit()
         flash(f'Successfully updated MP.', 'success')
         return redirect(url_for("main.account", user_id = user_id))
-    return render_template("mp_settings.html", form = form)
+    return render_template("main/mp_settings.html", form = form)
 
 @main.route("/delete_mp/<int:mp_id>", methods = ["GET", "POST"])
 @login_required
@@ -325,20 +325,20 @@ def total_victory_points(mp_id):
             data = {}
             for tag in nation_tags:
                 data[tag] = [0]*(len(header_labels)-1)
-            return render_template("victory_points.html", header_labels = header_labels,\
+            return render_template("main/victory_points.html", header_labels = header_labels,\
                     num_columns = len(header_labels),\
                     nation_info = zip(nation_names,nation_tags,nation_colors_hex,nation_colors_hsl), data = data)
         elif mp_id == 2:
             header_labels, data = mp2_data(nation_tags, mp_id)
 
-            return render_template("victory_points.html", header_labels = header_labels,\
+            return render_template("main/victory_points.html", header_labels = header_labels,\
                     num_columns = len(header_labels),\
                     nation_info = zip(nation_names,nation_tags,nation_colors_hex,nation_colors_hsl), data = data)
 
         elif mp_id == 1:
             header_labels, data = mp1_data()
 
-            return render_template("victory_points.html", header_labels = header_labels,\
+            return render_template("main/victory_points.html", header_labels = header_labels,\
                     num_columns = len(header_labels),\
                     nation_info = zip(nation_names,nation_tags,nation_colors_hex,nation_colors_hsl), data = data)
 
@@ -363,7 +363,7 @@ def configure_teams(mp_id):
     mp = MP.query.get(mp_id)
     if request.method == "POST":
         return redirect(url_for("main.home", mp_id = mp_id))
-    return render_template("configure_teams.html", form = form, mp = mp)
+    return render_template("main/configure_teams.html", form = form, mp = mp)
 
 @main.route("/add_team/<int:mp_id>", methods = ["GET", "POST"])
 def add_team(mp_id):
@@ -373,7 +373,7 @@ def add_team(mp_id):
         db.session.add(team)
         db.session.commit()
         return redirect(url_for("main.configure_teams", mp_id = mp_id))
-    return render_template("new_team.html", form = form, mp_id = mp_id)
+    return render_template("main/new_team.html", form = form, mp_id = mp_id)
 
 @main.route("/delete_team/<int:mp_id>/<int:team_id>", methods = ["GET"])
 def delete_team(mp_id, team_id):

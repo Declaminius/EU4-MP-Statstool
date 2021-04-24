@@ -103,7 +103,7 @@ class MP(db.Model):
     institutions = db.Column(db.Boolean)
     victory_points = db.Column(db.Boolean)
     teams_setting = db.Column(db.Boolean)
-
+    map_file = db.Column(db.String(120), nullable = True)
 
 class Team(db.Model):
     __tablename__ = 'team'
