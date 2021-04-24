@@ -64,7 +64,7 @@ def remove_nation_formation(sg_id1,sg_id2,old,new):
     formation = NationFormation.query.get((sg_id1,sg_id2,old,new))
     db.session.delete(formation)
     db.session.commit()
-    return redirect(url_for("show_stats.parse", sg_id1 = sg_id1, sg_id2 = sg_id2, part = 0))
+    return redirect(url_for("show_stats.configure", sg_id1 = sg_id1, sg_id2 = sg_id2))
 
 @show_stats.route("/configure/<int:sg_id1>/<int:sg_id2>", methods = ["GET", "POST"])
 @login_required
@@ -97,17 +97,8 @@ def configure(sg_id1,sg_id2):
 
     nation_formations = []
     for x in NationFormation.query.filter_by(old_savegame_id = sg_id1, new_savegame_id = sg_id2).all():
-        old_nation_data = NationSavegameData.query.filter_by(savegame_id = sg_id1, nation_tag = x.old_nation_tag).first()
-        if old_nation_data:
-            if (name := old_nation_data.nation_name):
-                old_nation = name
-        else:
-            old_nation = x.old_nation_tag
-        new_nation_data = NationSavegameData.query.filter_by(savegame_id = sg_id2, nation_tag = x.new_nation_tag).first()
-        if (name := new_nation_data.nation_name):
-            new_nation = name
-        else:
-            new_nation = new_nation_data.nation_tag
+        old_nation = NationSavegameData.query.filter_by(savegame_id = sg_id1, nation_tag = x.old_nation_tag).first()
+        new_nation = NationSavegameData.query.filter_by(savegame_id = sg_id2, nation_tag = x.new_nation_tag).first()
         nation_formations.append((old_nation, new_nation))
     return render_template("show_stats/configure.html", old_savegame = old_savegame, new_savegame = new_savegame, \
             form = form, nation_formations = nation_formations, mp = mp)

@@ -24,12 +24,12 @@
         <tbody>
             {% for old, new in nation_formations %}
                 <tr>
-                  <td style="text-align:center" bgcolor = "white">{{ old }}</td>
-                  <td style="text-align:center" bgcolor = "white">{{ new }}</td>
+                  <td style="text-align:center" bgcolor = "white">{{ old.nation_name }}</td>
+                  <td style="text-align:center" bgcolor = "white">{{ new.nation_name }}</td>
                   <td style="text-align:center" bgcolor = "white">
                     <div>
                       <a class="tn btn-danger btn-sm m-1"
-                      href = "{{url_for('show_stats.remove_nation_formation', sg_id1 = old_savegame.id, sg_id2 = new_savegame.id, old = old, new = new)}}">Remove</a>
+                      href = "{{url_for('show_stats.remove_nation_formation', sg_id1 = old_savegame.id, sg_id2 = new_savegame.id, old = old.nation_tag, new = new.nation_tag)}}">Remove</a>
                     </div>
                   </td>
                 </tr>
