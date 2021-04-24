@@ -215,6 +215,23 @@
           {% endif %}
         {% endif %}
       </div>
+      <div class="album py-5 bg-light mt-4">
+        {% if current_mp.current_map_file %}
+          <h4 class="card-text mb-4"><center> Aktuelle Karte </center></h4>
+          <div class="media">
+            <img src="/static/maps/{{current_mp.current_map_file}}" class="img-responsive fit-image">
+          </div>
+          {% if current_user == current_mp.admin %}
+            <center><a class="btn btn-outline-danger btn-center mt-2 mb-2"\
+                        href = "{{url_for('main.delete_current_mp_map', mp_id = current_mp.id)}}">Delete</a></center>
+          {% endif %}
+        {% else %}
+          {% if current_user == current_mp.admin %}
+            <center><a class="btn btn-outline-secondary btn-center mt-2 mb-2"\
+                        href = "{{url_for('main.add_current_mp_map', mp_id = current_mp.id)}}">Add Current Map</a></center>
+          {% endif %}
+        {% endif %}
+      </div>
     </div>
   </div>
   <div class="col-md-2">
