@@ -159,29 +159,33 @@
       <div class="album py-5 bg-light">
         <div class="container">
           <div class="row">
-            {{ institution_block("basesave", "colonialism", "Start-Save", "Kolonialismus") }}
-            {% if savegame_dict["colonialism"] %}
+            {% if savegame_dict["colonialism"] or current_user == current_mp.admin %}
+              {{ institution_block("basesave", "colonialism", "Start-Save", "Kolonialismus") }}
+            {% endif %}
+            {% if savegame_dict["printing_press"] or current_user == current_mp.admin %}
               {{ institution_block("colonialism", "printing_press", "Kolonialismus", "Druckerpresse") }}
             {% endif %}
-            {% if savegame_dict["printing_press"] %}
+            {% if savegame_dict["global_trade"] or current_user == current_mp.admin %}
               {{ institution_block("printing_press", "global_trade", "Druckerpresse", "Globaler Handel") }}
             {% endif %}
           </div>
           <div class="row">
-            {% if savegame_dict["global_trade"] %}
+            {% if savegame_dict["manufactories"] or current_user == current_mp.admin %}
               {{ institution_block("global_trade", "manufactories", "Globaler Handel", "Manufakturen") }}
             {% endif %}
-            {% if savegame_dict["manufactories"] %}
+            {% if savegame_dict["enlightenment"] or current_user == current_mp.admin %}
               {{ institution_block("manufactories", "enlightenment", "Manufakturen", "Aufklärung") }}
             {% endif %}
-            {% if savegame_dict["enlightenment"] %}
+            {% if savegame_dict["industrialization"] or current_user == current_mp.admin %}
               {{ institution_block("enlightenment", "industrialization", "Aufklärung", "Industrialisierung") }}
             {% endif %}
           </div>
           <div class="row">
-            {% if savegame_dict["industrialization"] %}
+            <div class="col-md-4"></div>
+            {% if savegame_dict["endsave"] or current_user == current_mp.admin %}
               {{ institution_block("industrialization", "endsave", "Industrialisierung", "MP-Ende") }}
             {% endif %}
+            <div class="col-md-4"></div>
           </div>
         </div>
       </div>

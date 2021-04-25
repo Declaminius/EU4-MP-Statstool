@@ -8,6 +8,9 @@
       {% for label in header_labels%}
       <th>{{label}}</th>
       {% endfor %}
+      {% if current_user == current_mp.admin %}
+        <th>Edit</th>
+      {% endif %}
     </tr>
   </thead>
   <tbody>
@@ -21,6 +24,9 @@
         {% for value in data[tag] %}
           <td>{{value}}</td>
         {% endfor %}
+        {% if current_user == current_mp.admin %}
+          <td style="text-align:center"><div><a class="tn btn-secondary btn-sm m-1" href = "{{url_for('main.edit_victory_points', mp_id = mp_id, team_id = tag)}}">Edit</a></div></td>
+        {% endif %}
       </tr>
     {% endfor %}
   </tbody>

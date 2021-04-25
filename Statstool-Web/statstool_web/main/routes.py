@@ -310,6 +310,7 @@ def delete_mp(mp_id):
 @main.route("/total_victory_points/<int:mp_id>", methods = ["GET"])
 def total_victory_points(mp_id):
     savegame = Savegame.query.filter_by(mp_id = mp_id).order_by(desc(Savegame.year)).first()
+    current_mp = MP.query.get(mp_id)
 
     if savegame:
         nation_tags = [x.tag for x in savegame.player_nations]
@@ -325,6 +326,12 @@ def total_victory_points(mp_id):
             "Globaler Handel", "Manufakturen", "Aufklärung", "Industrialisierung", \
             "erster Spielerkrieg-Sieger", "Globaler Handel-Sieger", "Gesamt"]
             institutions = ("colonialism", "printing_press", "global_trade", "manufactories", "enlightenment", "industrialization")
+            two_vp_province_ids = {382: "Damaskus", 227: "Lissabon", 333: "Majorca",\
+                    1765: "Sofia", 177: "Maine", 45: "Lübeck", 257: "Warschau", 295: "Moskau"}
+            one_vp_province_ids = {361: "Kairo", 223: "Granada", 151: "Konstantinopel",\
+                    341: "Tunis", 231: "Porto", 170: "Finistère", 183: "Paris", 50: "Berlin",\
+                    153: "Pest", 1756: "Bessarabien", 4142: "Ostjylland", 41: "Königsberg"}
+
             teams = MP.query.get(mp_id).teams
             team_names = ["Team {}".format(i) for i in range(1,len(teams)+1)]
             team_ids = [i for i in range(1,len(teams)+1)]
@@ -338,11 +345,45 @@ def total_victory_points(mp_id):
                 for id in team_ids:
                     if (result := VictoryPoint.query.filter_by(mp_id = mp_id, category = institution, team_id = id).first()):
                         data[id][column] = result.points
+
+            province_points_list = []
+            for id in team_ids:
+                if (vp := VictoryPoint.query.filter_by(mp_id = mp_id, team_id = id, category = "provinces").first()):
+                    vp.points = 0
+                    province_points_list.append(vp)
+                else:
+                    vp = VictoryPoint(mp_id = mp_id, team_id = id, category = "provinces", points = 0)
+                    db.session.add(vp)
+                    province_points_list.append(vp)
+            for (id,name) in two_vp_province_ids.items():
+                ProviceData = NationSavegameProvinces.query.filter_by(savegame_id = savegame.id, province_id = id).first()
+                owner = ProviceData.nation_tag
+                for team in teams:
+                    if owner in (team.team_tag1, team.team_tag2):
+                        province_points_list[team.id-1].points += 2
+            for (id,name) in one_vp_province_ids.items():
+                ProviceData = NationSavegameProvinces.query.filter_by(savegame_id = savegame.id, province_id = id).first()
+                owner = ProviceData.nation_tag
+                for team in teams:
+                    if owner in (team.team_tag1, team.team_tag2):
+                        province_points_list[team.id-1].points += 1
+
+            db.session.commit()
+
             for team in teams:
+                data[team.id][0] = VictoryPoint.query.filter_by(mp_id = mp_id, team_id = team.id, category = "provinces").first().points
+                vp = VictoryPoint.query.filter_by(mp_id = mp_id, team_id = team.id, category = "first_player_war").first()
+                if vp:
+                    data[team.id][-2] = vp.points
+                vp = VictoryPoint.query.filter_by(mp_id = mp_id, team_id = team.id, category = "global_trade_spawn").first()
+                if vp:
+                    data[team.id][-1] = vp.points
                 data[team.id].append(sum(data[team.id]))
+
             return render_template("main/victory_points.html", header_labels = header_labels,\
                     num_columns = len(header_labels),\
-                    nation_info = zip(team_names,team_ids,team_colors_hex,team_colors_hsl), data = data, mp_id = mp_id)
+                    nation_info = zip(team_names,team_ids,team_colors_hex,team_colors_hsl), \
+                    data = data, mp_id = mp_id, current_mp = current_mp)
 
 
         elif mp_id == 2:
@@ -362,6 +403,34 @@ def total_victory_points(mp_id):
     else:
         flash(f'Noch keine Siegpunkte vergeben.', 'danger')
         return redirect(url_for("main.home", mp_id = mp_id))
+
+@main.route("/edit_victory_points/<int:mp_id>/<int:team_id>", methods = ["GET", "POST"])
+def edit_victory_points(mp_id, team_id):
+    form = EditVPForm()
+    categories = ["first_player_war", "global_trade_spawn"]
+    fields =  [form.first_player_war, form.global_trade_spawn]
+    if request.method == "GET":
+        for (cat,field) in zip(categories,fields):
+            vp = VictoryPoint.query.filter_by(mp_id = mp_id, team_id = team_id, category = cat).first()
+            if vp:
+                if vp.points == 1:
+                    field.data = True
+            else:
+                field.data = False
+    if request.method == "POST":
+        for (cat,field) in zip(categories,fields):
+            vp = VictoryPoint.query.filter_by(mp_id = mp_id, team_id = team_id, category = cat).first()
+            if not vp:
+                vp = VictoryPoint(mp_id = mp_id, team_id = team_id, category = cat)
+                db.session.add(vp)
+            if field.data:
+                vp.points = 1
+            else:
+                vp.points = 0
+
+        db.session.commit()
+        return redirect(url_for("main.total_victory_points", mp_id = mp_id))
+    return render_template("main/edit_vps.html", form = form, mp_id = mp_id)
 
 @main.route("/latest_stats/<int:mp_id>", methods = ["GET"])
 def latest_stats(mp_id):

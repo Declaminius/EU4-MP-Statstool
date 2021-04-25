@@ -73,3 +73,9 @@ class NewTeamForm(FlaskForm):
     select1 = StringField("Add First Nation")
     select2 = StringField("Add Second Nation")
     submit = SubmitField("Confirm")
+
+
+class EditVPForm(FlaskForm):
+    first_player_war = BooleanField("Erster Spielerkrieg-Sieger")
+    global_trade_spawn = BooleanField("Globaler Handel")
+    submit = SubmitField("Confirm")
