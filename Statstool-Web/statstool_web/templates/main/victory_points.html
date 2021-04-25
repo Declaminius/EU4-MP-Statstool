@@ -24,7 +24,7 @@
         {% for value in data[tag] %}
           <td>{{value}}</td>
         {% endfor %}
-        {% if current_user == current_mp.admin %}
+        {% if current_user == current_mp.admin and mp_id == 3 %}
           <td style="text-align:center"><div><a class="tn btn-secondary btn-sm m-1" href = "{{url_for('main.edit_victory_points', mp_id = mp_id, team_id = tag)}}">Edit</a></div></td>
         {% endif %}
       </tr>

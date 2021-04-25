@@ -391,14 +391,16 @@ def total_victory_points(mp_id):
 
             return render_template("main/victory_points.html", header_labels = header_labels,\
                     num_columns = len(header_labels),\
-                    nation_info = zip(nation_names,nation_tags,nation_colors_hex,nation_colors_hsl), data = data, mp_id = mp_id)
+                    nation_info = zip(nation_names,nation_tags,nation_colors_hex,nation_colors_hsl), \
+                    data = data, mp_id = mp_id, current_mp = current_mp)
 
         elif mp_id == 1:
             header_labels, data = mp1_data()
 
             return render_template("main/victory_points.html", header_labels = header_labels,\
                     num_columns = len(header_labels),\
-                    nation_info = zip(nation_names,nation_tags,nation_colors_hex,nation_colors_hsl), data = data, mp_id = mp_id)
+                    nation_info = zip(nation_names,nation_tags,nation_colors_hex,nation_colors_hsl), \
+                    data = data, mp_id = mp_id, current_mp = current_mp)
 
     else:
         flash(f'Noch keine Siegpunkte vergeben.', 'danger')
