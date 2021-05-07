@@ -67,7 +67,7 @@
       <tr style="border-bottom:1px solid black">
         <td colspan="100%"></td>
       </tr>
-      {% for j in range([free_provinces_two_vp|length//3, free_provinces_one_vp|length//3]|max) %}
+      {% for j in range(num_free_rows) %}
         <tr>
           <td> Frei </td>
           {% for i in range(3) %}
@@ -78,11 +78,11 @@
             {% endif %}
           {% endfor %}
           {% for i in range(3) %}
-          {% if 3*j + i < free_provinces_two_vp|length %}
-          <td bgcolor = "#86fca3"> {{free_provinces_one_vp[3*j + i]}}</td>
-        {% else %}
-          <td></td>
-        {% endif %}
+            {% if 3*j + i < free_provinces_two_vp|length %}
+              <td bgcolor = "#86fca3"> {{free_provinces_one_vp[3*j + i]}}</td>
+            {% else %}
+              <td></td>
+            {% endif %}
           {% endfor %}
         </tr>
       {% endfor %}

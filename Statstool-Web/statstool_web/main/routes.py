@@ -8,6 +8,7 @@ from statstool_web.util import redirect_url
 from pathlib import Path
 from sqlalchemy import desc
 from flask_login import login_user, logout_user, current_user, login_required
+from math import ceil
 
 
 import os
@@ -386,6 +387,8 @@ def total_victory_points(mp_id):
                 if vp:
                     data[team.id][-1] = vp.points
                 data[team.id].append(sum(data[team.id]))
+            
+            num_free_rows = max([ceil(len(free_provinces_one_vp)/3), ceil(len(free_provinces_two_vp)/3)])
 
             return render_template("main/victory_points.html", header_labels = header_labels,\
                     num_columns = len(header_labels),\
@@ -393,6 +396,7 @@ def total_victory_points(mp_id):
                     team_province_dict = team_province_dict, \
                     free_provinces_one_vp = free_provinces_one_vp, \
                     free_provinces_two_vp = free_provinces_two_vp, \
+                    num_free_rows = num_free_rows, \
                     data = data, mp_id = mp_id, current_mp = current_mp)
 
 
