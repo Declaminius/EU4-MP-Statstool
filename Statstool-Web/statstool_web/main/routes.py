@@ -322,7 +322,7 @@ def total_victory_points(mp_id):
 
 
         if mp_id == 3:
-            header_labels = ["Nation", "Provinzen", "Kolonialismus", "Druckerpresse", \
+            header_labels = ["Team", "Provinzen", "Kolonialismus", "Druckerpresse", \
             "Globaler Handel", "Manufakturen", "Aufklärung", "Industrialisierung", \
             "erster Spielerkrieg-Sieger", "Globaler Handel-Sieger", "Gesamt"]
             institutions = ("colonialism", "printing_press", "global_trade", "manufactories", "enlightenment", "industrialization")
@@ -347,6 +347,9 @@ def total_victory_points(mp_id):
                         data[id][column] = result.points
 
             province_points_list = []
+            team_province_dict = {i+1: [[],[]] for i in range(len(teams))}
+            free_provinces_one_vp = [x for x in one_vp_province_ids.values()]
+            free_provinces_two_vp = [x for x in two_vp_province_ids.values()]
             for id in team_ids:
                 if (vp := VictoryPoint.query.filter_by(mp_id = mp_id, team_id = id, category = "provinces").first()):
                     vp.points = 0
@@ -361,12 +364,16 @@ def total_victory_points(mp_id):
                 for team in teams:
                     if owner in (team.team_tag1, team.team_tag2):
                         province_points_list[team.id-1].points += 2
+                        team_province_dict[team.id][0].append(name)
+                        free_provinces_two_vp.remove(name)
             for (id,name) in one_vp_province_ids.items():
                 ProviceData = NationSavegameProvinces.query.filter_by(savegame_id = savegame.id, province_id = id).first()
                 owner = ProviceData.nation_tag
                 for team in teams:
                     if owner in (team.team_tag1, team.team_tag2):
                         province_points_list[team.id-1].points += 1
+                        team_province_dict[team.id][1].append(name)
+                        free_provinces_one_vp.remove(name)
 
             db.session.commit()
 
@@ -383,6 +390,9 @@ def total_victory_points(mp_id):
             return render_template("main/victory_points.html", header_labels = header_labels,\
                     num_columns = len(header_labels),\
                     nation_info = zip(team_names,team_ids,team_colors_hex,team_colors_hsl), \
+                    team_province_dict = team_province_dict, \
+                    free_provinces_one_vp = free_provinces_one_vp, \
+                    free_provinces_two_vp = free_provinces_two_vp, \
                     data = data, mp_id = mp_id, current_mp = current_mp)
 
 

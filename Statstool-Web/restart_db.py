@@ -54,8 +54,12 @@ so_mp1 = MP(id = 1, name = "Sonntags-MP: S2E2 - Per Aspera Ad Astra",
 so_mp2 = MP(id = 2, name = "Sonntags-MP: S2E3 - Faber est suae quisque fortunae",
 			description = "Statistiken und Siegpunkts-Übersicht für das 18.Sonntags-MP der Strategie-Zone." ,
 			gm = "Declaminius", host = "RoLJZ1", checksum = "f22f", next_gameday = "14.02.2021", admin = admin)
+so_mp3 = MP(id = 3, name = "Sonntags-MP: S2E4 - Noch zwei Desynchs bis 1821!",
+			description = "Statistiken und Siegpunkts-Übersicht für das 19.Sonntags-MP der Strategie-Zone." ,
+			gm = "Declaminius", host = "Sam", checksum = "????", next_gameday = "09.05.2021", admin = admin)
 db.session.add(so_mp1)
 db.session.add(so_mp2)
+db.session.add(so_mp3)
 db.session.add(admin)
 db.session.commit()
 #Todo: create tags, trade_goods, ... (all static values)

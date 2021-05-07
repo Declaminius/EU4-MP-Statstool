@@ -35,8 +35,15 @@
                 <a class="nav-item nav-link"
                 href = "{{url_for('show_stats.configure', sg_id1 = old_savegame.id, sg_id2 = new_savegame.id)}}">Configure</a>
               {% endif %}
-              <a class="nav-item nav-link"
-              href = "{{url_for('show_stats.overview_table', sg_id1 = old_savegame.id, sg_id2 = new_savegame.id)}}">Overview</a>
+              <li class="nav-item dropdown">
+                <a class="nav-link dropdown-toggle" href="#" id="navbarDropdown" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                  Overview
+                </a>
+                <div class="dropdown-menu" aria-labelledby="navbarDropdown">
+                  <a class="dropdown-item" href="{{url_for('show_stats.overview_table', sg_id1 = old_savegame.id, sg_id2 = new_savegame.id)}}">Nations</a>
+                  <a class="dropdown-item" href="{{url_for('show_stats.overview_table_teams', sg_id1 = old_savegame.id, sg_id2 = new_savegame.id)}}">Teams</a>
+                </div>
+              </li>
               <li class="nav-item dropdown">
                 <a class="nav-link dropdown-toggle" href="#" id="navbarDropdown" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
                   Development

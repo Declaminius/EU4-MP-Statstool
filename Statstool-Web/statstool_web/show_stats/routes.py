@@ -123,6 +123,33 @@ def overview_table(sg_id1,sg_id2):
             new_savegame = Savegame.query.get(sg_id2), data = zip(nation_data,nation_names,nation_colors_hex, nation_colors_hsl), \
             columns = columns, header_labels = header_labels, colorize_columns = [1,2,3,4,5,6], sort_by = 1, map = map, mp = mp)
 
+@show_stats.route("/overview_table_teams/<int:sg_id1>/<int:sg_id2>", methods = ["GET"])
+def overview_table_teams(sg_id1,sg_id2):
+    mp = Savegame.query.get(sg_id2).mp
+
+    columns = ["great_power_score", "development", "effective_development", "navy_strength", "max_manpower", "income"]
+    header_labels = ["Team", "Great Power Score", "Development", "Effective Development", "Navy Strength", "Maximum Manpower", "Monthly Income"]
+    teams = mp.teams
+    team_names = ["Team {}".format(i) for i in range(1,len(teams)+1)]
+    team_ids = [i for i in range(1,len(teams)+1)]
+    team_colors_hex = ["#ffffff"]*len(teams)
+    team_colors_hsl = [(0,0,100)]*len(teams)
+
+    team_data = []
+    for team in teams:
+        team_tags = (team.team_tag1, team.team_tag2)
+        data = dict(zip(columns, [0 for x in range(len(columns))]))
+
+        for tag in team_tags:
+            result = NationSavegameData.query.filter_by(nation_tag = tag, \
+                savegame_id = sg_id2).first().__dict__
+            for column in columns:
+                data[column] += result[column]
+        team_data.append(data)
+    return render_template("show_stats/table.html", old_savegame = Savegame.query.get(sg_id1), \
+            new_savegame = Savegame.query.get(sg_id2), data = zip(team_data,team_names,team_colors_hex, team_colors_hsl), \
+            columns = columns, header_labels = header_labels, colorize_columns = [1,2,3,4,5,6], sort_by = 1, map = map, mp = mp)
+
 @show_stats.route("/development/<int:sg_id1>/<int:sg_id2>", methods = ["GET"])
 def development(sg_id1, sg_id2):
     mp = Savegame.query.get(sg_id2).mp
