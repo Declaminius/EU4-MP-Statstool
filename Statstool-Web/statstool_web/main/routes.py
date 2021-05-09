@@ -334,10 +334,8 @@ def total_victory_points(mp_id):
                     153: "Pest", 1756: "Bessarabien", 4142: "Ostjylland", 41: "Königsberg"}
 
             teams = MP.query.get(mp_id).teams
-            team_ids = []
             team_names = []
             for team in teams:
-                team_ids.append(team_id)
                 team_names.append("Team {}".format(team.id))
             team_colors_hex = ["#ffffff"]*len(teams)
             team_colors_hsl = [(0,0,100)]*len(teams)
@@ -346,28 +344,28 @@ def total_victory_points(mp_id):
                 data[team.id] = [0]*(len(header_labels)-2)
 
             for institution, column in zip(institutions, range(1,7)):
-                for id in team_ids:
-                    if (result := VictoryPoint.query.filter_by(mp_id = mp_id, category = institution, team_id = id).first()):
-                        data[id][column] = result.points
+                for team in teams:
+                    if (result := VictoryPoint.query.filter_by(mp_id = mp_id, category = institution, team_id = team.id).first()):
+                        data[team.id][column] = result.points
 
-            province_points_list = []
-            team_province_dict = {i+1: [[],[]] for i in range(len(teams))}
+            province_points_dict = {}
+            team_province_dict = {team.id: [[],[]] for team in teams}
             free_provinces_one_vp = [x for x in one_vp_province_ids.values()]
             free_provinces_two_vp = [x for x in two_vp_province_ids.values()]
-            for id in team_ids:
-                if (vp := VictoryPoint.query.filter_by(mp_id = mp_id, team_id = id, category = "provinces").first()):
+            for team in teams:
+                if (vp := VictoryPoint.query.filter_by(mp_id = mp_id, team_id = team.id, category = "provinces").first()):
                     vp.points = 0
-                    province_points_list.append(vp)
+                    province_points_dict[team.id] = vp
                 else:
-                    vp = VictoryPoint(mp_id = mp_id, team_id = id, category = "provinces", points = 0)
+                    vp = VictoryPoint(mp_id = mp_id, team_id = team.id, category = "provinces", points = 0)
                     db.session.add(vp)
-                    province_points_list.append(vp)
+                    province_points_dict[team.id] = vp
             for (id,name) in two_vp_province_ids.items():
                 ProviceData = NationSavegameProvinces.query.filter_by(savegame_id = savegame.id, province_id = id).first()
                 owner = ProviceData.nation_tag
                 for team in teams:
                     if owner in (team.team_tag1, team.team_tag2):
-                        province_points_list[team.id-1].points += 2
+                        province_points_dict[team.id].points += 2
                         team_province_dict[team.id][0].append(name)
                         free_provinces_two_vp.remove(name)
             for (id,name) in one_vp_province_ids.items():
@@ -375,7 +373,7 @@ def total_victory_points(mp_id):
                 owner = ProviceData.nation_tag
                 for team in teams:
                     if owner in (team.team_tag1, team.team_tag2):
-                        province_points_list[team.id-1].points += 1
+                        province_points_dict[team.id].points += 1
                         team_province_dict[team.id][1].append(name)
                         free_provinces_one_vp.remove(name)
 
@@ -392,6 +390,7 @@ def total_victory_points(mp_id):
                 data[team.id].append(sum(data[team.id]))
             
             num_free_rows = max([ceil(len(free_provinces_one_vp)/3), ceil(len(free_provinces_two_vp)/3)])
+            team_ids = [team.id for team in teams]
 
             return render_template("main/victory_points.html", header_labels = header_labels,\
                     num_columns = len(header_labels),\

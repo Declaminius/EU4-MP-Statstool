@@ -7,4 +7,5 @@ savegames/
 plots/
 venv/
 *.db
+error.log
 Statstool-Web/statstool_web/config.py

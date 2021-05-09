@@ -18,7 +18,7 @@ def setup(sg_id1,sg_id2, part):
         form = TagSetupForm1()
     old_savegame = Savegame.query.get(sg_id1)
     new_savegame = Savegame.query.get(sg_id2)
-    nations = set(old_savegame.player_nations + new_savegame.player_nations)
+    nations = new_savegame.player_nations
     names_dict = {}
     for nation in nations:
         nation_data =  NationSavegameData.query.filter_by(savegame_id = sg_id2, \
