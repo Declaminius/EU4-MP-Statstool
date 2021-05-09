@@ -113,6 +113,8 @@ def overview_table(sg_id1,sg_id2):
     for nation in Savegame.query.get(sg_id2).player_nations:
         data = NationSavegameData.query.filter_by(nation_tag = nation.tag, \
                 savegame_id = sg_id2).with_entities(*columns).first()._asdict()
+        for column in data.keys():
+            data[column] = round(data[column], 3)
         nation_data.append(data)
         nation_colors_hex.append( NationSavegameData.query.filter_by(nation_tag = nation.tag, \
                 savegame_id = sg_id2).first().color)
@@ -127,7 +129,7 @@ def overview_table(sg_id1,sg_id2):
 def overview_table_teams(sg_id1,sg_id2):
     mp = Savegame.query.get(sg_id2).mp
 
-    columns = ["great_power_score", "development", "effective_development", "navy_strength", "max_manpower", "income"]
+    columns = ["great_power_score", "development",  "effective_development", "navy_strength", "income", "max_manpower"]
     header_labels = ["Team", "Great Power Score", "Development", "Effective Development", "Navy Strength", "Maximum Manpower", "Monthly Income"]
     teams = mp.teams
     team_names = ["Team {}".format(team.id) for team in teams]
@@ -145,6 +147,7 @@ def overview_table_teams(sg_id1,sg_id2):
                 savegame_id = sg_id2).first().__dict__
             for column in columns:
                 data[column] += result[column]
+                data[column] = round(data[column], 3)
         team_data.append(data)
     return render_template("show_stats/table.html", old_savegame = Savegame.query.get(sg_id1), \
             new_savegame = Savegame.query.get(sg_id2), data = zip(team_data,team_names,team_colors_hex, team_colors_hsl), \
@@ -182,11 +185,42 @@ def income(sg_id1, sg_id2):
 @show_stats.route("/max_manpower/<int:sg_id1>/<int:sg_id2>", methods = ["GET"])
 def max_manpower(sg_id1, sg_id2):
     mp = Savegame.query.get(sg_id2).mp
-    content, ids, header_labels, columns, flattened_image_files, map = get_images_and_table_data(["max_manpower"], [NationSavegameData.max_manpower], NationSavegameData, sg_id1, sg_id2)
+    content, ids, header_labels, columns, flattened_image_files, map = \
+        get_images_and_table_data(["max_manpower"], [NationSavegameData.max_manpower], NationSavegameData, sg_id1, sg_id2)
 
     return render_template("show_stats/plot.html", old_savegame = Savegame.query.get(sg_id1), new_savegame = Savegame.query.get(sg_id2), \
             flattened_image_files = flattened_image_files, content = content, \
             ids = ids, header_labels = header_labels, columns = columns, map = map, mp = mp)
+
+@show_stats.route("/tech/<int:sg_id1>/<int:sg_id2>", methods = ["GET"])
+def tech(sg_id1, sg_id2):
+    mp = Savegame.query.get(sg_id2).mp
+    
+    columns = ["adm_tech", "dip_tech", "mil_tech", "number_of_ideas", "innovativeness"]
+
+    header_labels = ["Nation", "ADM", "DIP", "MIL", "Ideen", "Innovativität"]
+
+    nation_data = []
+    nation_colors_hex = []
+    nation_colors_hsl = []
+    nation_names = []
+    for nation in Savegame.query.get(sg_id2).player_nations:
+        data = NationSavegameData.query.filter_by(nation_tag = nation.tag, \
+                savegame_id = sg_id2).with_entities(*columns).first()._asdict()
+        for column in data.keys():
+            data[column] = round(data[column], 3)
+        nation_data.append(data)
+        nation_colors_hex.append( NationSavegameData.query.filter_by(nation_tag = nation.tag, \
+                savegame_id = sg_id2).first().color)
+        nation_colors_hsl.append( NationSavegameData.query.filter_by(nation_tag = nation.tag, \
+                savegame_id = sg_id2).first().color.hsl)
+        nation_names.append(NationSavegameData.query.filter_by(savegame_id = sg_id2, nation_tag = nation.tag).first().nation_name)
+
+
+
+    return render_template("show_stats/table.html", old_savegame = Savegame.query.get(sg_id1), \
+            new_savegame = Savegame.query.get(sg_id2), data = zip(nation_data,nation_names,nation_colors_hex, nation_colors_hsl), \
+            columns = columns, header_labels = header_labels, colorize_columns = [1,2,3,4,5,], sort_by = 5, map = map, mp = mp)
 
 @show_stats.route("/army_losses_total/<int:sg_id1>/<int:sg_id2>", methods = ["GET"])
 def army_losses_total(sg_id1, sg_id2):

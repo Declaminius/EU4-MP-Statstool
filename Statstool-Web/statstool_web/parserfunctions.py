@@ -18,7 +18,7 @@ def edit_parse(filename):
 	with open(filename, 'r', encoding = 'cp1252', errors = 'ignore') as sg:
 		content = sg.read()
 		compile_player = compile("was_player=yes")
-		#compile_real_nations = compile("\n\t\tdevelopment")  # Dead nations don't have development
+		compile_real_nations = compile("\n\t\tdevelopment")  # Dead nations don't have development
 		countries = split("\n\t([A-Z0-9]{3})", content.split("\ncountries={")[1].split('active_advisors')[0])
 		tag_list, info_list = countries[1:-1:2], countries[2:-1:2]
 		nations_list = []
@@ -31,16 +31,17 @@ def edit_parse(filename):
 
 
 		year = int(search("date=(?P<year>\d{4})", content).group(1))
-
+		real_tag_list = []
 		for info, tag in zip(info_list, tag_list):
-			#result = compile_real_nations.search(info)
-			result = compile_player.search(info)
-			if result:
-				if not tag in player_names_dict.keys():
-					player_names_dict[tag] = None
+			if compile_real_nations.search(info):
+				real_tag_list.append(tag)
+				result = compile_player.search(info)
+				if result:
+					if not tag in player_names_dict.keys():
+						player_names_dict[tag] = None
 
 
-	return player_names_dict, sorted(tag_list), year
+	return player_names_dict, sorted(real_tag_list), year
 
 
 def parse_provinces(provinces, savegame):
@@ -86,7 +87,8 @@ def parse_provinces(provinces, savegame):
 				trade_good = TradeGood.query.filter_by(name = result["trade_goods"]).first()
 				if trade_good:
 					result["trade_good_id"] = trade_good.id
-				del result["name"], result["trade_goods"]
+				del result["name"]
+				del result["trade_goods"]
 
 				owner = province_x2.search(province)
 				if owner:
@@ -178,7 +180,8 @@ def parse_battle(battle, war, date_list, battle_regex, savegame):
 							for line in battle_dict[role].split("\n")[1:-1] \
 							if line.split("=")[0].split()[0] != "war_goal"})
 
-	del battle_dict["attacker"], battle_dict["defender"]
+	del battle_dict["attacker"]
+	del battle_dict["defender"]
 
 	for key in battle_dict.keys():
 		try:
@@ -476,8 +479,9 @@ def parse_countries(content, savegame):
 			nd.update(nation_data)
 		else:
 			nd = NationSavegameData.query.filter_by(savegame_id = savegame.id, nation_tag = tag).first()
-			db.session.delete(nd)
-			savegame.nations.remove(Nation.query.get(tag))
+			if nd:
+				db.session.delete(nd)
+				savegame.nations.remove(Nation.query.get(tag))
 
 
 	for tag in tag_list:
