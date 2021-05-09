@@ -25,6 +25,7 @@ def home(mp_id):
         savegame_dict[inst] = Savegame.query.filter_by(mp_id=mp_id, institution=inst).first()
     mps = MP.query.all()
     current_mp = MP.query.get(mp_id)
+    teams = sorted(current_mp.teams, key = lambda team: team.id)
     savegames = Savegame.query.filter_by(mp_id = mp_id).order_by(desc(Savegame.year))
     current_save = savegames.first()
     savegames = list(savegames)
@@ -43,7 +44,7 @@ def home(mp_id):
             else:
                 print(nation.tag)
     return render_template("main/home.html", savegames = savegames, counter = len(savegames), \
-            savegame_dict = savegame_dict, mps = mps, current_mp = current_mp, \
+            savegame_dict = savegame_dict, mps = mps, current_mp = current_mp, teams = teams, \
             current_save = current_save, names_dict = names_dict, nation_names_dict = nation_names_dict)
 
 @main.route("/login", methods = ["GET", "POST"])
@@ -465,9 +466,10 @@ def latest_stats(mp_id):
 def configure_teams(mp_id):
     form = ConfigureTeamsForm()
     mp = MP.query.get(mp_id)
+    teams = sorted(mp.teams, key = lambda team: team.id)
     if request.method == "POST":
         return redirect(url_for("main.home", mp_id = mp_id))
-    return render_template("main/configure_teams.html", form = form, mp = mp)
+    return render_template("main/configure_teams.html", form = form, mp = mp, teams = teams)
 
 @main.route("/add_team/<int:mp_id>", methods = ["GET", "POST"])
 def add_team(mp_id):
