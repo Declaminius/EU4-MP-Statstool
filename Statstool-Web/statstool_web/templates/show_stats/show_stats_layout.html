@@ -111,16 +111,22 @@
         </div>
       </nav>
     </header>
-    {% if new_savegame.map_file %}
     <style>
+      
+      body {
+        padding-top:20px;
+      }
+      {% if new_savegame.map_file %}
+  
         body {
         background-image:url('/static/maps/{{new_savegame.map_file}}');
         background-repeat: repeat-y;
         background-size:100% auto;
         opacity: 0.9;
-    }
-    {% endif %}
+        }
+      {% endif %}
     </style>
+  
     <div class = "container-fluid">
       {% block content %}{% endblock %}
     </div>
