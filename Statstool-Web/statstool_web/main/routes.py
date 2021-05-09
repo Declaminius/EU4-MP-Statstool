@@ -334,8 +334,11 @@ def total_victory_points(mp_id):
                     153: "Pest", 1756: "Bessarabien", 4142: "Ostjylland", 41: "Königsberg"}
 
             teams = MP.query.get(mp_id).teams
-            team_names = ["Team {}".format(i) for i in range(1,len(teams)+1)]
-            team_ids = [i for i in range(1,len(teams)+1)]
+            team_ids = []
+            team_names = []
+            for team in teams:
+                team_ids.append(team_id)
+                team_names.append("Team {}".format(team.id))
             team_colors_hex = ["#ffffff"]*len(teams)
             team_colors_hsl = [(0,0,100)]*len(teams)
             data = {}
