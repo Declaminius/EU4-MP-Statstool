@@ -130,8 +130,8 @@ def overview_table_teams(sg_id1,sg_id2):
     columns = ["great_power_score", "development", "effective_development", "navy_strength", "max_manpower", "income"]
     header_labels = ["Team", "Great Power Score", "Development", "Effective Development", "Navy Strength", "Maximum Manpower", "Monthly Income"]
     teams = mp.teams
-    team_names = ["Team {}".format(i) for i in range(1,len(teams)+1)]
-    team_ids = [i for i in range(1,len(teams)+1)]
+    team_names = ["Team {}".format(team.id) for team in teams]
+    team_ids = [team.id for team in teams]
     team_colors_hex = ["#ffffff"]*len(teams)
     team_colors_hsl = [(0,0,100)]*len(teams)
 
