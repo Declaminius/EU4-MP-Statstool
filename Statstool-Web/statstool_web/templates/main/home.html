@@ -216,7 +216,7 @@
         {% else %}
           {% if current_user == current_mp.admin %}
             <center><a class="btn btn-outline-secondary btn-center mt-2 mb-2"\
-                        href = "{{url_for('main.add_mp_map', mp_id = current_mp.id)}}">Add Map</a></center>
+                        href = "{{url_for('main.add_mp_map', mp_id = current_mp.id)}}">Add Victory Points Map</a></center>
           {% endif %}
         {% endif %}
       {% if current_mp.current_map_file %}

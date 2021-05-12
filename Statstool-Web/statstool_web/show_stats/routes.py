@@ -129,7 +129,7 @@ def overview_table(sg_id1,sg_id2):
 def overview_table_teams(sg_id1,sg_id2):
     mp = Savegame.query.get(sg_id2).mp
 
-    columns = ["great_power_score", "development",  "effective_development", "navy_strength", "income", "max_manpower"]
+    columns = ["great_power_score", "development",  "effective_development", "navy_strength", "max_manpower", "income"]
     header_labels = ["Team", "Great Power Score", "Development", "Effective Development", "Navy Strength", "Maximum Manpower", "Monthly Income"]
     teams = mp.teams
     team_names = ["Team {}".format(team.id) for team in teams]

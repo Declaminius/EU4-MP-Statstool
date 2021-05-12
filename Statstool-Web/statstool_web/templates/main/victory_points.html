@@ -9,13 +9,13 @@
       {% for label in header_labels%}
       <th>{{label}}</th>
       {% endfor %}
-      {% if current_user == current_mp.admin %}
+      {% if current_user == current_mp.admin and mp_id == 3 %}
         <th>Edit</th>
       {% endif %}
     </tr>
   </thead>
   <tbody>
-    {% for name, tag, color_hex,color_hsl in nation_info%}
+    {% for name, tag, color_hex, color_hsl in nation_info%}
       <tr>
         {% if color_hsl[2] > 0.5 %}
           <td bgcolor = "{{color_hex}}" style="color:black">{{name}}</td>
@@ -78,7 +78,7 @@
             {% endif %}
           {% endfor %}
           {% for i in range(3) %}
-            {% if 3*j + i < free_provinces_two_vp|length %}
+            {% if 3*j + i < free_provinces_one_vp|length %}
               <td bgcolor = "#86fca3"> {{free_provinces_one_vp[3*j + i]}}</td>
             {% else %}
               <td></td>
