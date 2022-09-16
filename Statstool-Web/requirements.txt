@@ -18,7 +18,7 @@ idna==2.10
 itsdangerous==1.1.0
 Jinja2==2.11.3
 kiwisolver==1.2.0
-Mako==1.1.4
+Mako==1.2.2
 MarkupSafe==1.1.1
 matplotlib==3.3.2
 numpy==1.19.2
